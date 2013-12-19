@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>高级迭代器 - 深入Python 3</title>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 8}
+mark{display:inline}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=Search></div></form>
+<p>您在这里: <a href="index.html">主页</a> <span class=u>&#8227;</span> <a href="table-of-contents.html#advanced-iterators">深入Python 3</a> <span class=u>&#8227;</span>
+<p id=level>难度等级: <span class=u title=advanced>&#x2666;&#x2666;&#x2666;&#x2666;&#x2662;</span>
+<h1>高级迭代器</h1>
+<blockquote class=q>
+<p><span class=u>&#x275D;</span> Great fleas have little fleas upon their backs to bite &#8217;em,<br>And little fleas have lesser fleas, and so ad infinitum. <span class=u>&#x275E;</span><br>&mdash; Augustus De Morgan
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>深入</h2>
+<p class=f>H<code>AWAII + IDAHO + IOWA + OHIO == STATES</code>. 或者，换个说法, <code>510199 + 98153 + 9301 + 3593 == 621246</code>. 我在说是方言吗？不，这只是一个谜题。
+
+<p>让我来给你解释一下。
+
+<pre class=nd><code>HAWAII + IDAHO + IOWA + OHIO == STATES
+510199 + 98153 + 9301 + 3593 == 621246
+
+H = 5
+A = 1
+W = 0
+I = 9
+D = 8
+O = 3
+S = 6
+T = 2
+E = 4</code></pre>
+
+<p>像这样的谜题被称为<i>cryptarithms</i> 或者 <i>字母算术(alphametics)</i>。字母可以拼出实际的单词，而如果你把每一个字母都用<code>0&ndash;9</code>中的某一个数字代替后, 也同样可以#8220;拼出&#8221; 一个算术等式。关键的地方是找出每个字母都映射到了哪个数字。每个字母所有出现的地方都必须映射到同一个数字，数字不能重复, 并且&#8220;单词&#8221;不能以0开始。
+
+<aside>最著名的字母算术谜题是<code>SEND + MORE = MONEY</code>。</aside>
+
+<p>在这一章中，我们将深入一个最初由Raymond Hettinger编写的难以置信的Python 程序。这个程序<em>只用14行代码</em>来解决字母算术谜题。
+
+<p class=d>[<a href="examples/alphametics.py">下载 <code>alphametics.py</code></a>]
+<pre class=pp><code>import re
+import itertools
+
+def solve(puzzle):
+    words = re.findall('[A-Z]+', puzzle.upper())
+    unique_characters = set(''.join(words))
+    assert len(unique_characters) &lt;= 10, 'Too many letters'
+    first_letters = {word[0] for word in words}
+    n = len(first_letters)
+    sorted_characters = ''.join(first_letters) + \
+        ''.join(unique_characters - first_letters)
+    characters = tuple(ord(c) for c in sorted_characters)
+    digits = tuple(ord(c) for c in '0123456789')
+    zero = digits[0]
+    for guess in itertools.permutations(digits, len(characters)):
+        if zero not in guess[:n]:
+            equation = puzzle.translate(dict(zip(characters, guess)))
+            if eval(equation):
+                return equation
+
+if __name__ == '__main__':
+    import sys
+    for puzzle in sys.argv[1:]:
+        print(puzzle)
+        solution = solve(puzzle)
+        if solution:
+            print(solution)</code></pre>
+
+<p>你可以从命令行运行这个程序。在Linux上, 运行情况看起来是这样的。(取决于你机器的速度，计算可能要花一些时间，而且不会有进度条。耐心等待就好了。)
+
+<pre class='nd screen'>
+<samp class=p>you@localhost:~/diveintopython3/examples$ </samp><kbd>python3 alphametics.py "HAWAII + IDAHO + IOWA + OHIO == STATES"</kbd>
+<samp>HAWAII + IDAHO + IOWA + OHIO = STATES
+510199 + 98153 + 9301 + 3593 == 621246</samp>
+<samp class=p>you@localhost:~/diveintopython3/examples$ </samp><kbd>python3 alphametics.py "I + LOVE + YOU == DORA"</kbd>
+<samp>I + LOVE + YOU == DORA
+1 + 2784 + 975 == 3760</samp>
+<samp class=p>you@localhost:~/diveintopython3/examples$ </samp><kbd>python3 alphametics.py "SEND + MORE == MONEY"</kbd>
+<samp>SEND + MORE == MONEY
+9567 + 1085 == 10652</samp></pre>
+
+<p class=a>&#x2042;
+
+<h2 id=re-findall>找到一个模式所有出现的地方</h2>
+
+<p>字母算术谜题解决者做的第一件事是找到谜题中所有的字母(A&ndash;Z)。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import re</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.findall('[0-9]+', '16 2-by-4s in rows of 8')</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=pp>['16', '2', '4', '8']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.findall('[A-Z]+', 'SEND + MORE == MONEY')</kbd>     <span class=u>&#x2461;</span></a>
+<samp class=pp>['SEND', 'MORE', 'MONEY']</samp></pre>
+<ol>
+<li><code>re</code> 模块是<a href="regular-expressions.html">正则表达式</a>的Python实现。它有一个漂亮的函数<code>findall()</code>，接受一个正则表达式和一个字符串作为参数，然后找出字符串中出现该模式的所有地方。在这个例子里，模式匹配的是数字序列。<code>findall()</code>函数返回所有匹配该模式的子字符串的列表。
+<li>这里正则表达式匹配的是字母序列。再一次，返回值是一个列表，其中的每一个元素是匹配该正则表达式的字符串。
+</ol>
+
+<p>这是另外一个稍微复杂一点的例子。
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>re.findall(' s.*? s', "The sixth sick sheikh's sixth sheep's sick.")</kbd>
+<samp class=pp>[' sixth s', " sheikh's s", " sheep's s"]</samp></pre>
+
+<aside>这是英语中<a href=http://en.wikipedia.org/wiki/Tongue-twister>最难的绕口令</a>。</aside>
+
+<p>很惊奇？这个正则表达式寻找一个空格，一个 <code>s</code>, 然后是最短的任何字符构成的序列(<code>.*?</code>), 然后是一个空格, 然后是另一个<code>s</code>。 在输入字符串中，我看见了五个匹配:
+
+<ol>
+<li><code>The<mark> sixth s</mark>ick sheikh's sixth sheep's sick.</code>
+<li><code>The sixth<mark> sick s</mark>heikh's sixth sheep's sick.</code>
+<li><code>The sixth sick<mark> sheikh's s</mark>ixth sheep's sick.</code>
+<li><code>The sixth sick sheikh's<mark> sixth s</mark>heep's sick.</code>
+<li><code>The sixth sick sheikh's sixth<mark> sheep's s</mark>ick.</code>
+</ol>
+
+<p>但是<code>re.findall()</code>函数值只返回了3个匹配。准确的说，它返回了第一，第三和第五个。为什么呢？因为<em>它不会返回重叠的匹配</em>。第一个匹配和第二个匹配是重叠的，所以第一个被返回了，第二个被跳过了。然后第三个和第四个重叠，所以第三个被返回了，第四个被跳过了。最后，第五个被返回了。三个匹配，不是五个。
+
+<p>这和字母算术解决者没有任何关系；我只是觉得这很有趣。
+
+<p class=a>&#x2042;
+
+<h2 id=unique-items>在序列中寻找不同的元素</h2>
+
+<p><a href="native-datatypes.html#sets">Sets</a> 使得在序列中查找不同的元素变得很简单。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>a_list = ['The', 'sixth', 'sick', "sheik's", 'sixth', "sheep's", 'sick']</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>set(a_list)</kbd>                      <span class=u>&#x2460;</span></a>
+<samp class=pp>{'sixth', 'The', "sheep's", 'sick', "sheik's"}</samp>
+<samp class=p>>>> </samp><kbd class=pp>a_string = 'EAST IS EAST'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>set(a_string)</kbd>                    <span class=u>&#x2461;</span></a>
+<samp class=pp>{'A', ' ', 'E', 'I', 'S', 'T'}</samp>
+<samp class=p>>>> </samp><kbd class=pp>words = ['SEND', 'MORE', 'MONEY']</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>''.join(words)</kbd>                   <span class=u>&#x2462;</span></a>
+<samp class=pp>'SENDMOREMONEY'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>set(''.join(words))</kbd>              <span class=u>&#x2463;</span></a>
+<samp class=pp>{'E', 'D', 'M', 'O', 'N', 'S', 'R', 'Y'}</samp></pre>
+<ol>
+<li>给出一个有若干字符串组成的列表，<code>set()</code>函数返回列表中不同的字符串组成的集合。把它想象成一个<code>for</code>循环可以帮助理解。从列表出拿出第一个元素，放到集合。第二个，第三个，第四个。第五个，等等, 它已经在集合里面了，因为Python 集合不允许重复，所以它只被列出了一次。第六个。第七个又是一个重复的，所以它只被列出了一次。原来的列表甚至不需要事先排好序。
+<li>同样的技术也适用于字符串，因为一个字符串就是一个字符序列。
+<li>给出一个字符串列表, <code>''.join(<var>a_list</var>)</code>将所有的字符串拼接成一个。
+<li>所以，给出一个字符串列表，这行代码返回这些字符串中出现过的不重复的字符。
+</ol>
+
+<p>字母算术解决者通过这个技术来建立谜题中出现的不同字符的集合。
+
+<pre class='nd pp'><code>unique_characters = set(''.join(words))</code></pre>
+
+<p>这个列表在接下来迭代可能的解法的时候将被用来将数字分配给字符。
+
+<p class=a>&#x2042;
+
+<h2 id=assert>作出断言</h2>
+
+<p>和很多编程语言一样，Python 有一个<code>assert</code>语句。这是它的用法。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>assert 1 + 1 == 2</kbd>                                     <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>assert 1 + 1 == 3</kbd>                                     <span class=u>&#x2461;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+AssertionError</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>assert 2 + 2 == 5, "Only for very large values of 2"</kbd>  <span class=u>&#x2462;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+AssertionError: Only for very large values of 2</samp></pre>
+<ol>
+<li><code>assert</code> 语句后面跟任何合法的Python 表达式。在这个例子里, 表达式 <code>1 + 1 == 2</code> 的求值结果为 <code>True</code>, 所以 <code>assert</code> 语句没有做任何事情。
+<li>然而, 如果Python 表达式求值结果为 <code>False</code>, <code>assert</code> 语句会抛出一个 <code>AssertionError</code>.
+<li>你可以提供一个人类可读的消息，<code>AssertionError</code>异常被抛出的时候它可以被用于打印输出。
+</ol>
+
+<p>因此, 这行代码:
+
+<pre class='nd pp'><code>assert len(unique_characters) &lt;= 10, 'Too many letters'</code></pre>
+
+<p>&hellip;等价于:
+
+<pre class='nd pp'><code>if len(unique_characters) > 10:
+    raise AssertionError('Too many letters')</code></pre>
+
+<p>字母算术谜题使用这个<code>assert</code> 语句来排除谜题包含多于10个的不同的字母的情况。因为每个不同的字母对应一个不同的数字，而数子只有10个,含有多于10个的不同的字母的谜题是不可能有解的。
+
+<p class=a>&#x2042;
+
+<h2 id=generator-expressions>生成器表达式</h2>
+
+<p>生成表达式类似<a href="generators.html">生成器函数</a>，只不过它不是函数。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>unique_characters = {'E', 'D', 'M', 'O', 'N', 'S', 'R', 'Y'}</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>gen = (ord(c) for c in unique_characters)</kbd>  <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>gen</kbd>                                        <span class=u>&#x2461;</span></a>
+<samp class=pp>&lt;generator object &lt;genexpr> at 0x00BADC10></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>next(gen)</kbd>                                  <span class=u>&#x2462;</span></a>
+<samp class=pp>69</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(gen)</kbd>
+<samp class=pp>68</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>tuple(ord(c) for c in unique_characters)</kbd>   <span class=u>&#x2463;</span></a>
+<samp class=pp>(69, 68, 77, 79, 78, 83, 82, 89)</samp></pre>
+<ol>
+<li>生成器表达式类似一个yield值的匿名函数。表达式本身看起来像<a href="comprehensions.html#listcomprehension">列表解析</a>, 但不是用方括号而是用圆括号包围起来。
+<li>生成器表达式返回迭代器。
+<li>调用 <code>next(<var>gen</var>)</code> 返回迭代器的下一个值。
+<li>如果你愿意，你可以将生成器表达式传给<code>tuple()</code>, <code>list()</code>, 或者 <code>set()</code>来迭代所有的值并且返回元组，列表或者集合。在这种情况下，你不需要一对额外的括号&nbsp;&mdash;&nbsp;将生成器表达式<code>ord(c) for c in unique_characters</code> 传给 <code>tuple()</code> 函数就可以了, Python 会推断出它是一个生成器表达式。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>使用生成器表达式取代列表解析可以同时节省<abbr>CPU</abbr> 和 内存(<abbr>RAM</abbr>)。如果你构造一个列表的目的仅仅是传递给别的函数，(<i>比如</i> 传递给<code>tuple()</code> 或者 <code>set()</code>), 用生成器表达式替代吧!
+</blockquote>
+
+<p>这里是到达同样目的的另一个方法, 使用<a href="generators.html">生成器函数</a>:
+
+<pre class='nd pp'><code>def ord_map(a_string):
+    for c in a_string:
+        yield ord(c)
+
+gen = ord_map(unique_characters)</code></pre>
+
+<p>生成器表达式功能相同但更紧凑。
+
+<p class=a>&#x2042;
+
+<h2 id=permutations>计算排列&hellip; 懒惰的方法!</h2>
+
+<p>首先, 排列到底是个什么东西? 排列是一个数学概念。(取决于你在处理哪种数学，排列有好几个定义。在这里我们说的是组合数学, 如果你完全不知道组合数学是什么也不用担心。同往常一样, <a href=http://en.wikipedia.org/wiki/Permutation>维基百科是你的朋友</a>。)
+
+<p>想法是这样的，你有某物件(可以是数字，可以是字母，也可以是跳舞的熊)的一个列表，接着找出将它们拆开然后组合成小一点的列表的所有可能。所有的小列表的大小必须一致。最小是1，最大是元素的总数目。哦，也不能有重复。数学家说&#8220;让我们找出3个元素取2个的排列,&#8221; 意思是你有一个3个元素的序列，然后你找出所有可能的有序对。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>import itertools</kbd>                              <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>perms = itertools.permutations([1, 2, 3], 2)</kbd>  <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>                                   <span class=u>&#x2462;</span></a>
+<samp class=pp>(1, 2)</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>(1, 3)</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<a><samp class=pp>(2, 1)</samp>                                            <span class=u>&#x2463;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>(2, 3)</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>(3, 1)</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>(3, 2)</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>                                   <span class=u>&#x2464;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+StopIteration</samp></pre>
+<ol>
+<li><code>itertools</code>模块里有各种各样的有趣的东西，包括<code>permutations()</code>函数，它把查找排列的所有辛苦的工作的做了。
+<li><code>permutations()</code> 函数接受一个序列(这里是3个数字组成的列表) 和一个表示你要的排列的元素的数目的数字。函数返回迭代器，你可以在<code>for</code> 循环或其他老地方使用它。这里我遍历迭代器来显示所有的值。
+<li><code>[1, 2, 3]</code>取2个的第一个排列是<code>(1, 2)</code>。
+<li>记住排列是有序的: <code>(2, 1)</code> 和 <code>(1, 2)</code>是不同的。
+<li>这就是了。这些就是<code>[1, 2, 3]</code>取两个的所有排列。像<code>(1, 1)</code> 或者 <code>(2, 2)</code>这样的元素对没有出现，因为它们包含重复导致它们不是合法的排列。当没有更多排列的时候，迭代器抛出一个<code>StopIteration</code>异常。
+</ol>
+
+<aside><code>itertools</code>模块有各种各样的有趣的东西。</aside>
+
+<p><code>permutations()</code>函数并不一定要接受列表。它接受任何序列&nbsp;&mdash;&nbsp;甚至是字符串。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import itertools</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>perms = itertools.permutations('ABC', 3)</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<a><samp class=pp>('A', 'B', 'C')</samp>                               <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>('A', 'C', 'B')</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>('B', 'A', 'C')</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>('B', 'C', 'A')</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>('C', 'A', 'B')</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=pp>('C', 'B', 'A')</samp>
+<samp class=p>>>> </samp><kbd class=pp>next(perms)</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+StopIteration</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>list(itertools.permutations('ABC', 3))</kbd>    <span class=u>&#x2462;</span></a>
+<samp class=pp>[('A', 'B', 'C'), ('A', 'C', 'B'),
+ ('B', 'A', 'C'), ('B', 'C', 'A'),
+ ('C', 'A', 'B'), ('C', 'B', 'A')]</samp></pre>
+<ol>
+<li>字符串就是一个字符序列。对于查找排列来说，字符串<code>'ABC'</code>和列表 <code>['A', 'B', 'C']</code>是等价的。
+<li><code>['A', 'B', 'C']</code>取3个的第一个排列是<code>('A', 'B', 'C')</code>。还有5个其他的排列&nbsp;&mdash;&nbsp;同样的3个字符，不同的顺序。
+<li>由于<code>permutations()</code>函数总是返回迭代器，一个简单的调试排列的方法是将这个迭代器传给内建的<code>list()</code>函数来立刻看见所有的排列。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=more-itertools><code>itertools</code>模块中的其它有趣的东西</h2>
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import itertools</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>list(itertools.product('ABC', '123'))</kbd>   <span class=u>&#x2460;</span></a>
+<samp class=pp>[('A', '1'), ('A', '2'), ('A', '3'), 
+ ('B', '1'), ('B', '2'), ('B', '3'), 
+ ('C', '1'), ('C', '2'), ('C', '3')]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>list(itertools.combinations('ABC', 2))</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=pp>[('A', 'B'), ('A', 'C'), ('B', 'C')]</samp></pre>
+<ol>
+<li><code>itertools.product()</code>函数返回包含两个序列的笛卡尔乘积的迭代器。
+<li><code>itertools.combinations()</code>函数返回包含给定序列的给定长度的所有组合的迭代器。这和<code>itertools.permutations()</code>函数很类似，除了不包含因为只有顺序不同而重复的情况。所以<code>itertools.permutations('ABC', 2)</code>同时返回<code>('A', 'B')</code> and <code>('B', 'A')</code> (同其它的排列一起), <code>itertools.combinations('ABC', 2)</code> 不会返回<code>('B', 'A')</code> ，因为它和<code>('A', 'B')</code>是重复的，只是顺序不同而已。
+</ol>
+
+<p class=d>[<a href="examples/favorite-people.txt">下载 <code>favorite-people.txt</code></a>]
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>names = list(open('examples/favorite-people.txt', encoding='utf-8'))</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>names</kbd>
+<samp class=pp>['Dora\n', 'Ethan\n', 'Wesley\n', 'John\n', 'Anne\n',
+'Mike\n', 'Chris\n', 'Sarah\n', 'Alex\n', 'Lizzie\n']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>names = [name.rstrip() for name in names]</kbd>                             <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>names</kbd>
+<samp class=pp>['Dora', 'Ethan', 'Wesley', 'John', 'Anne',
+'Mike', 'Chris', 'Sarah', 'Alex', 'Lizzie']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>names = sorted(names)</kbd>                                                 <span class=u>&#x2462;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>names</kbd>
+<samp class=pp>['Alex', 'Anne', 'Chris', 'Dora', 'Ethan',
+'John', 'Lizzie', 'Mike', 'Sarah', 'Wesley']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>names = sorted(names, key=len)</kbd>                                        <span class=u>&#x2463;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>names</kbd>
+<samp class=pp>['Alex', 'Anne', 'Dora', 'John', 'Mike',
+'Chris', 'Ethan', 'Sarah', 'Lizzie', 'Wesley']</samp></pre>
+<ol>
+<li>这个表达式将文本内容以一行一行组成的列表的形式返回。
+<li>不幸的是，(对于这个例子来说), <code>list(open(<var>filename</var>))</code> 表达式返回的每一行的末尾都包含回车。这个列表解析使用<code>rstrip()</code> 字符串方法移除每一行尾部的空白。(字符串也有一个<code>lstrip()</code>方法移除头部的空白，以及<code>strip()</code>方法头尾都移除。)
+<li><code>sorted()</code> 函数接受一个列表并将它排序后返回。默认情况下，它按字母序排序。
+<li>然而，<code>sorted()</code>函数也接受一个函数作为<var>key</var> 参数, 并且使用key来排序。在这个例子里，排序函数是<code>len()</code>,所以它按<code>len(<var>each item</var>)</code>来排序。短的名字排在前面，然后是稍长，接着是更长的。
+</ol>
+
+<p>这和<code>itertools</code>模块有什么关系? 很高兴你问了这个问题。
+
+<pre class=screen>
+&hellip;continuing from the previous interactive shell&hellip;
+<samp class=p>>>> </samp><kbd class=pp>import itertools</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>groups = itertools.groupby(names, len)</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>groups</kbd>
+<samp class=pp>&lt;itertools.groupby object at 0x00BB20C0></samp>
+<samp class=p>>>> </samp><kbd class=pp>list(groups)</kbd>
+<samp class=pp>[(4, &lt;itertools._grouper object at 0x00BA8BF0>),
+ (5, &lt;itertools._grouper object at 0x00BB4050>),
+ (6, &lt;itertools._grouper object at 0x00BB4030>)]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>groups = itertools.groupby(names, len)</kbd>   <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>for name_length, name_iter in groups:</kbd>    <span class=u>&#x2462;</span></a>
+<samp class=p>... </samp><kbd class=pp>    print('Names with {0:d} letters:'.format(name_length))</kbd>
+<samp class=p>... </samp><kbd class=pp>    for name in name_iter:</kbd>
+<samp class=p>... </samp><kbd class=pp>        print(name)</kbd>
+<samp class=p>... </samp>
+<samp>Names with 4 letters:
+Alex
+Anne
+Dora
+John
+Mike
+Names with 5 letters:
+Chris
+Ethan
+Sarah
+Names with 6 letters:
+Lizzie
+Wesley</samp></pre>
+<ol>
+<li><code>itertools.groupby()</code>函数接受一个序列和一个key 函数, 并且返回一个生成二元组的迭代器。每一个二元组包含<code>key_function(<var>each item</var>)</code>的结果和另一个包含着所有共享这个key结果的元素的迭代器。
+<li>调用<code>list()</code> 函数会&#8220;耗尽&#8221;这个迭代器, <i>也就是说</i> 你生成了迭代器中所有元素才创造了这个列表。迭代器没有&#8220;重置&#8221;按钮。你一旦耗尽了它，你没法重新开始。如果你想要再循环一次(例如, 在接下去的<code>for</code>循环里面), 你得调用<code>itertools.groupby()</code>来创建一个新的迭代器。
+<li>在这个例子里，给出一个<em>已经按长度排序</em>的名字列表, <code>itertools.groupby(names, len)</code>将会将所有的4个字母的名字放在一个迭代器里面，所有的5个字母的名字放在另一个迭代器里，以此类推。<code>groupby()</code>函数是完全通用的; 它可以将字符串按首字母，将数字按因子数目, 或者任何你能想到的key函数进行分组。
+</ol>
+<!-- YO DAWG, WE HEARD YOU LIKE LOOPING, SO WE PUT AN ITERATOR IN YOUR ITERATOR SO YOU CAN LOOP WHILE YOU LOOP. -->
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>itertools.groupby()</code>只有当输入序列已经按分组函数排过序才能正常工作。在上面的例子里面，你用<code>len()</code> 函数分组了名字列表。这能工作是因为输入列表已经按长度排过序了。
+</blockquote>
+
+<p>Are you watching closely?
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>list(range(0, 3))</kbd>
+<samp class=pp>[0, 1, 2]</samp>
+<samp class=p>>>> </samp><kbd class=pp>list(range(10, 13))</kbd>
+<samp class=pp>[10, 11, 12]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>list(itertools.chain(range(0, 3), range(10, 13)))</kbd>        <span class=u>&#x2460;</span></a>
+<samp class=pp>[0, 1, 2, 10, 11, 12]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>list(zip(range(0, 3), range(10, 13)))</kbd>                    <span class=u>&#x2461;</span></a>
+<samp class=pp>[(0, 10), (1, 11), (2, 12)]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>list(zip(range(0, 3), range(10, 14)))</kbd>                    <span class=u>&#x2462;</span></a>
+<samp class=pp>[(0, 10), (1, 11), (2, 12)]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>list(itertools.zip_longest(range(0, 3), range(10, 14)))</kbd>  <span class=u>&#x2463;</span></a>
+<samp class=pp>[(0, 10), (1, 11), (2, 12), (None, 13)]</samp></pre>
+<ol>
+<li><code>itertools.chain()</code>函数接受两个迭代器，返回一个迭代器，它包含第一个迭代器的所有内容，以及跟在后面的来自第二个迭代器的所有内容。(实际上，它接受任何数目的迭代器，并把它们按传入顺序串在一起。)
+<li><code>zip()</code>函数的作用不是很常见，结果它却非常有用: 它接受任何数目的序列然后返回一个迭代器，其第一个元素是每个序列的第一个元素组成的元组，然后是每个序列的第二个元素（组成的元组），以此类推。
+<li><code>zip()</code> 在到达最短的序列结尾的时候停止。<code>range(10, 14)</code> 有四个元素(10, 11, 12, 和 13), 但是 <code>range(0, 3)</code>只有3个, 所以 <code>zip()</code>函数返回包含3个元素的迭代器。
+<li>相反，<code>itertools.zip_longest()</code>函数在到达<em>最长的</em>序列的结尾的时候才停止, 对短序列结尾之后的元素填入<code>None</code>值.
+</ol>
+
+<p id=dict-zip>好吧，这些都很有趣，但是和字母算术谜题解决者有什么联系呢? 请看下面:
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>characters = ('S', 'M', 'E', 'D', 'O', 'N', 'R', 'Y')</kbd>
+<samp class=p>>>> </samp><kbd class=pp>guess = ('1', '2', '0', '3', '4', '5', '6', '7')</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>tuple(zip(characters, guess))</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=pp>(('S', '1'), ('M', '2'), ('E', '0'), ('D', '3'),
+ ('O', '4'), ('N', '5'), ('R', '6'), ('Y', '7'))</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>dict(zip(characters, guess))</kbd>   <span class=u>&#x2461;</span></a>
+<samp class=pp>{'E': '0', 'D': '3', 'M': '2', 'O': '4',
+ 'N': '5', 'S': '1', 'R': '6', 'Y': '7'}</samp></pre>
+<ol>
+<li>给出一个字母列表和一个数字列表(两者的元素的形式都是1个字符的字符串), <code>zip</code>函数按顺序创建一组组字母，数字对。
+<li>为什么这很酷? 因为这个数据结构正好可以用来传递给<code>dict()</code>函数来创建以字母为键，对应数字为值的字典。(这不是实现这个目的唯一方法。你当然可以使用<a href="comprehensions.html#dictionarycomprehension">字典解析</a>来直接创建字典。) 尽管字典的打印形式以另一个顺序列出了这些键值对(字典本身没有#8220;顺序&#8221; ), 但是你可以看见每一个字母都按<var>characters</var> 和 <var>guess</var>序列的原始顺序对应到了相应的数字。
+</ol>
+
+<p id=guess>算术谜题解决者使用这个技术对每一个可能的解法创建一个将谜题中的字母映射到解法中的数字的字典。
+
+<pre class='nd pp'><code>characters = tuple(ord(c) for c in sorted_characters)
+digits = tuple(ord(c) for c in '0123456789')
+...
+for guess in itertools.permutations(digits, len(characters)):
+    ...
+<mark>    equation = puzzle.translate(dict(zip(characters, guess)))</mark></code></pre>
+
+<p>但是<code>translate()</code>方法是什么呢? 啊哈, 我们现在到了<em>真正</em>有趣的部分了。
+
+<p class=a>&#x2042;
+
+<h2 id=string-translate>一种新的操作字符串的方法</h2>
+
+<p>Python 字符串有很多方法。我们在<a href="strings.html">字符串章节</a>中学习了其中一些: <code>lower()</code>, <code>count()</code>, 和 <code>format()</code>。现在我要给你介绍一个强大但鲜为人知的操作字符串的技术: <code>translate()</code> 方法。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>translation_table = {ord('A'): ord('O')}</kbd>  <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>translation_table</kbd>                         <span class=u>&#x2461;</span></a>
+<samp class=pp>{65: 79}</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>'MARK'.translate(translation_table)</kbd>       <span class=u>&#x2462;</span></a>
+<samp class=pp>'MORK'</samp></pre>
+<ol>
+<li>字符串翻译从一个转换表开始, 转换表就是一个将一个字符映射到另一个字符的字典。实际上，&#8220;字符&#8221; 是不正确的&nbsp;&mdash;&nbsp;转换表实际上是将一个 <em>字节（byte)</em>映射到另一个。
+<li>记住，Python 3 中的字节是整形数。<code>ord()</code> 函数返回字符的<abbr>ASCII</abbr>码。在这个例子中，字符是A&ndash;Z, 所以返回的是从65 到 90的字节。
+<li>一个字符串的<code>translate()</code>方法接收一个转换表，并用它来转换该字符串。换句话说，它将出现在转换表的键中的字节替换为该键对应的值。在这个例子里， 将<code>MARK</code> &#8220;翻译为&#8221; <code>MORK</code>.
+</ol>
+
+<aside>现在你开始进入<em>真正</em>有趣的部分了。</aside>
+
+<p>这和解决字母算术谜题有什么关系呢？实际上，关系大着呢。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>characters = tuple(ord(c) for c in 'SMEDONRY')</kbd>       <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>characters</kbd>
+<samp class=pp>(83, 77, 69, 68, 79, 78, 82, 89)</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>guess = tuple(ord(c) for c in '91570682')</kbd>            <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>guess</kbd>
+<samp class=pp>(57, 49, 53, 55, 48, 54, 56, 50)</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>translation_table = dict(zip(characters, guess))</kbd>     <span class=u>&#x2462;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>translation_table</kbd>
+<samp class=pp>{68: 55, 69: 53, 77: 49, 78: 54, 79: 48, 82: 56, 83: 57, 89: 50}</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>'SEND + MORE == MONEY'.translate(translation_table)</kbd>  <span class=u>&#x2463;</span></a>
+<samp class=pp>'9567 + 1085 == 10652'</samp></pre>
+<ol>
+<li>使用<a href="advanced-iterators.html#generator-expressions">生成器表达式</a>, 我们快速的计算出字符串中每个字符的字节值。<var>characters</var>是<code>alphametics.solve()</code>函数中的<var>sorted_characters</var>的示例值 .
+<li>使用另一个生成器表达式，我们快速的计算出字符串中每个数字的字节值。计算结果<var>guess</var>, 正好是<a href="advanced-iterators.html#guess"><code>alphametics.solve()</code>函数中的<code>itertools.permutations()</code>函数</a>返回值的格式。
+<li>通过将<a href="advanced-iterators.html#dict-zip"><var>characters</var> 和 <var>guess</var>zipping 出来的元素对序列</a>构造出的字典来作为转换表。这正是<code>alphametics.solve()</code> 在<code>for</code> 循环里面干的事情。
+<li>最后我们将转换表传递给原始字符串的<code>translate()</code>方法。这会将字符串中的每个字母转化成相应的数字(基于<var>characters</var>中字母和<var>guess</var>中的数字)。结果是一个字符串形式的合法的Python表达式。
+</ol>
+
+<p>这相当令人难忘。但你能对正巧是一个合法Python 表达式的字符串干什么呢？
+
+<p class=a>&#x2042;
+
+<h2 id=eval>将任何字符串作为Python表达式求值</h2>
+
+<p>这是谜题的最后一部分(或者说, 谜题解决者的最后一部分)。经过华丽的字符串操作，我们得到了类似<code>'9567 + 1085 == 10652'</code>这样的一个字符串。但那是一个字符串，字符串有什么好的？输入<code>eval()</code>, Python 通用求值工具。
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>eval('1 + 1 == 2')</kbd>
+<samp class=pp>True</samp>
+<samp class=p>>>> </samp><kbd class=pp>eval('1 + 1 == 3')</kbd>
+<samp class=pp>False</samp>
+<samp class=p>>>> </samp><kbd class=pp>eval('9567 + 1085 == 10652')</kbd>
+<samp class=pp>True</samp></pre>
+
+<p>但是等一下，不止这些! <code>eval()</code> 并不限于布尔表达式。它能处理<em>任何</em> Python 表达式并且返回<em>任何</em>数据类型。
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>eval('"A" + "B"')</kbd>
+<samp class=pp>'AB'</samp>
+<samp class=p>>>> </samp><kbd class=pp>eval('"MARK".translate({65: 79})')</kbd>
+<samp class=pp>'MORK'</samp>
+<samp class=p>>>> </samp><kbd class=pp>eval('"AAAAA".count("A")')</kbd>
+<samp class=pp>5</samp>
+<samp class=p>>>> </samp><kbd class=pp>eval('["*"] * 5')</kbd>
+<samp class=pp>['*', '*', '*', '*', '*']</samp></pre>
+
+<p>等一下，还没完呢!
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>x = 5</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("x * 5")</kbd>         <span class=u>&#x2460;</span></a>
+<samp class=pp>25</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("pow(x, 2)")</kbd>     <span class=u>&#x2461;</span></a>
+<samp class=pp>25</samp>
+<samp class=p>>>> </samp><kbd class=pp>import math</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("math.sqrt(x)")</kbd>  <span class=u>&#x2462;</span></a>
+<samp class=pp>2.2360679774997898</samp></pre>
+<ol>
+<li><code>eval()</code>接受的表达式可以引用在<code>eval()</code>之外定义的全局变量。如果(<code>eval()</code>)在函数内被调用, 它也可以引用局部变量。
+<li>以及函数。
+<li>以及模块。
+</ol>
+
+<p>喂，等一下&hellip;
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import subprocess</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("subprocess.getoutput('ls ~')")</kbd>                  <span class=u>&#x2460;</span></a>
+<samp class=pp>'Desktop         Library         Pictures \
+ Documents       Movies          Public   \
+ Music           Sites'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("subprocess.getoutput('rm /some/random/file')")</kbd>  <span class=u>&#x2461;</span></a></pre>
+<ol>
+<li><code>subprocess</code> 模块允许你执行任何shell命令并以字符串形式获得输出。
+<li>执行任意的shell命令可能会导致永久的（不好的）后果。
+</ol>
+
+<p>更坏的是，由于存在全局函数<code>__import__()</code>，它接收字符串形式的模块名，导入模块，并返回模块的引用。和<code>eval()</code>的能力结合起来，你可以构造一个单独的表达式来删除你所有的文件:
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("__import__('subprocess').getoutput('rm /some/random/file')")</kbd>  <span class=u>&#x2460;</span></a></pre>
+<ol>
+<li>现在想象一下<code>'rm -rf ~'</code>的输出。实际上它不会有任何输出，但是你也不会有任何文件还留着。
+</ol>
+
+<p class=xxxl>eval() 是邪恶的
+
+<p>好吧, 邪恶部分是对来自非信任源的表达式进行求值。你应该只在信任的输入上使用<code>eval()</code>。当然，关键的部分是确定什么是&#8220;可信任的&#8221;。但有一点我敢肯定: 你<b>不</b>应该将这个字母算术表达式放到网上最为一个小的web服务。不要错误的认为，&#8220;Gosh, 这个函数在求值以前做了那么多的字符串操作。<em>我想不出</em> 谁能利用这个漏洞。&#8221; <b>会</b>有人找出穿过这些字符串操作把危险的可执行代码放进来的方法的。(<a href=http://www.securityfocus.com/blogs/746>更奇怪的事情都发生过。</a>), 然后你就得和你的服务器说再见了。
+
+<p>但是肯定有<em>某种</em>办法可以安全的求值表达式吧？将<code>eval()</code>放到一个不能访问和伤害外部世界的沙盒里面。嗯，对也不对。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>x = 5</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("x * 5", {}, {})</kbd>               <span class=u>&#x2460;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+  File "&lt;string>", line 1, in &lt;module>
+NameError: name 'x' is not defined</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("x * 5", {"x": x}, {})</kbd>         <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>import math</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("math.sqrt(x)", {"x": x}, {})</kbd>  <span class=u>&#x2462;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+  File "&lt;string>", line 1, in &lt;module>
+NameError: name 'math' is not defined</samp></pre>
+<ol>
+<li>传给<code>eval()</code>函数的第二和第三个函数担当了求值表达式是的全局和局部名字空间的角色。在这个例子里，它们都是空的，意味着当字符串<code>"x * 5"</code>被求值的时候, 在全局和本地的名字空间都没有变量<var>x</var>, 所以 <code>eval()</code>抛出了一个异常。
+<li>你可以通过一个个列出的方式选择性在全局名字空间里面包含一些值。这些&nbsp;&mdash;&nbsp;并且这有这些&nbsp;&mdash;&nbsp;变量在求值的时候可用。
+<li>即使你刚刚导入了<code>math</code>模块, 你没有在传给<code>eval()</code>函数的名字空间里包含它，所以求值失败了。
+</ol>
+
+<p>哎呀，这很简单。 让我来做一个字母算术谜题的Web服务吧！
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("pow(5, 2)", {}, {})</kbd>                   <span class=u>&#x2460;</span></a>
+<samp class=pp>25</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>eval("__import__('math').sqrt(5)", {}, {})</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=pp>2.2360679774997898</samp></pre>
+<ol>
+<li>即使你传入空的字典作为全局和局部名字空间，所有的Python 内建函数在求值时还是可用的。所以<code>pow(5, 2)</code>可以工作, 因为 <code>5</code> 和 <code>2</code>是字面量，而<code>pow()</code>是内建函数。
+<li>很不幸 (如果你不明白为什么不幸，继续读。), <code>__import__()</code> 也是一个内建函数，所以它也能工作。
+</ol>
+
+<p>是的，这意味着即使你在调用<code>eval()</code>的时候显式的将全局和局部名字空间设置为空字典，你仍然可以做坏事。
+
+<pre class='nd screen'><samp class=p>>>> </samp><kbd class=pp>eval("__import__('subprocess').getoutput('rm /some/random/file')", {}, {})</kbd></pre>
+
+<p>哎呀. 幸亏我没有做那个字母算术web服务。存在<em>任何</em>安全的使用 <code>eval()</code>的方法吗? 嗯, 有也没有。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>eval("__import__('math').sqrt(5)",</kbd>
+<a><samp class=p>... </samp><kbd class=pp>    {"__builtins__":None}, {})</kbd>          <span class=u>&#x2460;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+  File "&lt;string>", line 1, in &lt;module>
+NameError: name '__import__' is not defined</samp>
+<samp class=p>>>> </samp><kbd class=pp>eval("__import__('subprocess').getoutput('rm -rf /')",</kbd>
+<a><samp class=p>... </samp><kbd class=pp>    {"__builtins__":None}, {})</kbd>          <span class=u>&#x2461;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+  File "&lt;string>", line 1, in &lt;module>
+NameError: name '__import__' is not defined</samp></pre>
+<olj
+<li>为了安全的求值不受信任的表达式, 你需要定义一个将<code>"__builtins__"</code> 映射为 <code>None</code>(Python 的空值)的全局名字空间字典. 在内部, &#8220;内建&#8221; 函数包含在一个叫做<code>"__builtins__"</code>的伪模块内。这个伪模块(<i>即</i> 内建函数的集合) 在没有被你显式的覆盖的情况下对被求值的表达式是总是可用的。
+<li>请确保你覆盖的是<code>__builtins__</code>。 不是<code>__builtin__</code>, <code>__built-ins__</code>, 或者其它某个变量，否则程序还是可以运行但是会有巨大的风险。
+</ol>
+
+<p>那么<code>eval()</code>现在安全了? 嗯，是也不是。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>eval("2 ** 2147483647",</kbd>
+<a><samp class=p>... </samp><kbd class=pp>    {"__builtins__":None}, {})</kbd>          <span class=u>&#x2460;</span></a>
+</pre>
+<ol>
+<li>即使不能访问到<code>__builtins__</code>, 你还是可以开启一个拒绝服务攻击。例如, 试图求<code>2</code> 的 <code>2147483647</code>次方会导致你的服务器的 <abbr>CPU</abbr> 利用率到达100% 一段时间。(如果你在交互式shell中试验这个, 请多按几次 <kbd>Ctrl-C</kbd>来跳出来。) 技术上讲，这个表达式 最终<em>将会</em>返回一个值, 但是在这段时间里你的服务器将啥也干不了。
+</ol>
+
+<p>最后, Python 表达式的求值<em>是</em>可能达到某种意义的&#8220;安全&#8221;的, 但结果是在现实生活中没什么用。如果你只是玩玩没有问题，如果你只给它传递安全的输入也没有问题。但是其它的情况完全是自找麻烦。
+
+<p class=a>&#x2042;
+
+<h2 id=alphametics-finale>把所有东西放在一起</h2>
+
+<p>总的来说: 这个程序通过暴力解决字母算术谜题， <i>也就是</i>通过穷举所有可能的解法。为了达到目的，它
+
+<ol>
+<li>通过<code>re.findall()</code>函数<a href="advanced-iterators.html#re-findall">找到谜题中的所有字母</a>
+<li>使用集合和<code>set()</code>函数<a href="advanced-iterators.html#unique-items">找到谜题出现的所有<em>不同</em>的字母</a>
+<li>通过<code>assert</code>语句<a href="advanced-iterators.html#assert">检查是否有超过10个的不同的字母</a> (意味着谜题无解) 
+<li>通过一个生成器对象<a href="advanced-iterators.html#generator-objects">将字符转换成对应的ASCII码值</a>
+<li>使用<code>itertools.permutations()</code>函数<a href="advanced-iterators.html#permutations">计算所有可能的解法</a> 
+<li>使用<code>translate()</code>字符串方法<a href="advanced-iterators.html#string-translate">将所有可能的解转换成Python表达式</a> 
+<li>使用<code>eval()</code>函数<a href="advanced-iterators.html#eval">通过求值Python 表达式来检验解法</a>
+<li>返回第一个求值结果为<code>True</code>的解法
+</ol>
+
+<p>&hellip;仅仅14行代码.
+
+<p class=a>&#x2042;
+
+<h2 id=furtherreading>进一步阅读</h2>
+
+<ul>
+<li><a href=http://docs.python.org/3.1/library/itertools.html><code>itertools</code> 模块</a>
+<li><a href=http://www.doughellmann.com/PyMOTW/itertools/><code>itertools</code>&nbsp;&mdash;&nbsp;用于高效循环的迭代器函数</a>
+<li><a href=http://blip.tv/file/1947373/>观看 Raymond Hettinger 在 PyCon 2009 上的 &#8220;Easy AI with Python&#8221; 演讲</a> 
+<li><a href=http://code.activestate.com/recipes/576615/>Recipe 576615: Alphametics solver</a>, Raymond Hettinger 的原始的适用于Python 2的算木谜题解决程序
+<li><a href=http://code.activestate.com/recipes/users/178123/>More of Raymond Hettinger&#8217;s recipes</a> in the ActiveState Code repository
+<li><a href=http://en.wikipedia.org/wiki/Verbal_arithmetic>算木谜题在维基百科上的页面</a>
+<li><a href=http://www.tkcs-collins.com/truman/alphamet/index.shtml>字母索引</a>, 包含 <a href=http://www.tkcs-collins.com/truman/alphamet/alphamet.shtml>很多谜题</a> 以及 <a href=http://www.tkcs-collins.com/truman/alphamet/alpha_gen.shtml>一个创建你自己的谜题的工具</a>
+</ul>
+
+<p>非常感谢Raymond Hettinger同意重现授权他的代码，因此我才能将它移植到Python 3 并作为本章的基础。
+
+<p class=v><a href="iterators.html" rel=prev title='back to &#8220;Classes &amp; Iterators&#8221;'><span class=u>&#x261C;</span></a> <a href="unit-testing.html" rel=next title='onward to &#8220;Unit Testing&#8221;'><span class=u>&#x261E;</span></a>
+
+<p class=c>&copy; 2001&ndash;9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<meta name=robots content=noindex>
+<title>后记 －－ 深入 Python 3</title>
+<link rel=stylesheet href="dip3.css">
+<style>
+h1:before,h2:before{content:''}
+.ss{float:right;margin:0 0 1.75em 1.75em}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=搜索></div></form>
+<p>目前位置: <a href="index.html">首页</a> <span class=u>‣</span> <a href="table-of-contents.html">深入 Python 3</a> <span class=u>‣</span>
+<h1>后记</h1>
+<blockquote class=q>
+<p><span class=u>❝</span> <i lang=fr>Je n’ai fait celle-ci plus longue que parce que je n’ai pas eu le loisir de la faire plus courte.</i><br>(我也许应该写一封短点的信，但我实在没有时间了。） <span class=u>❞</span><br>— <a href=http://en.wikiquote.org/wiki/Blaise_Pascal>Blaise Pascal</a>
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>深入</h2>
+<p class=f>与所有图书一样，本书来源于心甘情愿的劳动。哦，当然，我从中获取了一定利益，可没有人会是为了金钱而撰写技术类书籍。同时，由于此书同时在网上及纸上发布，我花费了大量本来可用于写作的时间来摆弄与网络相关的玩艺。<p class='ss nm'><img src="i/openclipart.org_media_files_johnny_automatic_5261.png" width=314 height=273 alt='[打字机]'>
+
+<p>在线版本的载入效率已经尽可能地进行了提高。效率方面从来没有发生过意外情形，我花费大量时间才做到了这一点。也许在其中花了过多时间了。是的，几乎可以肯定是花了太多时间。千万不要低估一位拖拉的作家可能为此着迷的程度。<p>我不会用所有的细节来烦你。慢着，是的，我将用所有的细节来烦你。但下面有个简短的版本。<ol>
+<li>最小化 HTML ，并以 <a href=http://httpd.apache.org/docs/trunk/mod/mod_deflate.html>压缩</a> 形式传送。</li><li>通过 <a href=http://developer.yahoo.com/yui/compressor/>YUI 压缩工具</a> 对脚本和样式表进行最小化（并也以压缩的方式传送）。</li><li>组合脚本以减少 HTTP 请求。</li><li>通过样式表的组合与内联减少 HTTP 请求。</li><li>在<a href=http://pyquery.org/>pyquery</a>的些许帮助下，<a href=http://hg.diveintopython3.org/file/default/util/lesscss.py>逐页面删除</a>未用上的 CSS 选择器和属性。</li><li>基于来自 <a href=http://developer.yahoo.com/yslow/>YSlow</a> 和 <a href=http://code.google.com/speed/page-speed/>Page Speed</a> 的建议，对 HTTP 缓存及其它服务器端选项进行优化。</li><li>尽可能地让页面使用 <a href=http://www.alanwood.net/unicode/unicode_samples.html>Unicode 字符</a>替代图片。</li><li>通过 <a href=http://optipng.sourceforge.net/>OptiPNG</a> 对图片进行优化。</li><li>为避免不完整标识，整本书精心使用<a href=http://diveintomark.org/archives/2009/03/27/dive-into-history-2009-edition>HTML 5 手动创作而成</a>。</li></ol>
+
+<p class=a>⁂
+
+<h2 id=typography>印刷</h2>
+
+<p>垂直韵律、最佳可用 &amp; 符号、弯引号/撇符号、来自 webtypography.net 的其它东西<p class=a>⁂
+
+<h2 id=graphics>图形</h2>
+
+<p>Unicode、标注、Windows 上的字体族问题<p class=a>⁂
+
+<h2 id=performance>性能</h2>
+
+<p>"深入历史 2009 版"、最小化 CSS + JS + HTML、内联 CSS 、图像优化<p class=a>⁂
+
+<h2 id=fun>趣物</h2>
+
+<p>引号、约束写作(?)、木瓜鞭<p class=a>⁂
+
+<h2 id=furtherreading>深入阅读</h2>
+
+<ul>
+<li><a href=http://webtypography.net/toc/>应用于网页的印刷风格元素</a>
+</li><li><a href=http://www.alistapart.com/articles/settingtypeontheweb>针对基线网格的网页设置类型</a>
+</li><li><a href=http://24ways.org/2006/compose-to-a-vertical-rhythm>谱写垂直韵律</a>
+</li><li><a href=http://simplebits.com/notebook/2008/08/14/ampersands.html>使用现有最佳 ＆ 符号</a>
+</li><li><a href=http://alanwood.net/unicode/>HTML、字体和网页浏览器的 Unicode 支持</a>
+</li><li>为 <a href=http://getfirebug.com/>Firebug</a> 准备的 <a href=http://developer.yahoo.com/yslow/>YSlow</a>
+</li><li><a href=http://developer.yahoo.com/performance/rules.html>加速网站的最佳实践</a>
+</li><li><a href=http://stevesouders.com/hpws/rules.php>快速载入网站的 14 条规则</a>
+</li><li><a href=http://developer.yahoo.com/yui/compressor/>YUI 压缩程序</a>
+</li><li><a href=http://code.google.com/speed/page-speed/>谷歌网页速度</a>
+</li><li><a href=http://code.google.com/speed/page-speed/docs/using.html>使用谷歌网页速度</a>
+</li><li><a href=http://optipng.sourceforge.net/>优化</a>
+</li></ul>
+
+<p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/dip3.js"></script><!--[if IE]><script src=j/html5.js></script><![endif]-->
+

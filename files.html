@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>文件 - 深入Python 3</title>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 11}
+mark{display:inline}
+</style>
+<link rel=stylesheet type=text/css media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=Search></div></form>
+<p>你的位置: <a href="index.html">Home</a> <span class=u>&#8227;</span> <a href="table-of-contents.html#files">Dive Into Python 3</a> <span class=u>&#8227;</span>
+<p id=level>难度等级: <span class=u title=intermediate>&#x2666;&#x2666;&#x2666;&#x2662;&#x2662;</span>
+<h1>文件</h1>
+<blockquote class=q>
+<p><span class=u>&#x275D;</span> A nine mile walk is no joke, especially in the rain. <br><span class=u>&#x275E;</span><br>&mdash; Harry Kemelman, <cite>The Nine Mile Walk</cite>
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>概要</h2>
+<p class=f>在没有安装任何一个应用程序之前，我的笔记本上Windows系统有38,493个文件。安装Python 3后，大约增加了3,000个文件。文件是每一个主流操作系统的主要存储模型；这种观念如此根深蒂固以至于难以想出一种<a href=http://en.wikipedia.org/wiki/Computer_file#History>替代物</a>。打个比方，你的电脑实际上就是泡在文件里了。
+<h2 id=reading>读取文本文件</h2>
+<p>在读取文件之前，你需要先打开它。在Python里打开一个文件很简单：
+
+<pre class='nd pp'><code>a_file = open('examples/chinese.txt', encoding='utf-8')</code></pre>
+
+<p>Python有一个内置函数 <code>open()</code>，它使用一个文件名作为其参数。在以上代码中，文件名是 <code class=pp>'examples/chinese.txt'</code>。关于这个文件名，有五件值得一讲的事情：
+
+<ol>
+<li>它不仅是一个文件的名字；实际上，它是文件路径和文件名的组合；一般来说，文件打开函数应该有两个参数&nbsp;&mdash;&nbsp;路径和文件名&nbsp;&mdash;&nbsp;但是函数<code>open()</code>只使用一个参数。在Python里，当你使用&#8220;filename,&#8221;作为参数的时候，你可以将部分或者全部的路径也包括进去。
+<li>在这个例子中，目录路径中使用的是斜杠(forward slash)，但是我并没有说明我正在使用的操作系统。Windows使用反斜杠来表示子目录，但是Mac OS X和Linux使用斜杠。但是，在Python中，斜杠永远都是正确的，即使是在Windows环境下。
+<li>不使用斜杠或者反斜杠的路径被称作<i>相对路径(relative path)</i>。你也许会问，相对于什么呢？耐心一些，伙计。
+<li>&#8220;filename,&#8221;参数是一个字符串。所有现代的操作系统（甚至Windows！）使用Unicode编码方式来存储文件名和目录名。Python 3全面支持非<abbr>ASCII</abbr>编码的路径。
+<li>文件不一定需要在本地磁盘上。也许你挂载了一个网络驱动器。它也可以是一个完全虚拟的文件系统(<a href=http://en.wikipedia.org/wiki/Filesystem_in_Userspace>an entirely virtual filesystem</a>)上的文件。只要你的操作系统认为它是一个文件，并且能够以文件的方式访问，那么，Python就能打开它。
+</ol>
+
+<p>但是对<code>open()</code>函数的调用不局限于<code>filename</code>。还有另外一个叫做<code>encoding</code>参数。天哪，似乎<a href="strings.html#boring-stuff">非常耳熟</a>的样子！
+
+<h3 id=encoding>字符编码抬起了它腌臜的头&hellip;</h3>
+
+<p>字节即字节；<a href="strings.html#byte-arrays">字符是一种抽象</a>。字符串由使用Unicode编码的字符序列构成。但是磁盘上的文件不是Unicode编码的字符序列。文件是字节序列。所以你可能会想，如果从磁盘上读取一个&#8220;文本文件&#8221;，Python是怎样把那个字节序列转化为字符序列的呢？实际上，它是根据特定的字符解码算法来解释这些字节序列，然后返回一串使用Unicode编码的字符（或者也称为字符串）。
+<pre>
+# This example was created on Windows. Other platforms may
+# behave differently, for reasons outlined below.
+# 这个样例在Windows平台上创建。其他平台可能会有不同的表现，理由描述在下边
+<samp class=p>>>> </samp><kbd class=pp>file = open('examples/chinese.txt')</kbd>
+<samp class=p>>>> </samp><kbd class=pp>a_string = file.read()</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+  File "C:\Python31\lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f in position 28: character maps to &lt;undefined></samp>
+<samp class=p>>>> </samp></pre>
+
+<aside>默认的编码方式是平台相关的。</aside>
+
+<p>刚才发生了什么？由于你没有指定字符编码的方式，所以Python被迫使用默认的编码。那么默认的编码方式是什么呢？如果你仔细看了跟踪信息(traceback)，错误出现在<code>cp1252.py</code>，这意味着Python此时正在使用CP-1252作为默认的编码方式。（在运行微软视窗操作系统的机器上，CP-1252是一种常用的编码方式。）CP-1252的字符集不支持这个文件上的字符编码，所以它以这个可恶的<code>UnicodeDecodeError</code>错误读取失败。
+
+<p>但是，还有更糟糕的！因为默认的编码方式是<em>平台相关的(platform-dependent)</em>，所以，当前的代码<em>也许</em>能够在你的电脑上运行（如果你的机器的默认编码方式是<abbr>UTF-8</abbr>），但是当你把这份代码分发给其他人的时候可能就会失败（因为他们的默认编码方式可能跟你的不一样，比如说CP-1252）。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>如果你需要获得默认编码的信息，则导入<code>locale</code>模块，然后调用<code>locale.getpreferredencoding()</code>。在我安装了Windows的笔记本上，它的返回值是<code>'cp1252'</code>，但是在我楼上安装了Linux的台式机上边，它返回<code>'UTF8'</code>。你看，即使在我自己家里我都不能保证一致性(consistency)！你的运行结果也许不一样（即使在Windows平台上），这依赖于操作系统的版本和区域/语言选项的设置。这就是为什么每次打开一个文件的时候指定编码方式是如此重要了。
+
+</blockquote>
+
+<h3 id=file-objects>流对象</h3>
+
+<p>到目前为止，我们都知道Python有一个内置的函数叫做<code>open()</code>。<code>open()</code>函数返回一个流对象（stream object），它拥有一些用来获取信息和操作字符流的方法和属性。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>a_file = open('examples/chinese.txt', encoding='utf-8')</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.name</kbd>                                              <span class=u>&#x2460;</span></a>
+<samp class=pp>'examples/chinese.txt'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.encoding</kbd>                                          <span class=u>&#x2461;</span></a>
+<samp class=pp>'utf-8'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.mode</kbd>                                              <span class=u>&#x2462;</span></a>
+<samp class=pp>'r'</samp></pre>
+<ol>
+<li><code>name</code>属性反映的是当你打开文件时传递给<code>open()</code>函数的文件名。它没有被标准化(normalize)成绝对路径。
+<li>同样的，<code>encoding</code>属性反映的是在你调用<code>open()</code>函数时指定的编码方式。如果你在打开文件的时候没有指定编码方式（不好的开发人员！），那么<code>encoding</code>属性反映的是<code>locale.getpreferredencoding()</code>的返回值。
+<li><code>mode</code>属性会告诉你被打开文件的访问模式。你可以传递一个可选的<var>mode</var>参数给<code>open()</code>函数。如果在打开文件的时候没有指定访问模式，Python默认设置模式为<code>'r'</code>，意思是&#8220;在文本模式下以只读的方式打开。&#8221;在这章的后面你会看到，文件的访问模式有各种用途；不同模式能够使你写入一个文件，追加到一个文件，或者以二进制模式打开一个文件（在这种情况下，你处理的是字节，不再是字符）。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><a href=http://docs.python.org/3.1/library/io.html#module-interface><code>open()</code>函数的文档</a>列出了所有可用的文件访问模式。
+</blockquote>
+
+<h3 id=read>从文本文件读取数据</h3>
+
+<p>在打开文件以后，你可能想要从某处开始读取它。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>a_file = open('examples/chinese.txt', encoding='utf-8')</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>                                            <span class=u>&#x2460;</span></a>
+<samp class=pp>'Dive Into Python 是为有经验的程序员编写的一本 Python 书。\n'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>                                            <span class=u>&#x2461;</span></a>
+<samp class=pp>''</samp></pre>
+<ol>
+<li>只要成功打开了一个文件（并且指定了正确的编码方式），你只需要调用流对象的<code>read()</code>方法即可以读取它。返回的结果是文件的一个字符串表示。
+<li>也许你会感到意外，再次读取文件不会产生一个异常。Python不认为到达了文件末尾(end-of-file)还继续执行读取操作是一个错误；这种情况下，它只是简单地返回一个空字符串。
+</ol>
+
+<aside>无论何时，打开文件时指定<code>encoding</code>参数。</aside>
+
+<p>如果想要重新读取文件呢？
+
+<pre class=screen>
+# continued from the previous example
+# 接着前一个例子
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>                      <span class=u>&#x2460;</span></a>
+<samp class=pp>''</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.seek(0)</kbd>                     <span class=u>&#x2461;</span></a>
+<samp class=pp>0</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read(16)</kbd>                    <span class=u>&#x2462;</span></a>
+<samp class=pp>'Dive Into Python'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read(1)</kbd>                     <span class=u>&#x2463;</span></a>
+<samp class=pp>' '</samp>
+<samp class=p>>>> </samp><kbd class=pp>a_file.read(1)</kbd>
+<samp class=pp>'是'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.tell()</kbd>                      <span class=u>&#x2464;</span></a>
+<samp class=pp>20</samp></pre>
+<ol>
+<li>由于你依旧在文件的末尾，继续调用<code>read()</code>方法只会返回一个空字符串。
+<li><code>seek()</code>方法使定位到文件中的特定字节。
+<li><code>read()</code>方法可以使用一个可选的参数，即所要读取的字符个数。
+<li>只要愿意，你甚至可以一次读取一个字符。
+<li>16 + 1 + 1 = &hellip; 20?
+</ol>
+
+<p>我们再来做一遍。
+
+<pre class=screen>
+# continued from the previous example
+# 继续上一示例
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.seek(17)</kbd>                    <span class=u>&#x2460;</span></a>
+<samp class=pp>17</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read(1)</kbd>                     <span class=u>&#x2461;</span></a>
+<samp class=pp>'是'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.tell()</kbd>                      <span class=u>&#x2462;</span></a>
+<samp class=pp>20</samp></pre>
+<ol>
+<li>移动到第17<sup>th</sup>个字节位置。
+<li>读取一个字符。
+<li>当前在第20个字节位置处。
+</ol>
+
+<p>你是否已经注意到了？<code>seek()</code>和<code>tell()</code>方法总是以字节的方式计数，但是，由于你是以文本文件的方式打开的，<code>read()</code>方法以<em>字符</em>的个数计数。中文字符的<a href="strings.html#boring-stuff">UTF-8编码需要多个字节</a>。而文件里的英文字符每一个只需要一个字节来存储，所以你可能会产生这样的误解：<code>seek()</code>和<code>read()</code>方法对相同的目标计数。而实际上，只有对部分字符的情况是这样的。
+
+<p>但是，还有更糟的！
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.seek(18)</kbd>                         <span class=u>&#x2460;</span></a>
+<samp class=pp>18</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read(1)</kbd>                          <span class=u>&#x2461;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;pyshell#12>", line 1, in &lt;module>
+    a_file.read(1)
+  File "C:\Python31\lib\codecs.py", line 300, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0x98 in position 0: unexpected code byte</samp></pre>
+<ol>
+<li>定位到第18<sup>th</sup>个字节，然后试图读取一个字符。
+<li>为什么这里会失败？因为在第18个字节处不存在字符。距离此处最近的字符从第17个字节开始（长度为三个字节）。试图从一个字符的中间位置读取会导致程序以<code>UnicodeDecodeError</code>错误失败。
+</ol>
+
+<h3 id=close>关闭文件</h3>
+
+<p>打开文件会占用系统资源，根据文件的打开模式不同，其他的程序也许不能够访问它们。当已经完成了对文件的操作后就立即关闭它们，这很重要。
+
+<pre class='nd screen'>
+# continued from the previous example
+# 继续前面的例子
+<samp class=p>>>> </samp><kbd class=pp>a_file.close()</kbd></pre>
+
+<p>然而，这还不够(anticlimactic)。
+
+<p>流对象<var>a_file</var>仍然存在；调用<code>close()</code>方法并没有把对象本身销毁。所以这并不是非常有效。
+
+<pre class=screen>
+# continued from the previous example
+# 接着上一示例
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>                           <span class=u>&#x2460;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;pyshell#24>", line 1, in &lt;module>
+    a_file.read()
+ValueError: I/O operation on closed file.</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.seek(0)</kbd>                          <span class=u>&#x2461;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;pyshell#25>", line 1, in &lt;module>
+    a_file.seek(0)
+ValueError: I/O operation on closed file.</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.tell()</kbd>                           <span class=u>&#x2462;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;pyshell#26>", line 1, in &lt;module>
+    a_file.tell()
+ValueError: I/O operation on closed file.</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.close()</kbd>                          <span class=u>&#x2463;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.closed</kbd>                           <span class=u>&#x2464;</span></a>
+<samp class=pp>True</samp></pre>
+<ol>
+<li>不能读取已经关闭了的文件；那样会引发一个<code>IOError</code>异常。
+<li>也不能对一个已经关闭了的文件执行定位操作。
+<li>由于文件已经关闭了，所以也就不存在所谓当前的位置了，所以<code>tell()</code>也会失败。
+<li>也许你会有些意外，文件已经关闭，调用原来流对象的<code>close()</code>方法并<em>没有</em>引发异常。其实那只是一个空操作(no-op)而已。
+<li>已经关闭了的流对象确实还有一个有用的属性：<code>closed</code>用来确认文件是否已经被关闭了。
+</ol>
+
+<h3 id=with>自动关闭文件</h3>
+
+<aside><code>try..finally</code>也行。但是<code>with</code>更好</aside>
+
+<p>流对象有一个显式的<code>close()</code>方法，但是如果代码有缺陷，在调用<code>close()</code>方法以前就崩溃了呢？理论上，那个文件会在相当长的一段时间内一直打开着，这是没有必要地。当你在自己的机器上调试的时候，这不算什么大问题。但是当这种代码被移植到服务器上运行，也许就得三思了。
+
+<p>对于这种情况，Python 2有一种解决办法：<code>try..finally</code>块。这种方法在Python 3里仍然有效，也许你可以在其他人的代码，或者从比较老的被<a href="case-study-porting-chardet-to-python-3.html">移植到Python 3</a>的代码中看到它。但是Python 2.5引入了一种更加简洁的解决方案，并且Python 3将它作为首选方案：<code>with</code>语句。
+
+<pre class='nd pp'><code>with open('examples/chinese.txt', encoding='utf-8') as a_file:
+    a_file.seek(17)
+    a_character = a_file.read(1)
+    print(a_character)</code></pre>
+
+<p>这段代码调用了<code>open()</code>函数，但是它却一直没有调用<code>a_file.close()</code>。<code>with</code>语句引出一个代码块，就像<code>if</code>语句或者<code>for</code>循环一样。在这个代码块里，你可以使用变量<var>a_file</var>作为<code>open()</code>函数返回的流对象的引用。所以流对象的常规方法都是可用的&nbsp;&mdash;&nbsp;<code>seek()</code>，<code>read()</code>，无论你想要调用什么。当<code>with</code>块结束时，<em>Python自动调用<code>a_file.close()</code></em>。
+
+<p>这就是它与众不同的地方：无论你以何种方式跳出<code>with</code>块，Python会自动关闭那个文件&hellip;即使是因为未处理的异常而&#8220;exit&#8221;。是的，即使代码中引发了一个异常，整个程序突然中止了，Python也能够保证那个文件能被关闭掉。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>从技术上说，<code>with</code>语句创建了一个<dfn>运行时环境(runtime context)</dfn>。在这几个样例中，流对象的行为就像一个<dfn>上下文管理器(context manager)</dfn>。Python创建了<var>a_file</var>，并且告诉它正进入一个运行时环境。当<code>with</code>块结束的时候，Python告诉流对象它正在退出这个运行时环境，然后流对象就会调用它的<code>close()</code>方法。请阅读 <a href="special-method-names.html#context-managers">附录B，&#8220;能够在<code>with</code>块中使用的类&#8221;</a>以获取更多细节。
+</blockquote>
+
+<p><code>with</code>语句不只是针对文件而言的；它是一个用来创建运行时环境的通用框架(generic framework)，告诉对象它们正在进入和离开一个运行时环境。如果该对象是流对象，那么它就会做一些类似文件对象一样有用的动作（就像自动关闭文件！）。但是那个行为是被流对象自身定义的，而不是在<code>with</code>语句中。还有许多跟文件无关的使用上下文管理器(context manager)的方法。在这章的后面可以看到，你甚至可以自己创建它们。
+
+<h3 id=for>一次读取一行数据</h3>
+
+<p>正如你所想的，一行数据就是这样&nbsp;&mdash;&nbsp;输入一些单词，按<kbd>ENTER</kbd>键，然后就在新的一行了。一行文本就是一串被某种东西分隔的字符，到底是被什么分隔的呢？好吧，这有些复杂，因为文本文件可以使用几个不同的字符来标记行末(end of a line)。每种操作系统都有自己的规矩。有一些使用回车符(carriage return)，另外一些使用换行符(line feed)，还有一些在行末同时使用这两个字符来标记。
+
+<p>其实你可以舒口气了，因为<em>Python默认会自动处理行的结束符</em>。如果你告诉它，&#8220;我想从这个文本文件一次读取一行，&#8221;Python自己会弄明白这个文本文件到底使用哪种方式标记新行，然后正确工作。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>如果想要细粒度地控制(fine-grained control)使用哪种新行标记符，你可以传递一个可选的参数<code>newline</code>给<code>open()</code>函数。请阅读<a href=http://docs.python.org/3.1/library/io.html#module-interface><code>open()</code>函数的文档</a>以获取更多细节。
+</blockquote>
+
+<p>那么，实际中你会怎样做呢？我是指一次读取文件的一行。它如此简单优美&hellip;
+<br>
+
+<p class=d>[<a href="examples/oneline.py">download <code>oneline.py</code></a>]
+<pre class=pp><code>line_number = 0
+<a>with open('examples/favorite-people.txt', encoding='utf-8') as a_file:  <span class=u>&#x2460;</span></a>
+<a>    for a_line in a_file:                                               <span class=u>&#x2461;</span></a>
+        line_number += 1
+<a>        print('{:>4} {}'.format(line_number, a_line.rstrip()))          <span class=u>&#x2462;</span></a></code></pre>
+<ol>
+<li>使用<a href="files.html#with"><code>with</code>语句</a>，安全地打开这个文件，然后让Python为你关闭它。
+<li>为了一次读取文件的一行，使用<code>for</code>循环。是的，除了像<code>read()</code>这样显式的方法，<em>流对象也是一个<a href="iterators.html">迭代器(iterator)</a></em>，它能在你每次请求一个值时分离出单独的一行。
+<li>使用字符串的<a href="strings.html#formatting-strings"><code>format()</code>方法</a>，你可以打印出行号和行自身。格式说明符<code>{:>4}</code>的意思是&#8220;使用最多四个空格使之右对齐，然后打印此参数。&#8221;变量<var>a_line</var>是包括回车符等在内的完整的一行。字符串方法<code>rstrip()</code>可以去掉尾随的空白符，包括回车符。
+</ol>
+
+<pre class=screen>
+<samp class=p>you@localhost:~/diveintopython3$ </samp><kbd class=pp>python3 examples/oneline.py</kbd>
+<samp>   1 Dora
+   2 Ethan
+   3 Wesley
+   4 John
+   5 Anne
+   6 Mike
+   7 Chris
+   8 Sarah
+   9 Alex
+  10 Lizzie</samp></pre>
+
+<blockquote class=pf>
+<p>是否遇到了这个错误？
+<pre class='nd screen'>
+<samp class=p>you@localhost:~/diveintopython3$ </samp><kbd class=pp>python3 examples/oneline.py</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "examples/oneline.py", line 4, in &lt;module>
+    print('{:>4} {}'.format(line_number, a_line.rstrip()))
+ValueError: zero length field name in format</samp></pre>
+<p>如果结果是这样，也许你正在使用Python 3.0。你真的应该升级到Python 3.1。
+<p>Python 3.0支持字符串格式化，但是只支持<a href="strings.html#formatting-strings">显式编号了的格式说明符</a>。Python 3.1允许你在格式说明符里省略参数索引号。作为比照，下面是一个Python 3.0兼容的版本。
+<pre class='pp nd'><code>print('{<mark>0</mark>:>4} {<mark>1</mark>}'.format(line_number, a_line.rstrip()))</code></pre>
+</blockquote>
+
+<p class=a>&#x2042;
+
+<h2 id=writing>写入文本文件</h2>
+
+<aside>打开文件然后开始写入即可。</aside>
+
+<p>写入文件的方式和从它们那儿读取很相似。首先打开一个文件，获取流对象，然后你调用一些方法作用在流对象上来写入数据到文件，最后关闭文件。
+
+<p>为了写入而打开一个文件，可以使用<code>open()</code>函数，并且指定写入模式。有两种文件模式用于写入：
+
+<ul>
+<li>&#8220;写&#8221;模式会重写文件。传递<code>mode='w'</code>参数给<code>open()</code>函数。
+<li>&#8220;追加&#8221;模式会在文件末尾添加数据。传递<code>mode='a'</code>参数给<code>open()</code>函数。
+<br>
+</ul>
+
+<p>如果文件不存在，两种模式下都会自动创建新文件，所以就不需要&#8220;如果文件还不存在，创建一个新的空白文件以能够打开它&#8221;这种琐碎的过程了。所以，只需要打开一个文件，然后开始写入即可。
+
+<p>在完成写入后你应该马上关闭文件，释放文件句柄(file handle)，并且保证数据被完整地写入到了磁盘。跟读取文件一样，可以调用流对象的<code>close()</code>方法，或者你也可以使用<code>with</code>语句让Python为你关闭文件。我敢打赌，你肯定能猜到我推荐哪种方案。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>with open('test.log', mode='w', encoding='utf-8') as a_file:</kbd>  <span class=u>&#x2460;</span></a>
+<a><samp class=p>... </samp><kbd class=pp>    a_file.write('test succeeded')</kbd>                            <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>with open('test.log', encoding='utf-8') as a_file:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print(a_file.read())</kbd>                              
+<samp class=pp>test succeeded</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>with open('test.log', mode='a', encoding='utf-8') as a_file:</kbd>  <span class=u>&#x2462;</span></a>
+<samp class=p>... </samp><kbd class=pp>    a_file.write('and again')</kbd>
+<samp class=p>>>> </samp><kbd class=pp>with open('test.log', encoding='utf-8') as a_file:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print(a_file.read())</kbd>                              
+<a><samp class=pp>test succeededand again</samp>                                           <span class=u>&#x2463;</span></a></pre>
+<ol>
+<li>大胆地创建新文件<code>test.log</code>（或者重写已经存在的文件），然后以写入方式打开文件。参数<code>mode='w'</code>的意思是文件以写入的模式打开。是的，这听起来似乎比较危险。我希望你确定不再关心那个文件以前的内容（如果有的话），因为那份数据已经没了。
+<li>你可以通过<code>open()</code>函数返回的流对象的<code>write()</code>方法来给新打开的文件添加数据。当<code>with</code>块结束的时候，Python自动关闭文件。
+<li>多么有趣，我们再试一次。这一次，使用<code>with='a'</code>参数来添加数据到文件末尾，而不是重写它。追加模式绝不会破坏现有文件的内容。
+<li>原来写入的行，还有追加上去的第二行现在都在文件<code>test.log</code>里了。同时请注意，回车符没有被包括进去。你可以通过<code>'\n'</code>写入一个回车符。由于一开始没有这样做，所有写入到文件的数据现在都在同一行。
+</ol>
+
+<h3 id=encoding-again>再次讨论字符编码</h3>
+
+<p>你是否注意到当你在<a href="files.html#writing">打开文件用于写入数据</a>的时候传递给<code>open()</code>函数的<code>encoding</code>参数。它&#8220;非常重要&#8221;，不要忽略了！就如你在这章开头看到的，文件中并不存在<i>字符串</i>，它们由<i>字节</i>组成。只有当你告诉Python使用何种编码方式把字节流转换为字符串，从文件读取&#8220;字符串&#8221;才成为可能。相反地，写入文本到文件面临同样的问题。实际上你不能直接把字符写入到文件；<a href="strings.html#byte-arrays">字符只是一种抽象</a>。为了写入字符到文件，Python需要知道如何将字符串转换为字节序列。唯一能保证正确地执行转换的方法就是当你为写入而打开一个文件的时候，指定<code>encoding</code>参数。
+
+<p class=a>&#x2042;
+
+<h2 id=binary>二进制文件</h2>
+
+<p class=ss><img src="examples/beauregard.jpg" alt='my dog Beauregard' width=100 height=100>
+
+<p>不是所有的文件都包含文本内容。有一些还包含了我可爱的狗的照片。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>an_image = open('examples/beauregard.jpg', mode='rb')</kbd>                <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>an_image.mode</kbd>                                                        <span class=u>&#x2461;</span></a>
+<samp class=pp>'rb'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>an_image.name</kbd>                                                        <span class=u>&#x2462;</span></a>
+<samp class=pp>'examples/beauregard.jpg'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>an_image.encoding</kbd>                                                    <span class=u>&#x2463;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+AttributeError: '_io.BufferedReader' object has no attribute 'encoding'</samp></pre>
+<ol>
+<li>用二进制模式打开文件很简单，但是很精细。与文本模式唯一不同的是<code>mode</code>参数包含一个字符<code>'b'</code>。
+<li>以二进制模式打开文件得到的流对象与之前的有很多相同的属性，包括<code>mode</code>属性，它记录了你调用<code>open()</code>函数时指定的<code>mode</code>参数的值。
+<li>二进制文件的流对象也有<code>name</code>属性，就如文本文件的流对象一样。
+<li>然而，确实有不同之处：二进制的流对象没有<code>encoding</code>属性。你能明白其中的道理的，对吧？现在你读写的是字节，而不是字符串，所以Python不需要做转换工作。从二进制文件里读出的跟你所写入的是完全一样的，所以没有执行转换的必要。
+</ol>
+
+<p>我是否提到当前正在读取字节？噢，的确如此。
+
+<pre class=screen>
+# continued from the previous example
+# 继续前一样例
+<samp class=p>>>> </samp><kbd class=pp>an_image.tell()</kbd>
+<samp class=pp>0</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>data = an_image.read(3)</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>data</kbd>
+<samp class=pp>b'\xff\xd8\xff'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>type(data)</kbd>               <span class=u>&#x2461;</span></a>
+<samp class=pp>&lt;class 'bytes'></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>an_image.tell()</kbd>          <span class=u>&#x2462;</span></a>
+<samp class=pp>3</samp>
+<samp class=p>>>> </samp><kbd class=pp>an_image.seek(0)</kbd>
+<samp class=pp>0</samp>
+<samp class=p>>>> </samp><kbd class=pp>data = an_image.read()</kbd>
+<samp class=p>>>> </samp><kbd class=pp>len(data)</kbd>
+<samp class=pp>3150</samp></pre>
+<ol>
+<li>跟读取文本文件一样，你也可以从二进制文件一次读一点儿。但是它们之间有一个重大的不同之处&#hellip;
+<li>&#hellip;你正在读取字节，而不是字符串。由于你以二进制模式打开文件，<code>read()</code>方法每次<em>读取指定的字节数</em>，而非字符数。
+<li>这就意味着，你传递给<code>read()</code>方法的数目和你从<code>tell()</code>方法得到的位置序号不会出现<a href="files.html#read">意料之外的不匹配(unexpected mismatch)</a>
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=file-like-objects>非文件来源的流对象</h2>
+
+<aside>使用<code>read()</code>方法即可从虚拟文件读取数据。</aside>
+
+<p>想象一下你正在编写一个库(library)，其中有一库函数用来从文件读取数据。它使用文件名作为参数，以只读的方式打开文件，读取数据，关闭文件，返回。但是你不应该只做到这个程度。你的<abbr>API</abbr>应该能够接纳<em>任意的类型的流对象</em>。
+
+<p>最简单的情况，只要对象包含<code>read()</code>方法，这个方法使用一个可选参数<var>size</var>并且返回值为一个串，它就是是流对象。不使用<var>size</var>参数调用<code>read()</code>的时候，这个方法应该从输入源读取所有可读的信息然后以单独的一个值返回所有数据。当使用<var>size</var>参数调用<code>read()</code>时，它从输入源读取并返回指定量的数据。当再一次被调用时，它从上一次离开的地方开始读取并返回下一个数据块。
+
+<p>这听起来跟你从打开一个真实文件得到的流对象一样。不同之处在于<em>你不再受限于真实的文件</em>。能够&#8220;读取&#8221;的输入源可以是任何东西：网页，内存中的字符串，甚至是另外一个程序的输出。只要你的函数使用的是流对象，调用对象的<code>read()</code>方法，你可以处理任何行为与文件类似的输入源，而不需要为每种类型的输入指定特别的代码。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>a_string = 'PapayaWhip is the new black.'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>import io</kbd>                                  <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file = io.StringIO(a_string)</kbd>             <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>                              <span class=u>&#x2462;</span></a>
+<samp class=pp>'PapayaWhip is the new black.'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>                              <span class=u>&#x2463;</span></a>
+<samp class=pp>''</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.seek(0)</kbd>                             <span class=u>&#x2464;</span></a>
+<samp class=pp>0</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_file.read(10)</kbd>                            <span class=u>&#x2465;</span></a>
+<samp class=pp>'PapayaWhip'</samp>
+<samp class=p>>>> </samp><kbd class=pp>a_file.tell()</kbd>                       
+<samp class=pp>10</samp>
+<samp class=p>>>> </samp><kbd class=pp>a_file.seek(18)</kbd>
+<samp class=pp>18</samp>
+<samp class=p>>>> </samp><kbd class=pp>a_file.read()</kbd>
+<samp class=pp>'new black.'</samp></pre>
+<ol>
+<li><code>io</code>模块定义了<code>StringIO</code>类，你可以使用它来把内存中的字符串当作文件来处理。
+<li>为了从字符串创建一个流对象，可以把想要作为&#8220;文件&#8221;使用的字符串传递给<code>io.StringIO()</code>来创建一个<code>StringIO</code>的实例。
+<li>调用<code>read()</code>方法&#8220;读取&#8221;整个&#8220;文件&#8221;，以<code>StringIO</code>对象为例即返回原字符串。
+<li>就像一个真实的文件一样，再次调用<code>read()</code>方法返回一个空串。
+<li>通过使用<code>StringIO</code>对象的<code>seek()</code>方法，你可以显式地定位到字符串的开头，就像在一个真实的文件中定位一样。
+<li>通过传递<var>size</var>参数给<code>read()</code>方法，你也可以以数据块的形式读取字符串。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>io.StringIO</code>让你能够将一个字符串作为文本文件来看待。另外还有一个<code>io.ByteIO</code>类，它允许你将字节数组当做二进制文件来处理。
+</blockquote>
+
+<h3 id=gzip>处理压缩文件</h3>
+
+<p>Python标准库包含支持读写压缩文件的模块。有许多种不同的压缩方案；其中，<a href=http://docs.python.org/3.1/library/gzip.html>gzip</a>和<a href=http://docs.python.org/3.1/library/bz2.html>bzip2</a>是非Windows操作系统下最流行的两种压缩方式。
+
+<p><code>gzip</code>模块允许你创建用来读写gzip压缩文件的流对象。该流对象支持<code>read()</code>方法（如果你以读取模式打开）或者<code>write()</code>方法（如果你以写入模式打开）。这就意味着，你可以使用从普通文件那儿学到的技术来<em>直接读写gzip压缩文件</em>，而不需要创建临时文件来保存解压缩了的数据。
+
+<p>作为额外的功能，它也支持<code>with</code>语句，所以当你完成了对gzip压缩文件的操作，Python可以为你自动关闭它。
+
+<pre class='nd screen'>
+<samp class=p>you@localhost:~$ </samp><kbd>python3</kbd>
+
+<samp class=p>>>> </samp><kbd class=pp>import gzip</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>with gzip.open('out.log.gz', mode='wb') as z_file:</kbd>                                      <span class=u>&#x2460;</span></a>
+<samp class=p>... </samp><kbd class=pp>  z_file.write('A nine mile walk is no joke, especially in the rain.'.encode('utf-8'))</kbd>
+<samp class=p>... </samp>
+<samp class=p>>>> </samp><kbd class=pp>exit()</kbd>
+
+<a><samp class=p>you@localhost:~$ </samp><kbd>ls -l out.log.gz</kbd>                                                           <span class=u>&#x2461;</span></a>
+<samp>-rw-r--r--  1 mark mark    79 2009-07-19 14:29 out.log.gz</samp>
+<a><samp class=p>you@localhost:~$ </samp><kbd>gunzip out.log.gz</kbd>                                                          <span class=u>&#x2462;</span></a>
+<a><samp class=p>you@localhost:~$ </samp><kbd>cat out.log</kbd>                                                                <span class=u>&#x2463;</span></a>
+<samp>A nine mile walk is no joke, especially in the rain.</samp></pre>
+<ol>
+<li>你应该问题以二进制模式打开gzip压缩文件。（注意<code>mode</code>参数里的<code>'b'</code>字符。）
+<li>我在Linux系统上完成的这个例子。如果你对命令行不熟悉，这条命令用来显示刚才你在Python shell创建的gzip压缩文件的&#8220;长清单(long listings)&#8221;，你可以看到，它有79个字节长。而实际上这个值比一开始的字符串还要长！由于gzip文件包括了一个固定长度的文件头来存放一些关于文件的元数据(metadata)，所以它对于极小的文件来说效率不高。
+<li><code>gunzip</code>命令（发音：&#8220;gee-unzip&#8221;）解压缩文件然后保存其内容到一个与原来压缩文件同名的新文件中，并去掉其<code>.gz</code>扩展名。
+<li><code>cat</code>命令显示文件的内容。当前文件包含了原来你从Python shell直接写入到压缩文件<code>out.log.gz</code>的那个字符串。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=stdio>标准输入、输出和错误</h2>
+
+<aside><code>sys.stdin</code>, <code>sys.stdout</code>, <code>sys.stderr</code>.</aside>
+
+<p>命令行高手已经对标准输入，标准输出和标准错误的概念相当熟悉了。这部分内容是对另一部分还不熟悉的人员准备的。
+
+<p>标准输出和标准错误（通常缩写为<code>stdout</code>和<code>stderr</code>）是被集成到每一个类UNIX操作系统中的两个管道(pipe)，包括Mac OS X和Linux。当你调用<code>print()</code>的时候，需要打印的内容即被发送到<code>stdout</code>管道。当你的程序出错并且需要打印跟踪信息(traceback)时，它们被发送到<code>stderr</code>管道。默认地，这两个管道都被连接到你正在工作的终端窗口上(terminal window)；当你的程序打印某些东西，你可以在终端上看到这些输出，当程序出错，你也可以从终端上看到这些错误信息。在图形化的Python shell里，<code>stdout</code>和<code>stderr</code>管道默认连接到&#8220;交互式窗口(Interactive Window)&#8221;
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>for i in range(3):</kbd>
+<a><samp class=p>... </samp><kbd class=pp>    print('PapayaWhip')</kbd>        <span class=u>&#x2460;</span></a>
+<samp>PapayaWhip
+PapayaWhip
+PapayaWhip</samp>
+<samp class=p>>>> </samp><kbd class=pp>import sys</kbd>
+<samp class=p>>>> </samp><kbd class=pp>for i in range(3):</kbd>
+<a><samp class=p>... </samp><kbd class=pp>sys.stdout.write('is the')</kbd>     <span class=u>&#x2461;</span></a>
+<samp>is theis theis the</samp>
+<samp class=p>>>> </samp><kbd class=pp>for i in range(3):</kbd>
+<a><samp class=p>... </samp><kbd class=pp>sys.stderr.write('new black')</kbd>  <span class=u>&#x2462;</span></a>
+<samp>new blacknew blacknew black</samp></pre>
+<ol>
+<li>循环调用<code>print()</code>函数。没有什么特别的。
+<li><code>stdout</code>被定义在<code>sys</code>模块里，它是一个<a href="files.html#file-like-objects">流对象(stream object)</a>。使用任意字符串调用其<code>write()</code>函数会按原样输出。事实上，这就是<code>print()</code>函数实际在做的事情；它在串的结尾添加一个回车符，然后调用<code>sys.stdout.write</code>。
+<li>最简单的情况下，<code>sys.stdout</code>和<code>sys.stderr</code>把他们的输出发送到同一个位置：Python <abbr>IDE</abbr>（如果你在那里执行操作），或者终端（如果你从命令行执行Python指令）。跟标准输出一样，标准错误也不会自动为你添加回车符。如果你需要回车符，你需要手工写入回车符到标准错误。
+</ol>
+
+<p><code>sys.stdout</code>和<code>sys.stderr</code>都是流对象，但是他们都只支持写入。试图调用他们的<code>read()</code>方法会引发<code>IOError</code>异常。
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>import sys</kbd>
+<samp class=p>>>> </samp><kbd class=pp>sys.stdout.read()</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+IOError: not readable</samp></pre>
+
+<h3 id=redirect>标准输出重定向</h3>
+
+<p><code>sys.stdout</code>和<code>sys.stderr</code>都是流对象，尽管他们只支持写入。但是他们是变量而不是常量。这就意味着你可以给它们赋上新值&nbsp;&mdash;&nbsp;任意其他流对象&nbsp;&mdash;&nbsp;来重定向他们的输出。
+
+<p class=d>[<a href="examples/stdout.py">download <code>stdout.py</code></a>]
+<pre class=pp><code>import sys
+
+class RedirectStdoutTo:
+    def __init__(self, out_new):
+        self.out_new = out_new
+
+    def __enter__(self):
+        self.out_old = sys.stdout
+        sys.stdout = self.out_new
+
+    def __exit__(self, *args):
+        sys.stdout = self.out_old
+
+print('A')
+with open('out.log', mode='w', encoding='utf-8') as a_file, RedirectStdoutTo(a_file):
+    print('B')
+print('C')</code></pre>
+
+<p>验证一下：
+<pre class='nd screen'>
+<samp class=p>you@localhost:~/diveintopython3/examples$ </samp><kbd>python3 stdout.py</kbd>
+<samp>A
+C</samp>
+<samp class=p>you@localhost:~/diveintopython3/examples$ </samp><kbd>cat out.log</kbd>
+<samp>B</samp></pre>
+
+<blockquote class=pf>
+<p>你是否遇到了以下错误？
+<pre class='nd screen'>
+<samp class=p>you@localhost:~/diveintopython3/examples$ </samp><kbd class=pp>python3 stdout.py</kbd>
+<samp class=traceback>  File "stdout.py", line 15
+    with open('out.log', mode='w', encoding='utf-8') as a_file, RedirectStdoutTo(a_file):
+                                                              ^
+SyntaxError: invalid syntax</samp></pre>
+<p>如果是这样，你可能正在使用Python 3.0。应该升级到Python 3.1。
+<p>Python 3.0支持<code>with</code>语句，但是每个语句只能使用一个上下文管理器。Python 3.1允许你在一条<code>with</code>语句中链接多个上下文件管理器。
+</blockquote>
+
+<p>我们先来处理最后那一部分。
+
+<pre class=pp><code>print('A')
+with open('out.log', mode='w', encoding='utf-8') as a_file, RedirectStdoutTo(a_file):
+    print('B')
+print('C')</code></pre>
+
+<p>这是一个复杂的<code>with</code>语句。让我改写它使之更有可读性。
+
+<pre class=pp><code>with open('out.log', mode='w', encoding='utf-8') as a_file:
+    with RedirectStdoutTo(a_file):
+        print('B')</code></pre>
+
+<p>正如改动后的代码所展示的，实际上你使用了<em>两个</em><code>with</code>语句，其中一个嵌套在另外一个的作用域(scope)里。&#8220;外层的&#8221;<code>with</code>语句你应该已经熟悉了：它打开一个使用<abbr>UTF-8</abbr>编码的叫做<code>out.log</code>的文本文件用来写入，然后把返回的流对象赋给一个叫做<var>a_file</var>的变量。但是，在此处，它并不是唯一显得古怪的事情。
+<pre class='nd pp'><code>with RedirectStdoutTo(a_file):</code></pre>
+
+<p><code>as</code>子句(clause)到哪里去了？其实<code>with</code>语句并不一定需要<code>as</code>子句。就像你调用一个函数然后忽略其返回值一样，你也可以不把<code>with</code>语句的上下文环境赋给一个变量。在这种情况下，我们只关心<code>RedirectStdoutTo<code>上下文环境的边际效应(side effect)。
+
+<p>那么，这些边际效应都是些什么呢？我们来看一看<code>RedirectStdoutTo</code>类的内部结构。这是一个用户自定义的<a href="special-method-names.html#context-managers">上下文管理器(context manager)</a>。任何类只要定义了两个<a href="iterators.html#a-fibonacci-iterator">特殊方法</a>：code>__enter__()</code>和<code>__exit__()</code>就可以变成上下文管理器。
+
+<pre class=pp><code>class RedirectStdoutTo:
+<a>    def __init__(self, out_new):    <span class=u>&#x2460;</span></a>
+        self.out_new = out_new
+
+<a>    def __enter__(self):            <span class=u>&#x2461;</span></a>
+        self.out_old = sys.stdout
+        sys.stdout = self.out_new
+
+<a>    def __exit__(self, *args):      <span class=u>&#x2462;</span></a>
+        sys.stdout = self.out_old</code></pre>
+<ol>
+<li>在实例被创建后<code>__init__()</code>方法马上被调用。它使用一个参数，即在上下文环境的生命周期内你想用做标准输出的流对象。这个方法只是把该流对象保存在一个实例变量里(instance variable)以使其他方法在后边能够使用到它。
+<li><code>__enter__()</code>方法是一个<a href="iterators.html#a-fibonacci-iterator">特殊的类方法(special class method)</a>；在进入一个上下文环境时Python会调用它（<i>即</i>，在<code>with</code>语句的开始处）。该方法把当前<code>sys.stdout</code>的值保存在<var>self.out_old</var>内，然后通过把<var>self.out_new</var>赋给<var>sys.stdout</var>来重定向标准输出。
+<li><code>__exit__()</code>是另外一个特殊类方法；当离开一个上下文环境时（<i>即</i>，在<code>with</code>语句的末尾）Python会调用它。这个方法通过把保存的<var>self.out_old</var>的值赋给<var>sys.stdout</var>来恢复标准输出到原来的状态。
+</ol>
+
+<p>放到一起：
+<pre class=pp><code>
+<a>print('A')                                                                             <span class=u>&#x2460;</span></a>
+<a>with open('out.log', mode='w', encoding='utf-8') as a_file, RedirectStdoutTo(a_file):  <span class=u>&#x2461;</span></a>
+<a>    print('B')                                                                         <span class=u>&#x2462;</span></a>
+<a>print('C')                                                                             <span class=u>&#x2463;</span></a></code></pre>
+<ol>
+<li>这条代码会输出到<abbr>IDE</abbr>的&#8220;交互式窗口(Interactive Window)&#8221;（或者终端，如果你从命令行运行这段脚本）。
+<li>这条<a href="files.html#with"><code>with</code>语句</a>使用<em>逗号分隔的上下文环境列表</em>。这个列表就像一系列相互嵌套的<code>with</code>块。先列出的是&#8220;外层&#8221;的块；后列出的是&#8220;内层&#8221;的块。第一个上下文环境打开一个文件；第二个重定向<code>sys.stdout</code>到由第一个上下环境创建的流对象。
+<li>由于这个<code>print()</code>函数在<code>with</code>语句创建的上下文环境里执行，所以它不会输出到屏幕；它会写入到文件<code>out.log</code>。
+<li><code>with</code>语句块结束了。Python告诉每一个上下文管理器完成他们应该在离开上下文环境时应该做的事。这些上下文环境形成一个后进先出的栈。当离开一个上下文环境的时候，第二个上下文环境将<code>sys.stdout</code>的值恢复到它的原来状态，然后第一个上下文环境关闭那个叫做<code>out.log</code>的文件。由于标准输出已经被恢复到原来的状态，再次调用<code>print()</code>函数会马上输出到屏幕上。
+</ol>
+
+<p>重定向标准错误的原理跟这个完全一样，将<code>sys.stdout</code>替换为<code>sys.stderr</code>即可。
+
+<p class=a>&#x2042;
+
+<h2 id=furtherreading>进一步阅读</h2>
+
+<ul>
+<li><a href=http://docs.python.org/tutorial/inputoutput.html#reading-and-writing-files>读写文件</a> Python.org 上的教程
+<li><a href=http://docs.python.org/3.1/library/io.html><code>io</code> 模块</a>
+<li><a href=http://docs.python.org/3.1/library/stdtypes.html#file-objects>流对象</a>
+<li><a href=http://docs.python.org/3.1/library/stdtypes.html#context-manager-types>上下文管理器类型</a>
+<li><a href=http://docs.python.org/3.1/library/sys.html#sys.stdout><code>sys.stdout</code> and <code>sys.stderr</code></a>
+<li><a href=http://en.wikipedia.org/wiki/Filesystem_in_Userspace><abbr>FUSE</abbr> 来自维基百科</a>
+</ul>
+
+<p class=v><a href="refactoring.html" rel=prev title='back to &#8220;Refactoring&#8221;'><span class=u>&#x261C;</span></a> <a href="xml.html" rel=next title='onward to &#8220;XML&#8221;'><span class=u>&#x261E;</span></a>
+
+<p class=c>&copy; 2001&ndash;9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

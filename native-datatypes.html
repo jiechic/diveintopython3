@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>内置数据类型 - 深入 Python 3</title><!--[if IE]><script src=j/html5.js></script><![endif]-->
+
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 2}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=root value=搜索></div></form>
+<p>当前位置: <a href="index.html">首页</a> <span class=u>‣</span> <a href="table-of-contents.html#native-datatypes">深入 Python 3</a> <span class=u>‣</span>
+<p id=level>难度级别: <span class=u title=初学者>♦♦♢♢♢</span>
+<h1>内置数据类型</h1>
+<blockquote class=q>
+<p><span class=u>❝</span> Wonder is the foundation of all philosophy, inquiry its progress, ignorance its end. <span class=u>❞</span><br>— Michel de Montaigne
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>深入</h2>
+<p class=f>让我们暂时将 <a href="your-first-python-program.html">第一份 Python 程序</a> 抛在脑后，来聊一聊数据类型。在 Python 中， <a href="your-first-python-program.html#declaringfunctions">每个值都有一种数据类型</a>，但您并不需要声明变量的数据类型。那该方式是如何运作的呢？Python 根据每个变量的初始赋值情况分析其类型，并在内部对其进行跟踪。<p>Python 有多种内置数据类型。以下是比较重要的一些：<ol>
+<li><b>Booleans［布尔型］</b> 或为 <code>True［真］</code> 或为 <code>False［假］</code>。</li><li><b>Numbers［数值型］</b> 可以是 Integers［整数］（<code>1</code> 和 <code>2</code>）、Floats［浮点数］（<code>1.1</code> 和 <code>1.2</code>）、Fractions［分数］（<code>1/2</code> 和 <code>2/3</code>）；甚至是 <a href=http://en.wikipedia.org/wiki/Complex_number>Complex Number［复数］</a>。</li><li><b>Strings［字符串型］</b> 是 Unicode 字符序列，<i>例如：</i> 一份 <abbr>HTML</abbr> 文档。</li><li><b>Bytes［字节］</b> 和 <b>Byte Arrays［字节数组］</b>， <i>例如:</i> 一份 <abbr>JPEG</abbr> 图像文件。</li><li><b>Lists［列表］</b> 是值的有序序列。</li><li><b>Tuples［元组］</b> 是有序而不可变的值序列。</li><li><b>Sets［集合］</b> 是装满无序值的包裹。</li><li><b>Dictionaries［字典］</b> 是键值对的无序包裹。</li></ol>
+<p>当然，还有更多的类型。在 Python 中<a href="your-first-python-program.html#everythingisanobject">一切均为对象</a>，因此存在像 <i>module［模块］</i>、 <i>function［函数］</i>、 <i>class［类］</i>、 <i>method［方法］</i>、 <i>file［文件］</i> 甚至 <i>compiled code［已编译代码］</i> 这样的类型。您已经见过这样一些例子：<a href="your-first-python-program.html#runningscripts">模块的 name</a>、 <a href="your-first-python-program.html#docstrings">函数的  <code>docstrings</code></a> <i class=baa>等等</i>。将学到的包括 <a href="iterators.html">《类 <i class=baa> 与 </i> 迭代器》</a> 中的 Classes［类］，以及 <a href="files.html">《文件》</a> 中的 Files［文件］。<p>Strings［字符串］和 Bytes［字节串］比较重要，也相对复杂，足以开辟独立章节予以讲述。让我们先看看其它类型。<p class=a>⁂
+
+<h2 id=booleans>布尔类型</h2>
+<aside>在布尔类型上下文中，您几乎可以使用任何表达式。</aside>
+<p>布尔类型或为真或为假。Python 有两个被巧妙地命名为 <code><dfn>True</dfn></code> 和 <code><dfn>False</dfn></code> 的常量，可用于对<dfn>布尔</dfn>类型的直接赋值。表达式也可以计算为布尔类型的值。在某些地方（如 <code>if</code> 语句），Python 所预期的就是一个可计算出布尔类型值的表达式。这些地方称为 <i>布尔类型上下文环境</i>。事实上，可在布尔类型上下文环境中使用任何表达式，而 Python 将试图判断其真值。在布尔类型上下文环境中，不同的数据类型对于何值为真、何值为假有着不同的规则。（看过本章稍后的实例后，这一点将更好理解。）<p>例如，看看 <a href="your-first-python-program.html#divingin"><code>humansize.py</code></a> 中的这个片段：<pre class='nd pp'><code>if size &lt; 0:
+    raise ValueError('number must be non-negative')</code></pre>
+<p><var>size</var> 是整数， 0 是整数，而 <code>&lt;</code> 是数字运算符。<code>size &lt; 0</code> 表达式的结果始终是布尔值。可在 Python 交互式 shell 中自行测试下结果：<pre class='nd screen'>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>size = 1</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>size &lt; 0</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>size = 0</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>size &lt; 0</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>size = -1</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>size &lt; 0</kbd>
+<samp class=pp>True</samp></pre>
+<p>由于 Python 2 的一些遗留问题，布尔值可以当做数值对待。<code>True</code> 为 <code>1</code>；<code>False</code> 为 0 。<pre class='nd screen'>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>True + True</kbd>
+<samp class=pp>2</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>True - False</kbd>
+<samp class=pp>1</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>True * False</kbd>
+<samp class=pp>0</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>True / False</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+ZeroDivisionError: int division or modulo by zero</samp></pre>
+<p>喔，喔，喔！别那么干。忘掉我刚才说的。<p class=a>⁂
+
+<h2 id=numbers>数值类型</h2>
+<p>数值类型是可畏的。有太多类型可选了。Python 同时支持 <dfn>Integer［整型］</dfn> 和 <dfn>Floating Point［浮点型］</dfn> 数值。无任何类型声明可用于区分；Python 通过是否有 <dfn>小数</dfn> 点来分辨它们。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(1)</kbd>                 <span class=u>①</span></a>
+<samp class=pp>&lt;class 'int'&gt;</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>isinstance(1, int)</kbd>      <span class=u>②</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>1 + 1</kbd>                   <span class=u>③</span></a>
+<samp class=pp>2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>1 + 1.0</kbd>                 <span class=u>④</span></a>
+<samp class=pp>2.0</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(2.0)</kbd>
+<samp class=pp>&lt;class 'float'&gt;</samp></pre>
+<ol>
+<li>可以使用 <code>type()</code> 函数来检测任何值或变量的类型。正如所料，<code>1</code> 为 <code>int</code> 类型。</li><li>同样，还可使用 <code>isinstance()</code> 函数判断某个值或变量是否为给定某个类型。</li><li>将一个 <code>int</code> 与一个 <code>int</code> 相加将得到一个 <code>int</code> 。</li><li>将一个 <code>int</code> 与一个 <code>float</code> 相加将得到一个 <code>float</code> 。Python 把 <code>int</code> 强制转换为 <code>float</code> 以进行加法运算；然后返回一个 <code>float</code> 类型的结果。</li></ol>
+<h3 id=number-coercion>将整数强制转换为浮点数及反向转换</h3>
+<p>正如刚才所看到的，一些运算符（如：加法）会根据需把整数强制转换为浮点数。也可自行对其进行强制转换。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>float(2)</kbd>                <span class=u>①</span></a>
+<samp class=pp>2.0</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>int(2.0)</kbd>                <span class=u>②</span></a>
+<samp class=pp>2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>int(2.5)</kbd>                <span class=u>③</span></a>
+<samp class=pp>2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>int(-2.5)</kbd>               <span class=u>④</span></a>
+<samp class=pp>-2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>1.12345678901234567890</kbd>  <span class=u>⑤</span></a>
+<samp class=pp>1.1234567890123457</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(1000000000000000)</kbd>  <span class=u>⑥</span></a>
+<samp class=pp>&lt;class 'int'&gt;</samp></pre>
+<ol>
+<li>通过调用<code>float()</code> 函数，可以显示地将 <code>int</code> 强制转换为 <code>float</code>。</li><li>毫不出奇，也可以通过调用 <code>int()</code> 将 <code>float</code> 强制转换为 <code>int</code> 。</li><li><code>int()</code> 将进行取整，而不是四舍五入。</li><li>对于负数，<code>int()</code> 函数朝着 0 的方法进行取整。它是个真正的取整（截断）函数，而不是 floor［地板］函数。</li><li>浮点数精确到小数点后 15 位。</li><li>整数可以任意大。</li></ol>
+<blockquote class='note compare python2'>
+<p><span class=u>☞</span>Python 2 对于<code>int［整型］</code> 和 <code>long［长整型］</code> 采用不同的数据类型。<code>int</code> 数据类型受到 <code>sys.maxint</code> 的限制，因平台该限制也会有所不同，但通常是 <code>2<sup>32</sup>-1</code> 。Python 3 只有一种整数类型，其行为方式很有点像 Python 2 的旧 <code>long［长整数］</code> 类型。参阅 <a href=http://www.python.org/dev/peps/pep-0237><abbr>PEP</abbr> 237</a> 了解更多细节。</blockquote>
+<h3 id=common-numerical-operations>常见数值运算</h3>
+<p>对数值可进行各种类型的运算。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>11 / 2</kbd>      <span class=u>①</span></a>
+<samp class=pp>5.5</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>11 // 2</kbd>     <span class=u>②</span></a>
+<samp class=pp>5</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>−11 // 2</kbd>    <span class=u>③</span></a>
+<samp class=pp>−6</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>11.0 // 2</kbd>   <span class=u>④</span></a>
+<samp class=pp>5.0</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>11 ** 2</kbd>     <span class=u>⑤</span></a>
+<samp class=pp>121</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>11 % 2</kbd>      <span class=u>⑥</span></a>
+<samp class=pp>1</samp>
+</pre>
+<ol>
+<li><code>/</code> 运算符执行浮点除法。即便分子和分母都是 <code>int</code>，它也返回一个 <code>float</code> 浮点数。</li><li><code>//</code> 运算符执行古怪的整数除法。如果结果为正数，可将其视为朝向小数位取整（不是四舍五入），但是要小心这一点。</li><li>当整数除以负数， <code>//</code> 运算符将结果朝着最近的整数“向上”四舍五入。从数学角度来说，由于 <code>−6</code> 比 <code>−5</code> 要小，它是“向下”四舍五入，如果期望将结果取整为 <code>−5</code>，它将会误导你。</li><li><code>//</code> 运算符并非总是返回整数结果。如果分子或者分母是 <code>float</code>，它仍将朝着最近的整数进行四舍五入，但实际返回的值将会是 <code>float</code> 类型。</li><li><code>**</code> 运算符的意思是“计算幂”，<code>11<sup>2</sup></code> 结果为 <code>121</code> 。</li><li><code>%</code> 运算符给出了进行整除之后的余数。<code>11</code> 除以 <code>2</code> 结果为 <code>5</code> 以及余数 <code>1</code>，因此此处的结果为 <code>1</code>。</li></ol>
+<blockquote class='note compare python2'>
+<p><span class=u>☞</span>在 Python 2 中，运算符 <code>/</code> 通常表示整数除法，但是可以通过在代码中加入特殊指令，使其看起来像浮点除法。在 Python 3 中，<code>/</code> 运算符总是表示浮点除法。参阅 <a href=http://www.python.org/dev/peps/pep-0238/><abbr>PEP</abbr> 238</a> 了解更多细节。</blockquote>
+<h3 id=fractions>分数</h3>
+<p>Python 并不仅仅局限于整数和浮点数类型。它可以完成你在高中阶段学过、但几乎已经全部忘光的所有古怪数学运算。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>import fractions</kbd>              <span class=u>①</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x = fractions.Fraction(1, 3)</kbd>  <span class=u>②</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x</kbd>
+<samp class=pp>Fraction(1, 3)</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x * 2</kbd>                         <span class=u>③</span></a>
+<samp class=pp>Fraction(2, 3)</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>fractions.Fraction(6, 4)</kbd>      <span class=u>④</span></a>
+<samp class=pp>Fraction(3, 2)</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>fractions.Fraction(0, 0)</kbd>      <span class=u>⑤</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+  File "fractions.py", line 96, in __new__
+    raise ZeroDivisionError('Fraction(%s, 0)' % numerator)
+ZeroDivisionError: Fraction(0, 0)</samp></pre>
+<ol>
+<li>为启用 fractions 模块，必先引入 <code>fractions</code> 模块。</li><li>为定义一个分数，创建一个 <code>Fraction</code> 对象并传入分子和分母。</li><li>可对分数进行所有的常规数学计算。运算返回一个新的 <code>Fraction</code> 对象。<code>2 * (1/3) = (2/3)</code>
+</li><li><code>Fraction</code> 对象将会自动进行约分。<code>(6/4) = (3/2)</code>
+</li><li>在杜绝创建以零为分母的分数方面，Python 有着良好的敏感性。</li></ol>
+<h3 id=trig>三角函数</h3>
+<p>还可在 Python 中进行基本的三角函数运算。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>import math</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>math.pi</kbd>                <span class=u>①</span></a>
+<samp class=pp>3.1415926535897931</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>math.sin(math.pi / 2)</kbd>  <span class=u>②</span></a>
+<samp class=pp>1.0</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>math.tan(math.pi / 4)</kbd>  <span class=u>③</span></a>
+<samp class=pp>0.99999999999999989</samp></pre>
+<ol>
+<li><code>math</code> 模块中有一个代表 π 的常量，表示圆的周长与直径之比率（圆周率）。</li><li><code>math</code> 模块包括了所有的基本三角函数，包括：<code>sin()</code>、 <code>cos()</code>、<code>tan()</code> 及像 <code>asin()</code> 这样的变体函数。</li><li>然而要注意的是 Python 并不支持无限精度。<code>tan(π / 4)</code> 将返回 <code>1.0</code>，而不是 <code>0.99999999999999989</code>。</li></ol>
+<h3 id=numbers-in-a-boolean-context>布尔上下文环境中的数值</h3>
+<aside>零值是 false［假］，非零值是 true［真］。</aside>
+<p>可以在 <code>if</code> 这样的 <a href="native-datatypes.html#booleans">布尔类型上下文环境中</a> 使用数值。零值是 false［假］，非零值是 true［真］。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>def is_it_true(anything):</kbd>             <span class=u>①</span></a>
+<samp class=p>... </samp><kbd class=pp>  if anything:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("yes, it's true")</kbd>
+<samp class=p>... </samp><kbd class=pp>  else:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("no, it's false")</kbd>
+<samp class=p>...</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(1)</kbd>                         <span class=u>②</span></a>
+<samp>yes, it's true</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(-1)</kbd>
+<samp>yes, it's true</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(0)</kbd>
+<samp>no, it's false</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(0.1)</kbd>                       <span class=u>③</span></a>
+<samp>yes, it's true</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(0.0)</kbd>
+<samp>no, it's false</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>import fractions</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(fractions.Fraction(1, 2))</kbd>  <span class=u>④</span></a>
+<samp>yes, it's true</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(fractions.Fraction(0, 1))</kbd>
+<samp>no, it's false</samp></pre>
+<ol>
+<li>您知道可以在 Python 交互式 Shell 中定义自己的函数吗？只需在每行的结尾按 <kbd>回车键</kbd> ，然后在某一空行按 <kbd>回车键</kbd> 结束。</li><li>在布尔类型上下文环境中，非零整数为真；零为假。</li><li>非零浮点数为真； <code>0.0</code> 为假。请千万小心这一点！如果有轻微的四舍五入偏差（正如在前面小节中看到的那样，这并非不可能的事情），那么 Python 将测试 <code>0.0000000000001</code> 而不是 0 ，并将返回一个 <code>True</code> 值。</li><li>分数也可在布尔类型上下文环境中使用。无论 <var>n</var> 为何值，<code>Fraction(0, n)</code> 为假。所有其它分数为真。</li></ol>
+<p class=a>⁂
+
+<h2 id=lists>列表</h2>
+<p>列表是 Python 的主力数据类型。当提到 “<dfn>列表</dfn> ”时，您脑海中可能会闪现“必须进一步声明大小的数组，只能包含同一类对象“ 等想法。千万别这么想。列表比那要酷得多。<blockquote class='note compare perl5'>
+<p><span class=u>☞</span> Python 中的列表类似 Perl 5 中的数组。在 Perl 5 中，存储数组的变量总是以字符 <code>@</code> 开头；在 Python 中，变量可随意命名，Python 仅在内部对数据类型进行跟踪。</blockquote>
+<blockquote class='note compare java'>
+<p><span class=u>☞</span> Python 中的列表更像 Java 中的数组（尽管可以把列表当做生命中所需要的一切来使用)。一个更好的比喻可能是 <code>ArrayList</code> 类，该类可以容纳任何对象，并可在添加新元素时进行动态拓展。</blockquote>
+<h3 id=creatinglists>创建列表</h3>
+<p>列表创建非常轻松：使用中括号包裹一系列以逗号分割的值即可。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a', 'b', 'mpilgrim', 'z', 'example']</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'b', 'mpilgrim', 'z', 'example']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[0]</kbd>                                        <span class=u>②</span></a>
+<samp class=pp>'a'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[4]</kbd>                                        <span class=u>③</span></a>
+<samp class=pp>'example'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[-1]</kbd>                                       <span class=u>④</span></a>
+<samp class=pp>'example'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[-3]</kbd>                                       <span class=u>⑤</span></a>
+<samp class=pp>'mpilgrim'</samp></pre>
+<ol>
+<li>首先，创建一个包含 5 个元素的列表。要注意的是它们保持了最初的顺序。这并不是偶然的。列表是元素的有序集合。</li><li>列表可当做以零为基点的数组使用。非空列表的首个元素始终是 <code>a_list[0]</code> 。</li><li>该 5 元素列表的最后一个元素是 <code>a_list[4]</code>，因为列表（索引）总是以零为基点的。</li><li>使用负索引值可从列表的尾部向前计数访问元素。任何非空列表的最后一个元素总是 <code>a_list[-1]</code> 。</li><li>如果负数令你混淆，可将其视为如下方式： <code>a_list[-<var>n</var>] == a_list[len(a_list) - <var>n</var>]</code> 。因此在此列表中， <code>a_list[-3] == a_list[5 - 3] == a_list[2]</code>。</li></ol>
+<h3 id=slicinglists>列表切片</h3>
+<aside>a_list[0] 是列表的第一个元素。</aside>
+<p>定义列表后，可从其中获取任何部分作为新列表。该技术称为对列表进行 <i>切片</i> 。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'b', 'mpilgrim', 'z', 'example']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[1:3]</kbd>            <span class=u>①</span></a>
+<samp class=pp>['b', 'mpilgrim']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[1:-1]</kbd>           <span class=u>②</span></a>
+<samp class=pp>['b', 'mpilgrim', 'z']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[0:3]</kbd>            <span class=u>③</span></a>
+<samp class=pp>['a', 'b', 'mpilgrim']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[:3]</kbd>             <span class=u>④</span></a>
+<samp class=pp>['a', 'b', 'mpilgrim']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[3:]</kbd>             <span class=u>⑤</span></a>
+<samp class=pp>['z', 'example']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[:]</kbd>              <span class=u>⑥</span></a>
+<samp class=pp>['a', 'b', 'mpilgrim', 'z', 'example']</samp></pre>
+<ol>
+<li>通过指定两个索引值，可以从列表中获取称作“切片”的某个部分。返回值是一个新列表，它包含列表(??切片)中所有元素，按顺序从第一个切片索引开始（本例中为 <code>a_list[1]</code>），截止但不包含第二个切片索引（本例中的 <code>a_list[3]</code>）。</li><li>如果切片索引之一或两者均为负数，切片操作仍可进行。如果有帮助的话，您可以这么思考：自左向右读取列表，第一个切片索引指明了想要的第一个元素，第二个切片索引指明了第一个不想要的元素。返回值是两者之间的任何值。 between.</li><li>列表是以零为起点的，因此 <code>a_list[0:3]</code> 返回列表的头三个元素，从 <code>a_list[0]</code> 开始，截止到但不包括 <code>a_list[3]</code> 。</li><li>如果左切片索引为零，可以将其留空而将零隐去。因此 <code>a_list[:3]</code> 与 <code>a_list[0:3]</code> 是完全相同的，因为起点 0 被隐去了。</li><li>同样，如果右切片索引为列表的长度，也可以将其留空。因此 <code>a_list[3:]</code> 与 <code>a_list[3:5]</code> 是完全相同的，因为该列表有五个元素。此处有个好玩的对称现象。在这个五元素列表中， <code>a_list[:3]</code> 返回头三个元素，而 <code>a_list[3:]</code> 返回最后两个元素。事实上，无论列表的长度是多少, <code>a_list[:<var>n</var>]</code> 将返回头  <var>n</var> 个元素，而 <code>a_list[<var>n</var>:]</code> 返回其余部分。</li><li>如果两个切片索引都留空，那么将包括列表所有的元素。但该返回值与最初的 <var>a_list</var> 变量并不一样。它是一个新列表，只不过恰好拥有完全相同的元素而已。<code>a_list[:]</code> 是对列表进行复制的一条捷径。</li></ol>
+<h3 id=extendinglists>向列表中新增项</h3>
+<p>有四种方法可用于向列表中增加元素。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a']</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = a_list + [2.0, 3]</kbd>    <span class=u>①</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>                        <span class=u>②</span></a>
+<samp class=pp>['a', 2.0, 3]</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.append(True)</kbd>           <span class=u>③</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 2.0, 3, True]</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.extend(['four', 'Ω'])</kbd>  <span class=u>④</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 2.0, 3, True, 'four', 'Ω']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.insert(0, 'Ω')</kbd>         <span class=u>⑤</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['Ω', 'a', 2.0, 3, True, 'four', 'Ω']</samp></pre>
+<ol>
+<li><code>+</code> 运算符连接列表以创建一个新列表。列表可包含任何数量的元素；没有大小限制（除了可用内存的限制）。然而，如果内存是个问题，那就必须知道在进行连接操作时，将在内存中创建第二个列表。在该情况下，新列表将会立即被赋值给已有变量 <var>a_list</var> 。因此，实际上该行代码包含两个步骤&nbsp;—&nbsp;连接然后赋值&nbsp;—&nbsp;当处理大型列表时，该操作可能（暂时）消耗大量内存。</li><li>列表可包含任何数据类型的元素，单个列表中的元素无须全为同一类型。下面的列表中包含一个字符串、一个浮点数和一个整数。</li><li><code>append()</code> 方法向列表的尾部添加一个新的元素。（现在列表中有 <em>四种</em> 不同数据类型！）</li><li>列表是以类的形式实现的。“创建”列表实际上是将一个类实例化。因此，列表有多种方法可以操作。<code>extend()</code> 方法只接受一个列表作为参数，并将该参数的每个元素都添加到原有的列表中。</li><li><code>insert()</code> 方法将单个元素插入到列表中。第一个参数是列表中将被顶离原位的第一个元素的位置索引。列表中的元素并不一定要是唯一的；比如说：现有两个各自独立的元素，其值均为 <code>'Ω'</code>:，第一个元素 <code>a_list[0]</code> 以及最后一个元素 <code>a_list[6]</code> 。</li></ol>
+
+<blockquote class='note compare perl'>
+<p><span class=u>☞</span><code><var>a_list</var>.insert(0, <var>value</var>)</code> 就像是 Perl 中的 <code>unshift()</code> 函数。它将一个元素添加到列表的头部，所有其它的元素都被顶理原先的位置以腾出空间。</blockquote>
+
+<p>让我们进一步看看 <code>append()</code> 和 <code>extend()</code> 的区别。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a', 'b', 'c']</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.extend(['d', 'e', 'f'])</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'b', 'c', 'd', 'e', 'f']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>len(a_list)</kbd>                     <span class=u>②</span></a>
+<samp class=pp>6</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[-1]</kbd>
+<samp class=pp>'f'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.append(['g', 'h', 'i'])</kbd>  <span class=u>③</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'b', 'c', 'd', 'e', 'f', ['g', 'h', 'i']]</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>len(a_list)</kbd>                     <span class=u>④</span></a>
+<samp class=pp>7</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[-1]</kbd>
+<samp class=pp>['g', 'h', 'i']</samp></pre>
+<ol>
+<li><code>extend()</code> 方法只接受一个参数，而该参数总是一个列表，并将列表 <var>a_list</var> 中所有的元素都添加到该列表中。</li><li>如果开始有个 3 元素列表，然后将它与另一个 3 元素列表进行 extend 操作，结果是将获得一个 6 元素列表。</li><li>另一方面， <code>append()</code> 方法只接受一个参数，但可以是任何数据类型。在此，对一个 3 元素列表调用 <code>append()</code> 方法。</li><li>如果开始的时候有个 6 元素列表，然后将一个列表 append［添加］上去，结果就会……得到一个 7 元素列表。为什么是 7 个？因为最后一个元素（刚刚 append［添加］ 的元素） <em> 本身是个列表</em> 。列表可包含任何类型的数据，包括其它列表。这可能是你所需要的结果，也许不是。但如果这就是你想要的，那这就是你所得到的。</li></ol>
+<h3 id=searchinglists>在列表中检索值</h3>
+<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a', 'b', 'new', 'mpilgrim', 'new']</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.count('new')</kbd>       <span class=u>①</span></a>
+<samp class=pp>2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>'new' in a_list</kbd>           <span class=u>②</span></a>
+<samp class=pp>True</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>'c' in a_list</kbd>
+<samp class=pp>False</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.index('mpilgrim')</kbd>  <span class=u>③</span></a>
+<samp class=pp>3</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.index('new')</kbd>       <span class=u>④</span></a>
+<samp class=pp>2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.index('c')</kbd>         <span class=u>⑤</span></a>
+<samp class=traceback>Traceback (innermost last):
+  File "&lt;interactive input&gt;", line 1, in ?ValueError: list.index(x): x not in list</samp></pre>
+<ol>
+<li>如你所期望， <code>count()</code> 方法返回了列表中某个特定值出现的次数。</li><li>如果你想知道的是某个值是否出现在列表中， <code>in</code> 运算符将会比使用 <code>count()</code> 方法要略快一些。<code>in</code> 运算符总是返回 <code>True</code> 或 <code>False</code>；它不会告诉你该值出现在什么位置。</li><li>如果想知道某个值在列表中的精确位置，可调用 <code>index()</code> 方法。尽管可以通过第二个参数（以 0 为基点的）索引值来指定起点，通过第三个参数（以 0 基点的）索引来指定搜索终点，但缺省情况下它将搜索整个列表，</li><li><code>index()</code> 方法将查找某值在列表中的<em>第一次</em>出现。在该情况下，<code>'new'</code> 在列表中出现了两次，分别为 <code>a_list[2]</code> 和 <code>a_list[4]</code>，但 <code>index()</code> 方法将只返回第一次出现的位置索引值。</li><li>可能 <em>出乎</em> 您的预期，如果在列表中没有找到该值，<code>index()</code> 方法将会引发一个例外。</li></ol>
+
+<p>等等，什么？是这样的：如果没有在列表中找到该值， <code>index()</code> 方法将会引发一个例外。这是 Python 语言最显著不同之处，其它多数语言将会返回一些无效的索引值（像是 <code>-1</code>）。当然，一开始这一点看起来比较讨厌，但我想您会逐渐欣赏它。这意味着您的程序将会在问题的源头处崩溃，而不是之后奇怪地、默默地崩溃。请记住， <a href="native-datatypes.html#creatinglists"><code>-1</code> 是合法的列表索引值</a>。如果 <code>index()</code> 方法返回 <code>-1</code>，可能会导致调整过程变得不那么有趣！<h3 id=removingfromlists>从列表中删除元素</h3>
+
+<aside>列表永远不会有缝隙。</aside>
+
+<p>列表可以自动拓展或者收缩。您已经看到了拓展部分。也有几种方法可从列表中删除元素。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a', 'b', 'new', 'mpilgrim', 'new']</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[1]</kbd>
+<samp class=pp>'b'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>del a_list[1]</kbd>         <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'new', 'mpilgrim', 'new']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list[1]</kbd>             <span class=u>②</span></a>
+<samp class=pp>'new'</samp></pre>
+<ol>
+<li>可使用 <code><dfn>del</dfn></code> 语句从列表中删除某个特定元素。</li><li>删除索引 <code>1</code> 之后再访问索引 <code>1</code> 将 <em>不会</em> 导致错误。被删除元素之后的所有元素将移动它们的位置以“填补”被删除元素所产生的“缝隙”。</li></ol>
+
+<p>不知道位置索引？这不成问题，您可以通过值而不是索引删除元素。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.remove('new')</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'mpilgrim', 'new']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.remove('new')</kbd>  <span class=u>②</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'mpilgrim']</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.remove('new')</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+ValueError: list.remove(x): x not in list</samp></pre>
+<ol>
+<li>还可以通过 <code>remove()</code> 方法从列表中删除某个元素。<code>remove()</code> 方法接受一个 <em>value</em> 参数，并删除列表中该值的第一次出现。同样，被删除元素之后的所有元素将会将索引位置下移，以“填补缝隙”。列表永远不会有“缝隙”。</li><li>您可以尽情地调用 <code>remove()</code> 方法，但如果试图删除列表中不存在的元素，它将引发一个例外。</li></ol>
+
+<h3 id=popgoestheweasel>Removing Items From A List: Bonus Round</h3>
+
+<p>另一有趣的列表方法是 <code>pop()</code> 。<code>pop()</code> 方法是<a href="native-datatypes.html#removingfromlists">从列表删除元素</a>的另一方法，但有点变化。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a', 'b', 'new', 'mpilgrim']</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.pop()</kbd>   <span class=u>①</span></a>
+<samp class=pp>'mpilgrim'</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'b', 'new']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.pop(1)</kbd>  <span class=u>②</span></a>
+<samp class=pp>'b'</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['a', 'new']</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.pop()</kbd>
+<samp class=pp>'new'</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.pop()</kbd>
+<samp class=pp>'a'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list.pop()</kbd>   <span class=u>③</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+IndexError: pop from empty list</samp></pre>
+<ol>
+<li>如果不带参数调用， <code>pop()</code> 列表方法将删除列表中最后的元素，<em>并返回所删除的值</em>。</li><li>可以从列表中 pop［弹出］任何元素。只需传给 <code>pop()</code> 方法一个位置索引值。它将删除该元素，将其后所有元素移位以“填补缝隙”,然后返回它删除的值。</li><li>对空列表调用 <code>pop()</code> 将会引发一个例外。</li></ol>
+
+<blockquote class='note compare perl'>
+<p><span class=u>☞</span>不带参数调用的 <code>pop()</code> 列表方法就像 Perl 中的 <code>pop()</code> 函数。它从列表中删除最后一个元素并返回所删除元素的值。Perl 还有另一个函数 <code>shift()</code>，可用于删除第一个元素并返回其值；在 Python 中，该函数相当于 <code><var>a_list</var>.pop(0)</code> 。</blockquote>
+
+<h3 id=lists-in-a-boolean-context>布尔上下文环境中的列表</h3>
+<aside>空列表为假；其它所有列表为真。</aside>
+<p>可以在 <code>if</code> 这样的 <a href="native-datatypes.html#booleans">布尔类型上下文环境中</a> 使用列表。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>def is_it_true(anything):</kbd>
+<samp class=p>... </samp><kbd class=pp>  if anything:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("yes, it's true")</kbd>
+<samp class=p>... </samp><kbd class=pp>  else:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("no, it's false")</kbd>
+<samp class=p>...</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true([])</kbd>             <span class=u>①</span></a>
+<samp>no, it's false</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(['a'])</kbd>          <span class=u>②</span></a>
+<samp>yes, it's true</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true([False])</kbd>        <span class=u>③</span></a>
+<samp>yes, it's true</samp></pre>
+<ol>
+<li>在布尔类型上下文环境中，空列表为假值。</li><li>任何至少包含一个上元素的列表为真值。</li><li>任何至少包含一个上元素的列表为真值。元素的值无关紧要。</li></ol>
+
+<p class=a>⁂
+
+<h2 id=tuples>元组</h2>
+
+<p><dfn>元素</dfn> 是不可变的列表。一旦创建之后，用任何方法都不可以修改元素。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple = ("a", "b", "mpilgrim", "z", "example")</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple</kbd>
+<samp class=pp>('a', 'b', 'mpilgrim', 'z', 'example')</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple[0]</kbd>                                        <span class=u>②</span></a>
+<samp class=pp>'a'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple[-1]</kbd>                                       <span class=u>③</span></a>
+<samp class=pp>'example'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple[1:3]</kbd>                                      <span class=u>④</span></a>
+<samp class=pp>('b', 'mpilgrim')</samp></pre>
+<ol>
+<li>元组的定义方式和列表相同，除了整个元素的集合都用圆括号，而不是方括号闭合。</li><li>和列表一样，元组的元素都有确定的顺序。元组的索引也是以零为基点的，和列表一样，因此非空元组的第一个元素总是 <code>a_tuple[0]</code> 。</li><li>负的索引从元组的尾部开始计数，这和列表也是一样的。</li><li>和列表一样，元组也可以进行切片操作。对列表切片可以得到新的列表；对元组切片可以得到新的元组。</li></ol>
+
+<p>元组和列表的主要区别是元组不能进行修改。用技术术语来说，元组是 <dfn>不可变更</dfn> 的。从实践的角度来说，没有可用于修改元组的方法。列表有像 <code>append()</code>、 <code>extend()</code>、 <code>insert()</code>、<code>remove()</code> 和 <code>pop()</code> 这样的方法。这些方法，元组都没有。可以对元组进行切片操作（因为该方法创建一个新的元组），可以检查元组是否包含了特定的值（因为该操作不修改元组），还可以……就那么多了。<pre class=screen>
+# continued from the previous example
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple</kbd>
+<samp class=pp>('a', 'b', 'mpilgrim', 'z', 'example')</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple.append("new")</kbd>               <span class=u>①</span></a>
+<samp class=traceback>Traceback (innermost last):
+  File "&lt;interactive input&gt;", line 1, in ?AttributeError: 'tuple' object has no attribute 'append'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple.remove("z")</kbd>                 <span class=u>②</span></a>
+<samp class=traceback>Traceback (innermost last):
+  File "&lt;interactive input&gt;", line 1, in ?AttributeError: 'tuple' object has no attribute 'remove'</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_tuple.index("example")</kbd>            <span class=u>③</span></a>
+<samp class=pp>4</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>"z" in a_tuple</kbd>                      <span class=u>④</span></a>
+<samp class=pp>True</samp></pre>
+<ol>
+<li>无法向元组添加元素。元组没有 <code>append()</code> 或 <code>extend()</code> 方法。</li><li>不能从元组中删除元素。元组没有 <code>remove()</code> 或 <code>pop()</code> 方法。</li><li><em>可以</em> 在元组中查找元素，由于该操作不改变元组。</li><li>还可以使用 <code>in</code> 运算符检查某元素是否存在于元组中。</li></ol>
+
+<p>那么元组有什么好处呢？</p> 
+
+<ul> 
+<li>元组的速度比列表更快。如果定义了一系列常量值，而所需做的仅是对它进行遍历，那么请使用元组替代列表。</li><li>对不需要改变的数据进行“写保护”将使得代码更加安全。使用元组替代列表就像是有一条隐含的 <code>assert</code> 语句显示该数据是常量，特别的想法（及特别的功能）必须重写。（？？）</li><li>一些元组可用作字典键（特别是包含字符串、数值和其它元组这样的<i>不可变</i>数据的元组）。列表永远不能当做字典键使用，因为列表不是不可变的。</li></ul>
+
+<blockquote class=note>
+<p><span class=u>☞</span>元组可转换成列表，反之亦然。内建的 <code>tuple()</code> 函数接受一个列表参数，并返回一个包含同样元素的元组，而 <code>list()</code> 函数接受一个元组参数并返回一个列表。从效果上看， <code>tuple()</code> 冻结列表，而 <code>list()</code> 融化元组。</blockquote>
+
+<h3 id=tuples-in-a-boolean-context>布尔上下文环境中的元组</h3>
+
+<p>可以在 <code>if</code> 这样的 <a href="native-datatypes.html#booleans">布尔类型上下文环境中</a> 使用元组。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>def is_it_true(anything):</kbd>
+<samp class=p>... </samp><kbd class=pp>  if anything:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("yes, it's true")</kbd>
+<samp class=p>... </samp><kbd class=pp>  else:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("no, it's false")</kbd>
+<samp class=p>...</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(())</kbd>             <span class=u>①</span></a>
+<samp>no, it's false</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(('a', 'b'))</kbd>     <span class=u>②</span></a>
+<samp>yes, it's true</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true((False,))</kbd>       <span class=u>③</span></a>
+<samp>yes, it's true</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type((False))</kbd>              <span class=u>④</span></a>
+<samp class=pp>&lt;class 'bool'&gt;</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type((False,))</kbd>
+<samp class=pp>&lt;class 'tuple'&gt;</samp></pre>
+<ol>
+<li>在布尔类型上下文环境中，空元组为假值。</li><li>任何至少包含一个上元素的元组为真值。</li><li>任何至少包含一个上元素的元组为真值。元素的值无关紧要。不过此处的逗号起什么作用呢？</li><li>为创建单元素元组，需要在值之后加上一个逗号。没有逗号，Python 会假定这只是一对额外的圆括号，虽然没有害处，但并不创建元组。</li></ol>
+
+<h3 id=multivar>同时赋多个值</h3>
+
+<p>以下是一种很酷的编程捷径：在 Python 中，可使用元组来一次赋多值。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>v = ('a', 2, True)</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd>(x, y, z) = v</kbd>       <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x</kbd>
+<samp class=pp>'a'</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>y</kbd>
+<samp class=pp>2</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>z</kbd>
+<samp class=pp>True</samp></pre>
+<ol>
+<li><var>v</var> 是一个三元素的元组，而 <code>(x, y, z)</code> 是包含三个变量的元组。将其中一个赋值给另一个将会把 <var>v</var> 中的每个值按顺序赋值给每一个变量。</li></ol>
+
+<p>该特性有多种用途。假设需要将某个名称指定某个特定范围的值。可以使用内建的 <code>range()</code> 函数进行多变量赋值以快速地进行连续变量赋值。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY) = range(7)</kbd>  <span class=u>①</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>MONDAY</kbd>                                                                       <span class=u>②</span></a>
+<samp class=pp>0</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>TUESDAY</kbd>
+<samp class=pp>1</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>SUNDAY</kbd>
+<samp class=pp>6</samp></pre>
+<ol>
+<li>内建的 <code>range()</code> 函数构造了一个整数序列。（从技术上来说， <code>range()</code> 函数返回的既不是列表也不是元组，而是一个 <a href="iterators.html">迭代器</a>，但稍后您将学到它们的区别。） <var>MONDAY</var>、 <var>TUESDAY</var>、 <var>WEDNESDAY</var>、 <var>THURSDAY</var>、 <var>FRIDAY</var>、 <var>SATURDAY</var> 和 <var>SUNDAY</var> 是您所定义的变量。（本例来自于 <code>calendar</code> 模块，该短小而有趣的模块打印日历，有点像 <abbr>UNIX</abbr> 程序 <code>cal</code> 。该 <code>calendar</code> 模块为星期数定义了整数常量。</li><li>现在，每个变量都有其值了： <var>MONDAY</var> 为 0， <var>TUESDAY</var> 为 <code>1</code>，如此类推。</li></ol>
+
+<p>还可以使用多变量赋值创建返回多值的函数，只需返回一个包含所有值的元组。调用者可将返回值视为一个简单的元组，或将其赋值给不同的变量。许多标准 Python 类库这么干，包括在<a href="comprehensions.html#os">下一章</a>将学到的 <code>os</code> 模块。<p class=a>⁂
+
+<h2 id=sets>集合</h2>
+
+<p><dfn>集合set</dfn> 是装有独特值的无序“袋子”。一个简单的集合可以包含任何数据类型的值。如果有两个集合，则可以执行像联合、交集以及集合求差等标准集合运算。<h3 id=creating-a-set>创建集合</h3>
+
+<p>重中之重。创建集合非常简单。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1}</kbd>     <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(a_set)</kbd>     <span class=u>②</span></a>
+<samp class=pp>&lt;class 'set'&gt;</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1, 2}</kbd>  <span class=u>③</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 2}</samp></pre>
+<ol>
+<li>要创建只包含一个值的集合，仅需将该值放置于花括号之间。（<code>{}</code>）。</li><li>实际上，集合以 <a href="iterators.html#defining-classes">类</a> 的形式实现，但目前还无须考虑这一点。</li><li>要创建多值集合，请将值用逗号分开，并用花括号将所有值包裹起来。</li></ol>
+
+<p>还可以 <a href="native-datatypes.html#lists">列表</a> 为基础创建集合。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list = ['a', 'b', 'mpilgrim', True, False, 42]</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = set(a_list)</kbd>                           <span class=u>①</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>                                         <span class=u>②</span></a>
+<samp class=pp>{'a', False, 'b', True, 'mpilgrim', 42}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_list</kbd>                                        <span class=u>③</span></a>
+<samp class=pp>['a', 'b', 'mpilgrim', True, False, 42]</samp></pre>
+<ol>
+<li>要从列表创建集合，可使用 <code>set()</code> 函数。（懂得如何实现集合的学究可能指出这实际上并不是调用某个函数，而是对某个类进行实例化。我<em>保证</em>在本书稍后的地方将会学到其中的区别。目前而言，仅需知道 <code>set()</code> 行为与函数类似，以及它返回一个集合。）</li><li>正如我之前提到的，简单的集合可以包括任何数据类型的值。而且，如我之前所提到的，集合是 <em>无序的</em>。该集合并不记得用于创建它的列表中元素的最初顺序。如果向集合中添加元素，它也不会记得添加的顺序。</li><li>初始的列表并不会发生变化。</li></ol>
+
+<p id=emptyset>还没有任何值？没有问题。可以创建一个空的集合。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = set()</kbd>    <span class=u>①</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>            <span class=u>②</span></a>
+<samp class=pp>set()</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(a_set)</kbd>      <span class=u>③</span></a>
+<samp class=pp>&lt;class 'set'&gt;</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>len(a_set)</kbd>       <span class=u>④</span></a>
+<samp class=pp>0</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>not_sure = {}</kbd>    <span class=u>⑤</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(not_sure)</kbd>
+<samp class=pp>&lt;class 'dict'&gt;</samp></pre>
+<ol>
+<li>要创建空集合，可不带参数调用 <code>set()</code> 。</li><li>打印出来的空集合表现形式看起来有点儿怪。也许，您期望看到一个 <code>{}</code> 吧 ？该符号表示一个空的字典，而不是一个空的集合。本章稍后您将学到关于字典的内容。</li><li>尽管打印出的形式奇怪，这 <em>确实是</em> 一个集合……</li><li>…… 同时该集合没有任何成员。</li><li>由于从 Python 2 沿袭而来历史的古怪规定，不能使用两个花括号来创建空集合。该操作实际创建一个空字典，而不是一个空集合。</li></ol>
+
+<h3 id=modifying-sets>修改集合</h3>
+
+<p>有两种方法可向现有集合中添加值： <code>add()</code> 方法和 <code>update()</code> 方法。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1, 2}</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.add(4)</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 2, 4}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>len(a_set)</kbd>    <span class=u>②</span></a>
+<samp class=pp>3</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.add(1)</kbd>  <span class=u>③</span></a>
+<samp class=pp>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 2, 4}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>len(a_set)</kbd>    <span class=u>④</span></a>
+<samp class=pp>3</samp></pre>
+<ol>
+<li><code>add()</code> 方法接受单个可以是任何数据类型的参数，并将该值添加到集合之中。</li><li>该集合现在有三个成员了。</li><li>集合是装 <em>唯一值</em> 的袋子。如果试图添加一个集合中已有的值，将不会发生任何事情。将不会引发一个错误；只是一条空操作。</li><li>该集合 <em>仍然</em> 只有三个成员。</li></ol>
+
+<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1, 2, 3}</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 2, 3}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.update({2, 4, 6})</kbd>                       <span class=u>①</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>                                         <span class=u>②</span></a>
+<samp class=pp>{1, 2, 3, 4, 6}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.update({3, 6, 9}, {1, 2, 3, 5, 8, 13})</kbd>  <span class=u>③</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 2, 3, 4, 5, 6, 8, 9, 13}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.update([10, 20, 30])</kbd>                    <span class=u>④</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 2, 3, 4, 5, 6, 8, 9, 10, 13, 20, 30}</samp></pre>
+<ol>
+<li><code>update()</code> 方法仅接受一个集合作为参数，并将其所有成员添加到初始列表中。其行为方式就像是对参数集合中的每个成员调用 <code>add()</code> 方法。</li><li>由于集合不能包含重复的值，因此重复的值将会被忽略。</li><li>实际上，可以带任何数量的参数调用 <code>update()</code> 方法。如果调用时传递了两个集合， <code>update()</code> 将会被每个集合中的每个成员添加到初始的集合当中（丢弃重复值）。</li><li><code>update()</code> 方法还可接受一些其它数据类型的对象作为参数，包括列表。如果调用时传入列表，<code>update()</code> 将会把列表中所有的元素添加到初始集合中。</li></ol>
+
+<h3 id=removing-from-sets>从集合中删除元素</h3>
+
+<p>有三种方法可以用来从集合中删除某个值。前两种，<code>discard()</code> 和 <code>remove()</code> 有细微的差异。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1, 3, 6, 10, 15, 21, 28, 36, 45}</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 3, 36, 6, 10, 45, 15, 21, 28}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.discard(10)</kbd>                        <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 3, 36, 6, 45, 15, 21, 28}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.discard(10)</kbd>                        <span class=u>②</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 3, 36, 6, 45, 15, 21, 28}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.remove(21)</kbd>                         <span class=u>③</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{1, 3, 36, 6, 45, 15, 28}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.remove(21)</kbd>                         <span class=u>④</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+KeyError: 21</samp></pre>
+<ol>
+<li><code>discard()</code> 接受一个单值作为参数，并从集合中删除该值。</li><li>如果针对一个集合中不存在的值调用 <code>discard()</code> 方法，它不进行任何操作。不产生错误；只是一条空指令。</li><li><code>remove()</code> 方法也接受一个单值作为参数，也从集合中将其删除。</li><li>区别在这里：如果该值不在集合中，<code>remove()</code> 方法引发一个 <code>KeyError</code> 例外。</li></ol>
+
+<p>就像列表，集合也有个 <code>pop()</code> 方法。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1, 3, 6, 10, 15, 21, 28, 36, 45}</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.pop()</kbd>                                <span class=u>①</span></a>
+<samp class=pp>1</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.pop()</kbd>
+<samp class=pp>3</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.pop()</kbd>
+<samp class=pp>36</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>{6, 10, 45, 15, 21, 28}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.clear()</kbd>                              <span class=u>②</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set</kbd>
+<samp class=pp>set()</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.pop()</kbd>                                <span class=u>③</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+KeyError: 'pop from an empty set'</samp></pre>
+<ol>
+<li><code>pop()</code> 方法从集合中删除某个值，并返回该值。然而，由于集合是无序的，并没有“最后一个”值的概念，因此无法控制删除的是哪一个值。它基本上是随机的。</li><li><code>clear()</code> 方法删除集合中 <em>所有</em> 的值，留下一个空集合。它等价于 <code>a_set = set()</code>，该语句创建一个新的空集合，并用之覆盖 <var>a_set</var> 变量的之前的值。</li><li>试图从空集合中弹出某值将会引发 <code>KeyError</code> 例外。</li></ol>
+
+<h3 id=common-set-operations>常见集合操作</h3>
+
+<p>Python 的 <code>集合</code> 类型支持几种常见的运算。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {2, 4, 5, 9, 12, 21, 30, 51, 76, 127, 195}</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>30 in a_set</kbd>                                                     <span class=u>①</span></a>
+<samp class=pp>True</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>31 in a_set</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set = {1, 2, 3, 5, 6, 8, 9, 12, 15, 17, 18, 21}</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.union(b_set)</kbd>                                              <span class=u>②</span></a>
+<samp class=pp>{1, 2, 195, 4, 5, 6, 8, 12, 76, 15, 17, 18, 3, 21, 30, 51, 9, 127}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.intersection(b_set)</kbd>                                       <span class=u>③</span></a>
+<samp class=pp>{9, 2, 12, 5, 21}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.difference(b_set)</kbd>                                         <span class=u>④</span></a>
+<samp class=pp>{195, 4, 76, 51, 30, 127}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.symmetric_difference(b_set)</kbd>                               <span class=u>⑤</span></a>
+<samp class=pp>{1, 3, 4, 6, 8, 76, 15, 17, 18, 195, 127, 30, 51}</samp></pre>
+<ol>
+<li>要检测某值是否是集合的成员，可使用 <code>in</code> 运算符。其工作原理和列表的一样。</li><li><code>union()</code> 方法返回一个新集合，其中装着 <em>在两个</em> 集合中出现的元素。</li><li><code>intersection()</code> 方法返回一个新集合，其中装着 <em>同时</em> 在两个集合中出现的所有元素。</li><li><code>difference()</code> 方法返回的新集合中，装着所有在 <var>a_set</var> 出现但未在 <var>b_set</var> 中的元素。</li><li><code>symmetric_difference()</code> 方法返回一个新集合，其中装着所有 <em>只在其中一个</em> 集合中出现的元素。</li></ol>
+
+<p>这三种方法是对称的。<pre class=screen>
+# continued from the previous example
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.symmetric_difference(a_set)</kbd>                                       <span class=u>①</span></a>
+<samp class=pp>{3, 1, 195, 4, 6, 8, 76, 15, 17, 18, 51, 30, 127}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.symmetric_difference(a_set) == a_set.symmetric_difference(b_set)</kbd>  <span class=u>②</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.union(a_set) == a_set.union(b_set)</kbd>                                <span class=u>③</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.intersection(a_set) == a_set.intersection(b_set)</kbd>                  <span class=u>④</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.difference(a_set) == a_set.difference(b_set)</kbd>                      <span class=u>⑤</span></a>
+<samp class=pp>False</samp></pre>
+<ol>
+<li><var>a_set</var> 与 <var>b_set</var> 的对称差分 <em>看起来</em>  和<var>b_set</var> 与 <var>a_set</var> 的对称差分不同，但请记住：集合是无序的。任何两个包含所有同样值（无一遗漏）的集合可认为是相等的。</li><li>而这正是这里发生的事情。不要被 Python Shell 对这些集合的输出形式所愚弄了。它们包含相同的值，因此是相等的。</li><li>对两个集合的 Union［并集］操作也是对称的。</li><li>对两个集合的 Intersection［交集］操作也是对称的。</li><li>对两个集合的 Difference［求差］操作不是对称的。这是有意义的；它类似于从一个数中减去另一个数。操作数的顺序会导致结果不同。</li></ol>
+
+<p>最后，有几个您可能会问到的问题。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set = {1, 2, 3}</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set = {1, 2, 3, 4}</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.issubset(b_set)</kbd>    <span class=u>①</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.issuperset(a_set)</kbd>  <span class=u>②</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.add(5)</kbd>             <span class=u>③</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_set.issubset(b_set)</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>b_set.issuperset(a_set)</kbd>
+<samp class=pp>False</samp></pre>
+<ol>
+<li><var>a_set</var> 是 <var>b_set</var>&nbsp;的 <dfn>子集</dfn> —&nbsp;所有 <var>a_set</var> 的成员均为 <var>b_set</var> 的成员。</li><li>同样的问题反过来说， <var>b_set</var> 是 <var>a_set</var> 的 <dfn>超集</dfn>，因为 <var>a_set</var> 的所有成员均为 <var>b_set</var> 的成员。</li><li>一旦向 <var>a_set</var> 添加一个未在 <var>b_set</var> 中出现的值，两项测试均返回 <code>False</code> 。</li></ol>
+
+<h3 id=sets-in-a-boolean-context>布尔上下文环境中的集合</h3>
+
+<p>可在 <code>if</code> 这样的 <a href="native-datatypes.html#booleans">布尔类型上下文环境中</a> 使用集合。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>def is_it_true(anything):</kbd>
+<samp class=p>... </samp><kbd class=pp>  if anything:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("yes, it's true")</kbd>
+<samp class=p>... </samp><kbd class=pp>  else:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("no, it's false")</kbd>
+<samp class=p>...</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(set())</kbd>          <span class=u>①</span></a>
+<samp>no, it's false</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true({'a'})</kbd>          <span class=u>②</span></a>
+<samp>yes, it's true</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true({False})</kbd>        <span class=u>③</span></a>
+<samp>yes, it's true</samp></pre>
+<ol>
+<li>在布尔类型上下文环境中，空集合为假值。</li><li>任何至少包含一个上元素的集合为真值。</li><li>任何至少包含一个上元素的集合为真值。元素的值无关紧要。</li></ol>
+
+<p class=a>⁂
+
+<h2 id=dictionaries>字典</h2>
+
+<p><dfn>字典</dfn> 是键值对的无序集合。向字典添加一个键的同时，必须为该键增添一个值。（之后可随时修改该值。） Python 的字典为通过键获取值进行了优化，而不是反过来。<blockquote class='note compare perl5'>
+<p><span class=u>☞</span>Python 中的字典与 Perl 5 中的 hash [散列]类似。在 Perl 5 中，散列存储的变量总是以一个 <code>%</code> 符开头。在 Python 中，变量可以随意命名，而 Python 内部跟踪其数据类型。</blockquote>
+<h3 id=creating-dictionaries>创建字典</h3>
+<p>创建字典非常简单。其语法与 <a href="native-datatypes.html#sets">集合</a> 的类似，但应当指定键值对而不是值。有了字典后，可以通过键来查找值。<pre class=screen>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict = {'server': 'db.diveintopython3.org', 'database': 'mysql'}</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict</kbd>
+<samp class=pp>{'server': 'db.diveintopython3.org', 'database': 'mysql'}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['server']</kbd>                                                    <span class=u>②</span></a>
+'db.diveintopython3.org'
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['database']</kbd>                                                  <span class=u>③</span></a>
+'mysql'
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['db.diveintopython3.org']</kbd>                                    <span class=u>④</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+KeyError: 'db.diveintopython3.org'</samp></pre>
+<ol>
+<li>首先，通过将两个字典项指定给 <var>a_dict</var> 变量创建了一个新字典。每个字典项都是一组键值对，整个字典项集合都被大括号包裹在内。</li><li><code>'server'</code> 为键，通过 <code>a_dict['server']</code> 引用的关联值为 <code>'db.diveintopython3.org'</code> 。</li><li><code>'database'</code> 为键，通过 <code>a_dict['database']</code> 引用的关联值为 <code>'mysql'</code> 。</li><li>可以通过键获取值，但不能通过值获取键。因此 <code>a_dict['server']</code> 为 <code>'db.diveintopython3.org'</code>，而 <code>a_dict['db.diveintopython3.org']</code> 会引发例外，因为 <code>'db.diveintopython3.org'</code> 并不是键。</li></ol>
+<h3 id=modifying-dictionaries>修改字典</h3>
+<p>字典没有预定义的大小限制。可以随时向字典中添加新的键值对，或者修改现有键所关联的值。继续前面的例子：<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict</kbd>
+<samp class=pp>{'server': 'db.diveintopython3.org', 'database': 'mysql'}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['database'] = 'blog'</kbd>  <span class=u>①</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict</kbd>
+<samp class=pp>{'server': 'db.diveintopython3.org', 'database': 'blog'}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['user'] = 'mark'</kbd>      <span class=u>②</span></a>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict</kbd>                       <span class=u>③</span></a>
+<samp class=pp>{'server': 'db.diveintopython3.org', 'user': 'mark', 'database': 'blog'}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['user'] = 'dora'</kbd>      <span class=u>④</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict</kbd>
+<samp class=pp>{'server': 'db.diveintopython3.org', 'user': 'dora', 'database': 'blog'}</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict['User'] = 'mark'</kbd>      <span class=u>⑤</span></a>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>a_dict</kbd>
+<samp class=pp>{'User': 'mark', 'server': 'db.diveintopython3.org', 'user': 'dora', 'database': 'blog'}</samp></pre>
+<ol>
+<li>在字典中不允许有重复的键。对现有的键赋值将会覆盖旧值。</li><li>可随时添加新的键值对。该语法与修改现有值相同。</li><li>新字典项（键为 <code>'user'</code>，值为 <code>'mark'</code>）出现在中间。事实上，在第一个例子中字典项按顺序出现是个巧合；现在它们不按顺序出现同样也是个巧合。</li><li>对既有字典键进行赋值只会用新值替代旧值。</li><li>该操作会将 <code>user</code> 键的值改回 "mark" 吗？不会！仔细看看该键——有个大写的 <kbd>U</kbd> 出现在 <kbd>"User"</kbd> 中。字典键是区分大小写的，因此该语句创建了一组新的键值对，而不是覆盖既有的字典项。对你来说它们可能是一样的，但对于 Python 而言它们是完全不同的。</li></ol>
+<h3 id=mixed-value-dictionaries>混合值字典</h3>
+<p>字典并非只能用于字符串。字典的值可以是任何数据类型，包括整数、布尔值、任何对象，甚至是其它的字典。而且就算在同一字典中，所有的值也无须是同一类型，您可根据需要混合匹配。字典的键要严格得多，可以是字符串、整数和其它一些类型。在同一字典中也可混合、匹配使用不同数据类型的键。<p>实际上，您已经在  <a href="your-first-python-program.html#divingin">your first Python program</a> 见过一个将非字符串用作键的字典了。<pre class='nd pp'><code>SUFFIXES = {1000: ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            1024: ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']}</code></pre>
+<p>让我们在交互式 shell 中剖析一下：<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>SUFFIXES = {1000: ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],</kbd>
+<samp class=p>... </samp><kbd class=pp>            1024: ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']}</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>len(SUFFIXES)</kbd>      <span class=u>①</span></a>
+<samp class=pp>2</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>1000 in SUFFIXES</kbd>   <span class=u>②</span></a>
+<samp class=pp>True</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>SUFFIXES[1000]</kbd>     <span class=u>③</span></a>
+<samp class=pp>['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>SUFFIXES[1024]</kbd>     <span class=u>④</span></a>
+<samp class=pp>['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>SUFFIXES[1000][3]</kbd>  <span class=u>⑤</span></a>
+<samp class=pp>'TB'</samp></pre>
+<ol>
+<li>类似 <a href="native-datatypes.html#lists">列表</a> 和 <a href="native-datatypes.html#sets">集合</a> ，<code>len()</code> 函数将返回字典中键的数量。</li><li>而且像列表和集合一样，可使用 <code>in</code> 运算符以测试某个特定的键是否在字典中。</li><li><code>1000</code> <em>是</em> 字典 <code>SUFFIXES</code> 的一个键；其值为一个 8 元素列表（确切地说，是 8 个字符串）。</li><li>同样， <code>1024</code> 是字典 <code>SUFFIXES</code> 的键；其值也是一个 8 元素列表。</li><li>由于 <code>SUFFIXES[1000]</code> 是列表，可以通过它们的 0 基点索引来获取列表中的单个元素。</li></ol>
+<h3 id=dictionaries-in-a-boolean-context>布尔上下文环境中的字典</h3>
+<aside>空字典为假值；所有其它字典为真值。</aside>
+<p>可以在 <code>if</code> 这样的 <a href="native-datatypes.html#booleans">布尔类型上下文环境中</a> 使用字典。<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>def is_it_true(anything):</kbd>
+<samp class=p>... </samp><kbd class=pp>  if anything:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("yes, it's true")</kbd>
+<samp class=p>... </samp><kbd class=pp>  else:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("no, it's false")</kbd>
+<samp class=p>...</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true({})</kbd>             <span class=u>①</span></a>
+<samp>no, it's false</samp>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true({'a': 1})</kbd>       <span class=u>②</span></a>
+<samp>yes, it's true</samp></pre>
+<ol>
+<li>在布尔类型上下文环境中，空字典为假值。</li><li>至少包含一个键值对的字典为真值。</li></ol>
+<p class=a>⁂
+
+<h2 id=none><code>None</code></h2>
+<p><code><dfn>None</dfn></code> 是 Python 的一个特殊常量。它是一个 <dfn>空</dfn> 值。<code>None</code> 与 <code>False</code> 不同。<code>None</code> 不是 0 。<code>None</code> 不是空字符串。将 <code>None</code> 与任何非 <code>None</code> 的东西进行比较将总是返回 <code>False</code> 。<p><code>None</code> 是唯一的空值。它有着自己的数据类型（<code>NoneType</code>）。可将 <code>None</code> 赋值给任何变量，但不能创建其它 <code>NoneType</code> 对象。所有值为 <code>None</code> 变量是相等的。<pre class='nd screen'>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>type(None)</kbd>
+<samp class=pp>&lt;class 'NoneType'&gt;</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>None == False</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>None == 0</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>None == ''</kbd>
+<samp class=pp>False</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>None == None</kbd>
+<samp class=pp>True</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x = None</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x == None</kbd>
+<samp class=pp>True</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>y = None</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x == y</kbd>
+<samp class=pp>True</samp>
+</pre>
+<h3 id=none-in-a-boolean-context>布尔上下文环境中的 <code>None</code></h3>
+<p>在 <a href="native-datatypes.html#booleans">布尔类型上下文环境中</a>， <code>None</code> 为假值，而 <code>not None</code> 为真值。<pre class='nd screen'>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>def is_it_true(anything):</kbd>
+<samp class=p>... </samp><kbd class=pp>  if anything:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("yes, it's true")</kbd>
+<samp class=p>... </samp><kbd class=pp>  else:</kbd>
+<samp class=p>... </samp><kbd class=pp>    print("no, it's false")</kbd>
+<samp class=p>...</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(None)</kbd>
+<samp>no, it's false</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>is_it_true(not None)</kbd>
+<samp>yes, it's true</samp></pre>
+<p class=a>⁂
+
+<h2 id=furtherreading>深入阅读</h2>
+<ul>
+<li><a href=http://docs.python.org/3.1/library/stdtypes.html#boolean-operations-and-or-not>布尔运算</a>
+</li><li><a href=http://docs.python.org/3.1/library/stdtypes.html#numeric-types-int-float-long-complex>数值类型</a>
+</li><li><a href=http://docs.python.org/3.1/library/stdtypes.html#sequence-types-str-unicode-list-tuple-buffer-xrange>序列类型</a>
+</li><li><a href=http://docs.python.org/3.1/library/stdtypes.html#set-types-set-frozenset>集合类型</a>
+</li><li><a href=http://docs.python.org/3.1/library/stdtypes.html#mapping-types-dict>映射类型</a>
+</li><li><a href=http://docs.python.org/3.1/library/fractions.html><code>fractions［分数］</code> 模块</a>
+</li><li><a href=http://docs.python.org/3.1/library/math.html><code>math［数学］</code> 模块</a>
+</li><li><a href=http://www.python.org/dev/peps/pep-0237/><abbr>PEP</abbr> 237: 统一长整数和整数</a>
+</li><li><a href=http://www.python.org/dev/peps/pep-0238/><abbr>PEP</abbr> 238: 修改除法运算符</a>
+</li></ul>
+<p class=v><a href="your-first-python-program.html" rel=prev title="back to &#8220;Your First Python Program&#8221;"><span class=u>☜</span></a> <a href="comprehensions.html" rel=next title="onward to &#8220;Comprehensions&#8221;"><span class=u>☞</span></a>
+<p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

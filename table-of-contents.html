@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>目录 - 深入 Python 3</title>
+<link rel=stylesheet href="dip3.css">
+<style>
+h1:before{content:''}
+ol,ul{font-weight:bold}
+li ol{font-weight:normal}
+#porting-code-to-python-3-with-2to3,#special-method-names,#where-to-go-from-here{list-style:none;margin:0 0 0 -2em}
+#porting-code-to-python-3-with-2to3 > ol,#special-method-names > ol,#where-to-go-from-here > ol{margin:0;padding:0 0 0 4.5em}
+#porting-code-to-python-3-with-2to3:before{content:'A. \00a0 \00a0'}
+#special-method-names:before{content:'B. \00a0 \00a0'}
+#where-to-go-from-here:before{content:'C. \00a0 \00a0'}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8><input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=搜索></div></form>
+<p>当前位置： <a href="index.html">首页</a> <span class=u>‣</span> 深入 Python 3 <span class=u>‣</span>
+<h1>目录</h1><!-- toc -->
+
+<ol start=-1>
+<li id=whats-new><a href="whats-new.html">《深入 Python 3》中有何新内容</a>
+<ol>
+<li><a href="whats-new.html#divingin"><i>又名</i> “负号层”</a>
+</li></ol>
+</li><li id=installing-python><a href="installing-python.html">安装 Python</a>
+<ol>
+<li><a href="installing-python.html#divingin">深入</a>
+</li><li><a href="installing-python.html#which">哪个版本的 Python 适合您？</a>
+</li><li><a href="installing-python.html#windows">在 Microsoft Windows 上安装</a>
+</li><li><a href="installing-python.html#macosx">在 Mac OS X 上安装</a>
+</li><li><a href="installing-python.html#ubuntu">在 Ubuntu Linux 上安装</a>
+</li><li><a href="installing-python.html#other">在其它平台上安装</a>
+</li><li><a href="installing-python.html#idle">使用 Python Shell</a>
+</li><li><a href="installing-python.html#editors">Python 编辑器和集成开发环境</a>
+</li></ol>
+</li><li id=your-first-python-program><a href="your-first-python-program.html">第一份 Python 程序</a>
+<ol>
+<li><a href="your-first-python-program.html#divingin">深入</a>
+</li><li><a href="your-first-python-program.html#declaringfunctions">函数声明</a>
+<ol>
+<li><a href="your-first-python-program.html#optional-arguments">可选参数和命名参数</a>
+</li></ol>
+</li><li><a href="your-first-python-program.html#readability">撰写可读代码</a>
+<ol>
+<li><a href="your-first-python-program.html#docstrings">文档字符串</a>
+</li></ol>
+</li><li><a href="your-first-python-program.html#importsearchpath"><code>import</code> 搜索路径</a>
+</li><li><a href="your-first-python-program.html#everythingisanobject">一切都是对象</a>
+<ol>
+<li><a href="your-first-python-program.html#whatsanobject">什么是对象？</a>
+</li></ol>
+</li><li><a href="your-first-python-program.html#indentingcode">代码缩进</a>
+</li><li><a href="your-first-python-program.html#exceptions">例外</a>
+<ol>
+<li><a href="your-first-python-program.html#importerror">捕捉 Import 错误</a>
+</li></ol>
+</li><li><a href="your-first-python-program.html#nameerror">未绑定变量</a>
+</li><li><a href="your-first-python-program.html#case">一切都区分大小写</a>
+</li><li><a href="your-first-python-program.html#runningscripts">运行脚本</a>
+</li><li><a href="your-first-python-program.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=native-datatypes><a href="native-datatypes.html">内置数据类型</a>
+<ol>
+<li><a href="native-datatypes.html#divingin">深入</a>
+</li><li><a href="native-datatypes.html#booleans">布尔类型</a>
+</li><li><a href="native-datatypes.html#numbers">数值类型</a>
+<ol>
+<li><a href="native-datatypes.html#number-coercion">将整数强制转换为浮点数及反向转换</a>
+</li><li><a href="native-datatypes.html#common-numerical-operations">常用数值运算</a>
+</li><li><a href="native-datatypes.html#fractions">分数</a>
+</li><li><a href="native-datatypes.html#trig">三角函数</a>
+</li><li><a href="native-datatypes.html#numbers-in-a-boolean-context">布尔上下文环境中的数值</a>
+</li></ol>
+</li><li><a href="native-datatypes.html#lists">列表</a>
+<ol>
+<li><a href="native-datatypes.html#creatinglists">创建列表</a>
+</li><li><a href="native-datatypes.html#slicinglists">列表切片</a>
+</li><li><a href="native-datatypes.html#extendinglists">向列表中新增项</a>
+</li><li><a href="native-datatypes.html#searchinglists">在列表中检索值</a>
+</li><li><a href="native-datatypes.html#removingfromlists">从列表中删除元素</a>
+</li><li><a href="native-datatypes.html#popgoestheweasel">Removing Items From A List: Bonus Round</a>
+</li><li><a href="native-datatypes.html#lists-in-a-boolean-context">布尔上下文环境中的列表</a>
+</li></ol>
+</li><li><a href="native-datatypes.html#tuples">元组</a>
+<ol>
+<li><a href="native-datatypes.html#tuples-in-a-boolean-context">布尔上下文环境中的元组</a>
+</li><li><a href="native-datatypes.html#multivar">同时赋多个值</a>
+</li></ol>
+</li><li><a href="native-datatypes.html#sets">集合</a>
+<ol>
+<li><a href="native-datatypes.html#creating-a-set">创建集合</a>
+</li><li><a href="native-datatypes.html#modifying-sets">修改集合</a>
+</li><li><a href="native-datatypes.html#removing-from-sets">从集合中删除元素</a>
+</li><li><a href="native-datatypes.html#common-set-operations">常见集合操作</a>
+</li><li><a href="native-datatypes.html#sets-in-a-boolean-context">布尔上下文环境中的集合</a>
+</li></ol>
+</li><li><a href="native-datatypes.html#dictionaries">字典</a>
+<ol>
+<li><a href="native-datatypes.html#creating-dictionaries">创建字典</a>
+</li><li><a href="native-datatypes.html#modifying-dictionaries">修改字典</a>
+</li><li><a href="native-datatypes.html#mixed-value-dictionaries">混合值字典</a>
+</li><li><a href="native-datatypes.html#dictionaries-in-a-boolean-context">布尔上下文环境中的字典</a>
+</li></ol>
+</li><li><a href="native-datatypes.html#none"><code>None</code></a>
+<ol>
+<li><a href="native-datatypes.html#none-in-a-boolean-context">布尔上下文环境中的 <code>None</code></a>
+</li></ol>
+</li><li><a href="native-datatypes.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=comprehensions><a href="comprehensions.html">理解</a>
+<ol>
+<li><a href="comprehensions.html#divingin">深入</a>
+</li><li><a href="comprehensions.html#os">处理文件和目录</a>
+<ol>
+<li><a href="comprehensions.html#getcwd">当前工作目录</a>
+</li><li><a href="comprehensions.html#ospath">处理文件名和目录名</a>
+</li><li><a href="comprehensions.html#glob">列出目录</a>
+</li><li><a href="comprehensions.html#osstat">获取文件元数据</a>
+</li><li><a href="comprehensions.html#abspath">构造绝对路径</a>
+</li></ol>
+</li><li><a href="comprehensions.html#listcomprehension">列表解析</a>
+</li><li><a href="comprehensions.html#dictionarycomprehension">字典解析</a>
+<ol>
+<li><a href="comprehensions.html#stupiddicttricks">字典解析的其它趣事</a>
+</li></ol>
+</li><li><a href="comprehensions.html#setcomprehension">集合解析</a>
+</li><li><a href="comprehensions.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=strings><a href="strings.html">字符串</a>
+<ol>
+<li><a href="strings.html#boring-stuff">深入之前必须理解的繁琐内容</a>
+</li><li><a href="strings.html#one-ring-to-rule-them-all">Unicode</a>
+</li><li><a href="strings.html#divingin">深入</a>
+</li><li><a href="strings.html#formatting-strings">格式化字符串</a>
+<ol>
+<li><a href="strings.html#compound-field-names">符合字段名称</a>
+</li><li><a href="strings.html#format-specifiers">格式标识符</a>
+</li></ol>
+</li><li><a href="strings.html#common-string-methods">其它常见字符串方法</a>
+<ol>
+<li><a href="strings.html#slicingstrings">字符串切片</a>
+</li></ol>
+</li><li><a href="strings.html#byte-arrays">字符串与字节</a>
+</li><li><a href="strings.html#py-encoding">后记：Python 源代码的字符编码</a>
+</li><li><a href="strings.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=regular-expressions><a href="regular-expressions.html">正则表达式</a>
+<ol>
+<li><a href="regular-expressions.html#divingin">深入</a>
+</li><li><a href="regular-expressions.html#streetaddresses">案例研究：街道地址</a>
+</li><li><a href="regular-expressions.html#romannumerals">案例研究：罗马数字</a>
+<ol>
+<li><a href="regular-expressions.html#thousands">检查千位</a>
+</li><li><a href="regular-expressions.html#hundreds">检查百位</a>
+</li></ol>
+</li><li><a href="regular-expressions.html#nmsyntax">使用 <code>{n,m}</code> 语法</a>
+<ol>
+<li><a href="regular-expressions.html#tensandones">检查十位和个位</a>
+</li></ol>
+</li><li><a href="regular-expressions.html#verbosere">长正则表达式</a>
+</li><li><a href="regular-expressions.html#phonenumbers">案例研究：电话号码分析</a>
+</li><li><a href="regular-expressions.html#summary">摘要</a>
+</li></ol>
+</li><li id=generators><a href="generators.html">闭合 <i class=baa>与</i> 生成器</a>
+<ol>
+<li><a href="generators.html#divingin">深入</a>
+</li><li><a href="generators.html#i-know">我知道，让我们用正则表达式！</a>
+</li><li><a href="generators.html#a-list-of-functions">函数列表</a>
+</li><li><a href="generators.html#a-list-of-patterns">匹配模式列表</a>
+</li><li><a href="generators.html#a-file-of-patterns">匹配模式文件</a>
+</li><li><a href="generators.html#generators">生成器</a>
+<ol>
+<li><a href="generators.html#a-fibonacci-generator">斐波那奇生成器</a>
+</li><li><a href="generators.html#a-plural-rule-generator">复数规则生成器</a>
+</li></ol>
+</li><li><a href="generators.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=iterators><a href="iterators.html">类 <i class=baa>&amp;</i> 迭代器</a>
+<ol>
+<li><a href="iterators.html#divingin">深入</a>
+</li><li><a href="iterators.html#defining-classes">类的定义</a>
+<ol>
+<li><a href="iterators.html#init-method"><code>__init__()</code> 方法</a>
+</li></ol>
+</li><li><a href="iterators.html#instantiating-classes">类的实例化</a>
+</li><li><a href="iterators.html#instance-variables">实例变量</a>
+</li><li><a href="iterators.html#a-fibonacci-iterator">斐波那奇迭代器</a>
+</li><li><a href="iterators.html#a-plural-rule-iterator">多元规则迭代器</a>
+</li><li><a href="iterators.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=advanced-iterators><a href="advanced-iterators.html">高级迭代器</a>
+<ol>
+<li><a href="advanced-iterators.html#divingin">深入</a>
+</li><li><a href="advanced-iterators.html#re-findall">找到所有匹配模式</a>
+</li><li><a href="advanced-iterators.html#unique-items">在某序列中查找唯一项</a>
+</li><li><a href="advanced-iterators.html#assert">制作断言</a>
+</li><li><a href="advanced-iterators.html#generator-expressions">生成器表达式</a>
+</li><li><a href="advanced-iterators.html#permutations">计算置换 …… 懒人的办法！</a>
+</li><li><a href="advanced-iterators.html#more-itertools"><code>itertools</code> 模块中其它有趣的东西</a>
+</li><li><a href="advanced-iterators.html#string-translate">一种新的字符串操作</a>
+</li><li><a href="advanced-iterators.html#eval">将任意字符串转换为 Python 表达式</a>
+</li><li><a href="advanced-iterators.html#alphametics-finale">综述</a>
+</li><li><a href="advanced-iterators.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=unit-testing><a href="unit-testing.html">单元测试</a>
+<ol>
+<li><a href="unit-testing.html#divingin">（不要）深入</a>
+</li><li><a href="unit-testing.html#romantest1">一个简单的问题</a>
+</li><li><a href="unit-testing.html#romantest2">“Halt And Catch Fire”</a>
+</li><li><a href="unit-testing.html#romantest3">More Halting, More Fire</a>
+</li><li><a href="unit-testing.html#romantest4">还有一件事情……</a>
+</li><li><a href="unit-testing.html#romantest5">可喜的对称性</a>
+</li><li><a href="unit-testing.html#romantest6">更多错误输入</a>
+</li></ol>
+</li><li id=refactoring><a href="refactoring.html">重构</a>
+<ol>
+<li><a href="refactoring.html#divingin">深入</a>
+</li><li><a href="refactoring.html#changing-requirements">控制需求变化</a>
+</li><li><a href="refactoring.html#refactoring">重构</a>
+</li><li><a href="refactoring.html#summary">摘要</a>
+</li></ol>
+</li><li id=files><a href="files.html">文件</a>
+<ol>
+<li><a href="files.html#divingin">深入</a>
+</li><li><a href="files.html#reading">读取文本文件</a>
+<ol>
+<li><a href="files.html#encoding">Character Encoding Rears Its Ugly Head</a>
+</li><li><a href="files.html#file-objects">流对象</a>
+</li><li><a href="files.html#read">从文本文件读取数据</a>
+</li><li><a href="files.html#close">关闭文件</a>
+</li><li><a href="files.html#with">自动关闭文件</a>
+</li><li><a href="files.html#for">每次读取一行数据</a>
+</li></ol>
+</li><li><a href="files.html#writing">将数据写入文本文件</a>
+<ol>
+<li><a href="files.html#encoding-again">又见字符串编码</a>
+</li></ol>
+</li><li><a href="files.html#binary">二进制文件</a>
+</li><li><a href="files.html#file-like-objects">来自非文件源的流对象</a>
+<ol>
+<li><a href="files.html#gzip">处理压缩文件</a>
+</li></ol>
+</li><li><a href="files.html#stdio">标准输入、输出和错误</a>
+<ol>
+<li><a href="files.html#redirect">重定性标准输出</a>
+</li></ol>
+</li><li><a href="files.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=xml><a href="xml.html">XML</a>
+<ol>
+<li><a href="xml.html#divingin">深入</a>
+</li><li><a href="xml.html#xml-intro">XML 五分钟速成班</a>
+</li><li><a href="xml.html#xml-structure">The Structure Of An Atom Feed</a>
+</li><li><a href="xml.html#xml-parse">解析 XML</a>
+<ol>
+<li><a href="xml.html#xml-elements">元素是列表</a>
+</li><li><a href="xml.html#xml-attributes">属性是字典</a>
+</li></ol>
+</li><li><a href="xml.html#xml-find">在 XML 内搜索节点</a>
+</li><li><a href="xml.html#xml-lxml">进一步了解 lxml</a>
+</li><li><a href="xml.html#xml-generate">生成 XML</a>
+</li><li><a href="xml.html#xml-custom-parser">解析残缺的 XML</a>
+</li><li><a href="xml.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=serializing><a href="serializing.html">Python 对象序列化</a>
+<ol>
+<li><a href="serializing.html#divingin">深入</a>
+<ol>
+<li><a href="serializing.html#administrivia">关于本章示例的简要注意事项</a>
+</li></ol>
+</li><li><a href="serializing.html#dump">将数据保存为 Pickle 文件</a>
+</li><li><a href="serializing.html#load">从 Pickle 文件中载入数据</a>
+</li><li><a href="serializing.html#dumps">无文件序列化</a>
+</li><li><a href="serializing.html#protocol-versions">Bytes 和 Strings 再次抬头</a>
+</li><li><a href="serializing.html#debugging">调试 Pickle 文件</a>
+</li><li><a href="serializing.html#json">将 Python 对象序列化以供其它语言读取</a>
+</li><li><a href="serializing.html#json-dump">将数据保存为 <abbr>JSON</abbr> 文件</a>
+</li><li><a href="serializing.html#json-types">将 Python 数据类型映射为 <abbr>JSON</abbr></a>
+</li><li><a href="serializing.html#json-unknown-types">将 <abbr>JSON</abbr> 不支持的数据类型序列化</a>
+</li><li><a href="serializing.html#json-load">从 <abbr>JSON</abbr> 文件中载入数据</a>
+</li><li><a href="serializing.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=http-web-services><a href="http-web-services.html">HTTP Web 服务</a>
+<ol>
+<li><a href="http-web-services.html#divingin">深入</a>
+</li><li><a href="http-web-services.html#http-features">HTTP 特性</a>
+<ol>
+<li><a href="http-web-services.html#caching">缓存</a>
+</li><li><a href="http-web-services.html#last-modified">Last-Modified 检查</a>
+</li><li><a href="http-web-services.html#etags">ETag</a>
+</li><li><a href="http-web-services.html#compression">压缩</a>
+</li><li><a href="http-web-services.html#redirects">重定向</a>
+</li></ol>
+</li><li><a href="http-web-services.html#dont-try-this-at-home">如果绕过 HTTP 获取数据</a>
+</li><li><a href="http-web-services.html#whats-on-the-wire">线路上有什么？</a>
+</li><li><a href="http-web-services.html#introducing-httplib2"><code>httplib2</code> 介绍</a>
+<ol>
+<li><a href="http-web-services.html#why-bytes">轻微离题：解释为什么 <code>httplib2</code> 返回 Bytes 而不是 Strings</a>
+</li><li><a href="http-web-services.html#httplib2-caching"><code>httplib2</code> 如何处理缓存</a>
+</li><li><a href="http-web-services.html#httplib2-etags"><code>httplib2</code> 如何处理 <code>Last-Modified</code> 和 <code>ETag</code> 头部信息</a>
+</li><li><a href="http-web-services.html#httplib2-compression"><code>http2lib</code> 如何处理压缩</a>
+</li><li><a href="http-web-services.html#httplib2-redirects"><code>httplib2</code> 如何处理重定向</a>
+</li></ol>
+</li><li><a href="http-web-services.html#beyond-get">超越 HTTP GET</a>
+</li><li><a href="http-web-services.html#beyond-post">超越 HTTP POST</a>
+</li><li><a href="http-web-services.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=case-study-porting-chardet-to-python-3><a href="case-study-porting-chardet-to-python-3.html">案例研究：将 <code>chardet</code> 移植到 Python 3</a>
+<ol>
+<li><a href="case-study-porting-chardet-to-python-3.html#divingin">深入</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#faq.what">何为字符编码自动检测？</a>
+<ol>
+<li><a href="case-study-porting-chardet-to-python-3.html#faq.impossible">这难道不可能？</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#faq.who">存在这样的算法吗？</a>
+</li></ol>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#divingin2"><code>chardet</code> 模块介绍</a>
+<ol>
+<li><a href="case-study-porting-chardet-to-python-3.html#how.bom">带有 <abbr>BOM</abbr> 的 <abbr>UTF-n</abbr> </a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#how.esc">转义编码</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#how.mb">多字节编码</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#how.sb">单字节编码</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#how.windows1252"><code>windows-1252</code></a>
+</li></ol>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#running2to3">运行 <code>2to3</code></a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#multifile-modules">唠叨两句 Multi-File 模块</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#manual">修正 <code>2to3</code> 未实现的功能</a>
+<ol>
+<li><a href="case-study-porting-chardet-to-python-3.html#falseisinvalidsyntax"><code>False</code> 是错误的语法</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#nomodulenamedconstants">没有叫做 <code>constants</code> 的模块</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#namefileisnotdefined">名称 <var>'file'</var> 未定义</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#cantuseastringpattern">不能对类字节对象使用字符串匹配</a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#cantconvertbytesobject">不能隐式地将 <code>'bytes'</code> 对象转换为 <code>str</code> </a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#unsupportedoperandtypeforplus">不支持的操作类型 +： <code>'int'</code> 和 <code>'bytes'</code></a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#ordexpectedstring"><code>ord()</code> 期待长度为 1 的字符串，但遇到了 <code>int</code> </a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#unorderabletypes">不可排序的类型： <code>int()</code> &gt;= <code>str()</code></a>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#reduceisnotdefined">全局名称 <code>'reduce'</code> 未定义</a>
+</li></ol>
+</li><li><a href="case-study-porting-chardet-to-python-3.html#summary">摘要</a>
+</li></ol>
+</li><li id=packaging><a href="packaging.html">Python 类库打包</a>
+<ol>
+<li><a href="packaging.html#divingin">深入</a>
+</li><li><a href="packaging.html#cantdo">Distutils 无法为你完成的工作</a>
+</li><li><a href="packaging.html#structure">目录结构</a>
+</li><li><a href="packaging.html#setuppy">编写安装脚本</a>
+</li><li><a href="packaging.html#trove">将包分类</a>
+<ol>
+<li><a href="packaging.html#trove-examples">包分类的优秀范例</a>
+</li></ol>
+</li><li><a href="packaging.html#manifest">通过清单指定附加文件</a>
+</li><li><a href="packaging.html#check">检查安装脚本的错误</a>
+</li><li><a href="packaging.html#sdist">创建发布源</a>
+</li><li><a href="packaging.html#bdist">创建图形化安装程序</a>
+<ol>
+<li><a href="packaging.html#linux">为其它操作系统编译安装包</a>
+</li></ol>
+</li><li><a href="packaging.html#pypi">将软件添加到 Python 安装包列表</a>
+</li><li><a href="packaging.html#future">Python 打包工具的一些可能的将来</a>
+</li><li><a href="packaging.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=porting-code-to-python-3-with-2to3><a href="porting-code-to-python-3-with-2to3.html">使用 <code>2to3</code> 将代码移植到 Python 3</a>
+<ol>
+<li><a href="porting-code-to-python-3-with-2to3.html#divingin">深入</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#print"><code>print</code> 语句</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#unicodeliteral">Unicode 字符串文字</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#unicode"><code>unicode()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#long"><code>long</code> 数据类型</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#ne">&lt;&gt; 比较</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#has_key"><code>has_key()</code> 字典方法</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#dict">返回列表的字典方法</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#imports">被重命名或重组的模块 reorganized</a>
+<ol>
+<li><a href="porting-code-to-python-3-with-2to3.html#http"><code>http</code></a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#urllib"><code>urllib</code></a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#dbm"><code>dbm</code></a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#xmlrpc"><code>xmlrpc</code></a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#othermodules">其它模块</a>
+</li></ol>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#import">包内的相对 imports </a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#next"><code>next()</code> 迭代器方法</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#filter"><code>filter()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#map"><code>map()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#reduce"><code>reduce()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#apply"><code>apply()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#intern"><code>intern()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#exec"><code>exec</code> 语句</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#execfile"><code>execfile</code> 语句</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#repr"><code>repr</code> literals (backticks)</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#except"><code>try...except</code> 语句</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#raise"><code>raise</code> 语句</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#throw"><code>throw</code> method on generators</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#xrange"><code>xrange()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#raw_input"><code>raw_input()</code> 和 <code>input()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#funcattrs"><code>func_*</code> 函数属性</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#xreadlines"><code>xreadlines()</code> I/O 方法</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#tuple_params"><code>lambda</code> 函数接受元组而不是多参数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#methodattrs">特别方法属性</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#nonzero"><code>__nonzero__</code> 特别方法</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#numliterals">八进制数字</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#renames"><code>sys.maxint</code></a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#callable"><code>callable()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#zip"><code>zip()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#standarderror"><code>StandardError</code> 例外</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#types"><code>types</code> 模块常量</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#isinstance"><code>isinstance()</code> 全局函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#basestring"><code>basestring</code> 数据类型</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#itertools"><code>itertools</code> 模块</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#sys_exc"><code>sys.exc_type</code>、 <code>sys.exc_value</code>、<code>sys.exc_traceback</code></a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#paren">List comprehensions over tuples</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#getcwdu"><code>os.getcwdu()</code> 函数</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#metaclass">元类</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#nitpick">风格问题</a>
+<ol>
+<li><a href="porting-code-to-python-3-with-2to3.html#set_literal"><code>set()</code> literals （显式）</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#buffer"><code>buffer()</code> 全局函数（显式）</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#wscomma">包围逗号的空白（显式）</a>
+</li><li><a href="porting-code-to-python-3-with-2to3.html#idioms">常见习惯用法（显式）</a>
+</li></ol>
+</li></ol>
+</li><li id=special-method-names><a href="special-method-names.html">特殊方法名称</a>
+<ol>
+<li><a href="special-method-names.html#divingin">深入</a>
+</li><li><a href="special-method-names.html#basics">基础知识</a>
+</li><li><a href="special-method-names.html#acts-like-iterator">行为方式与迭代器类似的类</a>
+</li><li><a href="special-method-names.html#computed-attributes">计算属性</a>
+</li><li><a href="special-method-names.html#acts-like-function">行为方式与函数类似的类</a>
+</li><li><a href="special-method-names.html#acts-like-list">行为方式与序列类似的类</a>
+</li><li><a href="special-method-names.html#acts-like-dict">行为方式与字典类似的类</a>
+</li><li><a href="special-method-names.html#acts-like-number">行为方式与数值类似的类</a>
+</li><li><a href="special-method-names.html#rich-comparisons">可比较的类</a>
+</li><li><a href="special-method-names.html#pickle">可序列化的类</a>
+</li><li><a href="special-method-names.html#context-managers">可在 <code>with</code> 语块中使用的类</a>
+</li><li><a href="special-method-names.html#esoterica">真正神奇的东西</a>
+</li><li><a href="special-method-names.html#furtherreading">深入阅读</a>
+</li></ol>
+</li><li id=where-to-go-from-here><a href="where-to-go-from-here.html">接下来阅读什么？</a>
+<ol>
+<li><a href="where-to-go-from-here.html#things-to-read">要阅读的对象</a>
+</li><li><a href="where-to-go-from-here.html#code">到哪里找与 Python 3-兼容的代码</a>
+</li></ol>
+</li></ol><!-- /toc -->
+
+<p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->

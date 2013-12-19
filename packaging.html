@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>打包 Python 类库 - Dive Into Python 3</title><!--[if IE]><script src=j/html5.js></script><![endif]-->
+
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 16}
+mark{display:inline}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=root value=搜索></div></form>
+<p>当前位置: <a href="index.html">首页</a> <span class=u>‣</span> <a href="table-of-contents.html#packaging">深入 Python 3</a> <span class=u>‣</span>
+<p id=level>难度级别： <span class=u title=advanced>♦♦♦♦♢</span>
+
+<h1>打包 Python 类库</h1>
+<blockquote class=q>
+<p><span class=u>❝</span> You’ll find the shame is like the pain; you only feel it once. <span class=u>❞</span><br>— Marquise de Merteuil, <a href=http://www.imdb.com/title/tt0094947/quotes><cite>Dangerous Liaisons</cite></a>
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>深入</h2>
+<p class=f>读到这里，你可能是想要发布一个 Python 脚本，库，框架，或者应用程序。太棒了！世界需要更多的Python代码。<p>Python 3 自带一个名为 Distutils 的打包框架。Distutils 包含许多功能：构建工具（为你所准备），安装工具（为用户所准备），数据包格式（为搜索引擎所准备）等。它集成了<a href=http://pypi.python.org/> Python 安装包索引</a>（“PyPI”），一个开源 Python 类库的中央资料库。<p>这些 Distutils 的不同功能以<i>setup script</i>为中心，一般被命名为 <code>setup.py</code>。事实上，你已经在本书中见过一些 Distutils 安装脚本。在 <a href="http-web-services.html#introducing-httplib2">《HTTP Web Services》</a> 一章中，我们使用 Distutils 来安装 <code>httplib2</code> ，而在<a href="case-study-porting-chardet-to-python-3.html">《案例研究：将 <code>chardet</code> 移植到 Python 3》</a>一章中，我们用它安装 <code>chardet</code> 。<p>在本章中，你将学习 <code>chardet</code> 和 <code>httplib2</code> 的安装脚本如何工作，并将逐步（学会）发布自己的 Python 软件。<pre class=pp><code># chardet's setup.py
+from distutils.core import setup
+setup(
+    name = "chardet",
+    packages = ["chardet"],
+    version = "1.0.2",
+    description = "Universal encoding detector",
+    author = "Mark Pilgrim",
+    author_email = "mark@diveintomark.org",
+    url = "http://chardet.feedparser.org/",
+    download_url = "http://chardet.feedparser.org/download/python3-chardet-1.0.1.tgz",
+    keywords = ["encoding", "i18n", "xml"],
+    classifiers = [
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Development Status :: 4 - Beta",
+        "Environment :: Other Environment",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+        "Operating System :: OS Independent",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Text Processing :: Linguistic",
+        ],
+    long_description = """\
+Universal character encoding detector
+-------------------------------------
+
+Detects
+ - ASCII, UTF-8, UTF-16 (2 variants), UTF-32 (4 variants)
+ - Big5, GB2312, EUC-TW, HZ-GB-2312, ISO-2022-CN (Traditional and Simplified Chinese)
+ - EUC-JP, SHIFT_JIS, ISO-2022-JP (Japanese)
+ - EUC-KR, ISO-2022-KR (Korean)
+ - KOI8-R, MacCyrillic, IBM855, IBM866, ISO-8859-5, windows-1251 (Cyrillic)
+ - ISO-8859-2, windows-1250 (Hungarian)
+ - ISO-8859-5, windows-1251 (Bulgarian)
+ - windows-1252 (English)
+ - ISO-8859-7, windows-1253 (Greek)
+ - ISO-8859-8, windows-1255 (Visual and Logical Hebrew)
+ - TIS-620 (Thai)
+
+This version requires Python 3 or later; a Python 2 version is available separately.
+"""
+)</code></pre>
+
+<blockquote class=note>
+<p><span class=u>☞</span><code>chardet</code> 和 <code>httplib2</code> 都是开源的，但这并没有要求你在特定的许可下发布你自己的 Python 库。本章所描述的过程对任何 Python软件都适用，无论它使用什么许可证</blockquote>
+
+<p class=a>⁂
+
+<h2 id=cantdo>Distutils 无法为你完成的工作</h2>
+
+<p>发布第一个 Python 包是一项艰巨的过程。（发布第二个相对容易一些。）Distutils 试图尽可能多的自动完成一些工作，但是仍然有一些事情你必须自己做。<ul>
+<li><b>选择一种许可协议 。</b>. 这是一个复杂的话题，充满了派别斗争和危险。如果想将软件发布为开源软件，我冒昧地提出五点忠告：<ol>
+<li>不要撰写自己的许可证。</li><li>不要撰写自己的许可证。</li><li>不要撰写自己的许可证。</li><li>许可证并不一定必须是 <abbr>GPL</abbr> ，但它需要与 <abbr>GPL</abbr> 兼容 。</li><li>不要撰写自己的许可证。</li></ol>
+</li><li>使用 PyPI 分类系统<b>对软件进行分类</b>。我将在本章后面的部分解释这是什么意思。</li><li><b>写“自述”(read me)文件 。</b>不要在这一点吝惜精力投入。至少，它应该让你的用户了解你的软件可以干什么并知道如何安装它。</li></ul>
+
+<p class=a>⁂
+
+<h2 id=structure>目录结构</h2>
+
+<p>要开始打包 Python 软件，必须先将文件和目录安排好。<code> httplib2</code> 的目录树如下：<pre class=screen>
+<a>httplib2/                 <span class=u>①</span></a>
+|
+<a>+--README.txt             <span class=u>②</span></a>
+|
+<a>+--setup.py               <span class=u>③</span></a>
+|
+<a>+--httplib2/              <span class=u>④</span></a>
+   |
+   +--__init__.py
+   |
+   +--iri2uri.py</pre>
+<ol>
+<li>创建根目录来保存所有的目录和文件。将其以 Python 模块的名字命名。</li><li>为了适应 Windows 用户，"自述"文件应包含 <code>.txt</code> 扩展名，而且它应该使用 Windows 风格回车符。不能仅仅因为<em>你</em>使用了一个优秀的文本编辑器，它从命令行运行并包括它自己的宏语言，而需要让你的用户为难。（你的用户使用记事本。虽然可悲，但却是事实。）即使你工作在 Linux 或 Mac OS X 环境下，优秀的文本编辑器毫无疑问地会有一个选项，允许将文件以 Windows 风格回车符来保存。</li><li>Distutils 安装脚本应命名为 setup.py，除非你有一个很好的理由不这样做。但你并没有一个很好的理由不这样做。</li><li>如果你的Python软件只包含一个单一的 <code>.py</code> 文件，你应该把它和"自述"文件以及安装脚本放到根目录下。但 <code>httplib2</code> 并不是单一的 <code>.py</code> 文件，它是一个<a href="case-study-porting-chardet-to-python-3.html#multifile-modules">多文件模块</a> 。但是没关系！只需在根目录下放置 <code>httplib2</code> 目录，这样在 <code>httplib2/</code> 根目录下就会有一个包含 <code>__init__.py</code> 文件的 <code>httplib2/</code> 目录。这并不是一个难题，事实上，它可以简化打包过程。</li></ol>
+
+<p><code>chardet</code> 目录看起来有些不同。像 <code>httplib2</code> 一样，它是一个<a href="case-study-porting-chardet-to-python-3.html#multifile-modules">多文件模块</a> ，所以在 <code>chardet/</code> 根目录下有一个 <code>chardet/</code> 目录。除了 <code>README.txt</code> 文件，在 <code>docs/</code> 目录下， <code>chardet</code> 还有 <abbr>HTML</abbr> ——格式化文档。该 <code>docs/</code> 目录包含多个 <code>.html</code> 和<code>.css</code> 文件和 <code>images/</code> 子目录，其中包含几个 <code>.png</code> 和 <code>.gif</code> 文件。（稍后你会发现，这将是很重要的。）此外，对于 <abbr>(L)GPL</abbr> 许可的软件，它包含一个单独的 <code>COPYING.txt</code> 文件，其中包含 <abbr>LGPL</abbr> 许可证的完整内容。<pre class=nd><code>
+chardet/
+|
++--COPYING.txt
+|
++--setup.py
+|
++--README.txt
+|
++--docs/
+|  |
+|  +--index.html
+|  |
+|  +--usage.html
+|  |
+|  +--images/ ...
+|
++--chardet/
+   |
+   +--__init__.py
+   |
+   +--big5freq.py
+   |
+   +--...
+</code></pre>
+
+<p class=a>⁂
+
+<h2 id=setuppy>编写安装脚本</h2>
+
+<p>Distutils 安装脚本是一份 Python 脚本。从理论上讲，它可以做任何 Python 可以做的事情。在实践中，安装脚本应该做尽可能少的事情并尽可能按标准的方式做。安装脚本应该简单。安装过程越奇异，错误报告也会更奇特。<p>每个 Distutils 安装脚本的第一行总是相同的：<pre class='nd pp'><code>from distutils.core import setup</code></pre>
+
+<p>该行导入 <code>setup()</code> 函数，这是 Distutils 的主入口点。95％ 的 Distutils 安装脚本仅由一个对 <code>setup()</code> 方法的调用组成。（这完全是我臆造的统计，但如果你的 Distutils 安装脚本所做的比仅仅调用 <code>setup()</code> 方法更多，你会有一个好的理由。你有一个好的理由吗？我并不这么认为。）<p><code>setup()</code> 方法<a href=http://docs.python.org/3.1/distutils/apiref.html#distutils.core.setup>可以有几十个参数</a> 。为了使每个参与者都能清楚，你必须对每个参数使用<a href="your-first-python-program.html#optional-arguments">命名变量 </a>。这不只是一项约定，还是一项硬性要求。如果尝试以非命名变量调用 <code>setup()</code> 方法，安装脚本会崩溃。<p>下面的命名变量是必需的：<ul>
+<li><b>name</b>，安装包的名称。</li><li><b>version</b>，安装包的版本。</li><li><b>author</b>，您的全名。</li><li><b>author_email</b>，您的邮件地址。</li><li><b>url</b>，项目主页。如果没有一个单独的项目网站，这里可以是安装包的 <a href=http://pypi.python.org/>PyPI</a> 的页面地址。</li></ul>
+
+<p>虽然以下内容不是必须的，但我也建议你把他们包括在你的安装脚本里：<ul>
+<li><b>description</b>，在线的项目摘要。</li><li><b>long_description</b>，以 <a href=http://docutils.sourceforge.net/rst.html>reStructuredText format</a> 格式编写的多行字符串。<a href=http://pypi.python.org/>PyPI</a> 将其转换为 <abbr>HTML</abbr> 并在安装包中显示它。</li><li><b>classifiers</b>，下一节中将讲述的特别格式化字符串。</li></ul>
+
+<blockquote class=note>
+<p><span class=u>☞</span>安装脚本中用到的元数据具体定义在 <a href=http://www.python.org/dev/peps/pep-0314/><abbr>PEP</abbr> 314</a> 中。</blockquote>
+
+<p>现在让我们看看 <code>chardet</code> 的安装脚本。它包含所有这些要求的和建议的参数，还有一个我没有提到： <code>packages</code> 。<pre class='nd pp'><code>from distutils.core import setup
+setup(
+    name = 'chardet',
+    <mark>packages = ['chardet']</mark>,
+    version = '1.0.2',
+    description = 'Universal encoding detector',
+    author='Mark Pilgrim',
+    ...
+)</code></pre>
+
+<p>在分发过程中，这个 <code>packages</code> 参数凸显出一个不幸的词汇表重叠。我们一直在谈论正在构建的“安装包”（并将潜在地出现在Python包索引中）。但是，这并不是 <code>packages</code> 参数所指代的。它指代的是 <code>chardet</code> 模块是一个<a href="case-study-porting-chardet-to-python-3.html#multifile-modules">多文件模块</a>这一事实 ，有时也被称为...“包”。<code>packages</code> 参数告诉 Distutils 去包含<code>chardet/</code> 目录，它的 <code>__init__.py</code> 文件，以及所有其他构成 <code>chardet</code> 模块的 <code>.py</code> 文件。这还算比较重要；如果你忘记了包含实际的代码，那么所有这些关于文件和元数据的愉快交谈都将是无关紧要的。<p class=a>⁂
+
+<h2 id=trove>将包分类</h2>
+
+<p>Python 包索引（“PyPI”）包含成千上万的 Python 库。正确的分类数据将让人们更容易找到你的包。PyPI 让你<a href='http://pypi.python.org/pypi?:action=browse'>以类别的形式浏览包 </a>。你甚至可以选择多个类别来缩小搜索范围。分类不是你可以忽略的不可见的元数据！<p>你可以通过传递 <code>classifiers</code> 参数给 Distutils 的 <code>setup()</code> 方法来给你的软件分类。<code>classifers</code> 参数是一个字符串列表。这些字符串<em>不是</em>任意形式的。所有的分类字符串应该来自 <a href='http://pypi.python.org/pypi?:action=list_classifiers'>PyPI 上的列表</a> 。<p>分类是可选的。你可以写一个不包含任何分类的 Distutils 安装脚本。<strong>不要这样做。</strong> 你应该<em>总是</em>至少包括以下分类：<ul>
+<li>&lt;b0编程语言</b>. 特别的，你应该包括<code>"Programming Language :: Python"</code>和"<code>Programming Language :: Python :: 3</code>"。如果你不包括这些，你的包将不会出现在<a href='http://pypi.python.org/pypi?:action=browse&amp;c=533&amp;show=all'>兼容Python 3的库</a>列表中，它链接自每个<code>pypi.python.org</code>单页的侧边拦。</li><li><b>许可证</b>. 当我评价一个第三方库的时候，这<em>绝对是我寻找的第一个</em>东西。不要让我（花太多时间）寻找这个重要的信息。不要包含一个以上的许可证分类，除非你的软件明确地在多许可证下分发。（不要在多许可证下发布你的软件，除非你不得不这样做。不要强迫别人这样做。许可证已经足够让人头痛了，不要使情况变得更糟。）</li><li><b>操作系统0</b>. 如果你的软件只能运行于Windows（或Mac OS X或Linux），我想要尽早知道。如果你的软件不包含任何特定平台的代码并可以在任何平台运行，请使用分类 <code>"Operating System :: OS Independent"</code>。<code>多操作系统</code> 分类仅在你的软件在不同平台需要特别支持时使用。（这并不常见。）</li></ul>
+
+<p>我还建议你包括以下分类：<ul>
+<li><b>开发状态</b>. 你的软件品质适合beta发布么？适合Alpha发布么？还是Pre-alpha？在这里面选择一个吧。要诚实点。</li><li><b>目标用户</b>. 谁会下载你的软件？最常见的选项包括： <code>Developers</code>、 <code>End Users/Desktop</code>、 <code>Science/Research</code> 和 <code>System Administrators</code>。</li><li><b>框架</b>. 如果你的软件是像 <a href=http://www.djangoproject.com/>Django</a> 或 <a href=http://www.zope.org/>Zope</a> 这样较大的框架的插件，请包含适当的 <code>Framework</code> 分类。如果不是，请忽略它。</li><li><b>主题</b>. 有 <a href='http://pypi.python.org/pypi?:action=list_classifiers'>大量的主题</a> 可供选择 ，选择所有的适用项。</li></ul>
+
+<h3 id=trove-examples>包分类的优秀范例</h3>
+
+<p>作为例子，下面是 <a href=http://pypi.python.org/pypi/Django/>Django</a> 的分类。它是一个运行在 Web 服务器上的，可用于生产环境的，跨平台的，使用 <abbr>BSD</abbr> 授权的 Web 应用程序框架。（Django还没有与Python 3兼容，因此， 并没有列出 <code>Programming Language :: Python :: 3</code> 分类。）<pre><code>Programming Language :: Python
+License :: OSI Approved :: BSD License
+Operating System :: OS Independent
+Development Status :: 5 - Production/Stable
+Environment :: Web Environment
+Framework :: Django
+Intended Audience :: Developers
+Topic :: Internet :: WWW/HTTP
+Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Topic :: Internet :: WWW/HTTP :: WSGI
+Topic :: Software Development :: Libraries :: Python Modules</code></pre>
+
+<p>下面是 <a href=http://pypi.python.org/pypi/chardet><code>chardet</code></a> 的分类。它就是在<a href="case-study-porting-chardet-to-python-3.html">《案例研究：将 <code>chardet</code> 移植到 Python 3</a>》一章提到的字符编码检测库。<code>chardet</code> 是高质量的，跨平台的，与 Python 3 兼容的， <abbr>LGPL</abbr> 许可的库。它旨在让开发者将其集成进自己的产品。<pre><code>Programming Language :: Python
+Programming Language :: Python :: 3
+License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Operating System :: OS Independent
+Development Status :: 4 - Beta
+Environment :: Other Environment
+Intended Audience :: Developers
+Topic :: Text Processing :: Linguistic
+Topic :: Software Development :: Libraries :: Python Modules</code></pre>
+
+<p>以下是在本章开头我提到的 <a href=http://pypi.python.org/pypi/httplib2><code>httplib2</code></a> 模块——<abbr>HTTP</abbr> 的分类。<code>httplib2</code> 是一个测试品质的，跨平台的，<abbr>MIT</abbr> 许可证授权的，为 Python 开发者准备的模块。<pre><code>Programming Language :: Python
+Programming Language :: Python :: 3
+License :: OSI Approved :: MIT License
+Operating System :: OS Independent
+Development Status :: 4 - Beta
+Environment :: Web Environment
+Intended Audience :: Developers
+Topic :: Internet :: WWW/HTTP
+Topic :: Software Development :: Libraries :: Python Modules</code></pre>
+
+<h2 id=manifest>通过清单指定附加文件</h2>
+
+<p>默认情况下，Distutils 将把下列文件包含在你的发布包中：<ul>
+<li><code>README.txt</code>
+</li><li><code>setup.py</code>
+</li><li>由列在 <code>packages</code> 参数中的多模块文件所需的 <code>.py</code> 文件</li><li>在 <code>py_modules</code> 参数中列出的单独 <code>.py</code> 文件</li></ul>
+
+<p>这将覆盖<a href="packaging.html#structure"><code>httplib2</code> 项目的所有文件</a>。但对于 <code>chardet</code> 项目，我们还希望包含 <code>COPYING.txt</code> 许可文件和含有图像与 <abbr>HTML</abbr> 文件的整个 <code>docs/</code> 目录。要让 Distutils 在构建 <code>chardet</code> 发布包时包含这些额外的文件和目录，你需要创建一个 <i>manifest file</i> 。<p>清单文件是一个名为 <code>MANIFEST.in</code> 的文本文件。将它放置在项目的根目录下，同 <code>README.txt</code> 和 <code>setup.py</code> 一起。清单文件并<em>不是</em> Python 脚本，它是文本文件，其中包含一系列 Distutils 定义格式的命令。清单命令允许你包含或排除特定的文件和目录。<p>以下是 <code>chardet</code> 项目的全部清单文件：<pre class=nd><code><a>include COPYING.txt                                <span class=u>①</span></a>
+<a>recursive-include docs *.html *.css *.png *.gif    <span class=u>②</span></a></code></pre>
+<ol>
+<li>第一行是不言自明的：包含项目根目录的 <code>COPYING.txt</code> 文件。</li><li>第二行有些复杂。<code>recursive-include</code> 命令需要一个目录名和至少一个文件名。文件名并不限于特定的文件，可以包含通配符。这行的意思是“看到在项目根目录下的 <code>docs/</code> 目录了吗？在该目录下（递归地）查找 <code>.html</code>、 <code>.css</code>、 <code>.png</code> 和 <code>.gif</code> 文件。我希望将他们都包含在我的发布包中。”</li></ol>
+
+<p>所有的清单命令都将保持你在项目目录中所设置的目录结构。<code>recursive-include</code> 命令不会将一组 <code>.html</code> 和 <code>.png</code> 文件放置在你的发布包的根目录下。它将保持现有的 <code>docs/</code> 目录结构，但只包含该目录内匹配给定的通配符的文件。（之前我并没有提到， <code>chardet</code> 的文档实际上由 <abbr>XML</abbr> 语言写成，并由一个单独的脚本转换为 <abbr>HTML</abbr> 。我不想在发布包中包含<abbr>XML</abbr> 文件，只包含 <abbr>HTML</abbr> 文件和图像。)<blockquote class=note>
+<p><span class=u>☞</span>清单文件有自己独特的格式。详见 <a href=http://docs.python.org/3.1/distutils/sourcedist.html#manifest>分发指定文件 </a>和<a href=http://docs.python.org/3.1/distutils/commandref.html#sdist-cmd>清单文件命令</a>。</blockquote>
+
+<p>重申：仅仅在你需要包含一些 Distutils 不会默认包含的文件时才创建清单文件。I如果你确实需要一个清单文件，它应该只包含那些Distutils不会自动包含的文件和目录。<h2 id=check>检查安装脚本的错误</h2>
+
+<p>有许多事情需要留意。Distutils带有一个内置的验证命令，它检查是否所有必须的元数据都体现在你的安装脚本中。例如，如果你忘记包含 <code>version</code> 参数，Distutils 会提醒你。<pre class=screen>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd>c:\python31\python.exe setup.py check</kbd>
+<samp>running check
+warning: check: missing required meta-data: version</samp></pre>
+
+<p>当你包含了 <code>version</code> 参数（和所有其他所需的元数据）时， <code>check</code> 命令将如下所示：<pre class=screen>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd>c:\python31\python.exe setup.py check</kbd>
+<samp>running check</samp></pre>
+
+<p class=a>⁂
+
+<h2 id=sdist>创建发布源</h2>
+
+<p>Distutils 支持构建多种类型的发布包。至少，你应该建立一个“源代码分发”，其中包含源代码，你的Distutils 安装脚本，“read me ”文件和<a href="packaging.html#manifest">你想要包含其他文件</a> 。为了建立一个源代码分发，传递 <code>sdist</code> 命令给你的 Distutils 安装脚本。<pre class=screen>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd><mark>c:\python31\python.exe setup.py sdist</mark></kbd>
+<samp>running sdist
+running check
+reading manifest template 'MANIFEST.in'
+writing manifest file 'MANIFEST'
+creating chardet-1.0.2
+creating chardet-1.0.2\chardet
+creating chardet-1.0.2\docs
+creating chardet-1.0.2\docs\images
+copying files to chardet-1.0.2...
+copying COPYING -&gt; chardet-1.0.2
+copying README.txt -&gt; chardet-1.0.2
+copying setup.py -&gt; chardet-1.0.2
+copying chardet\__init__.py -&gt; chardet-1.0.2\chardet
+copying chardet\big5freq.py -&gt; chardet-1.0.2\chardet
+...
+copying chardet\universaldetector.py -&gt; chardet-1.0.2\chardet
+copying chardet\utf8prober.py -&gt; chardet-1.0.2\chardet
+copying docs\faq.html -&gt; chardet-1.0.2\docs
+copying docs\history.html -&gt; chardet-1.0.2\docs
+copying docs\how-it-works.html -&gt; chardet-1.0.2\docs
+copying docs\index.html -&gt; chardet-1.0.2\docs
+copying docs\license.html -&gt; chardet-1.0.2\docs
+copying docs\supported-encodings.html -&gt; chardet-1.0.2\docs
+copying docs\usage.html -&gt; chardet-1.0.2\docs
+copying docs\images\caution.png -&gt; chardet-1.0.2\docs\images
+copying docs\images\important.png -&gt; chardet-1.0.2\docs\images
+copying docs\images\note.png -&gt; chardet-1.0.2\docs\images
+copying docs\images\permalink.gif -&gt; chardet-1.0.2\docs\images
+copying docs\images\tip.png -&gt; chardet-1.0.2\docs\images
+copying docs\images\warning.png -&gt; chardet-1.0.2\docs\images
+creating dist
+creating 'dist\chardet-1.0.2.zip' and adding 'chardet-1.0.2' to it
+adding 'chardet-1.0.2\COPYING'
+adding 'chardet-1.0.2\PKG-INFO'
+adding 'chardet-1.0.2\README.txt'
+adding 'chardet-1.0.2\setup.py'
+adding 'chardet-1.0.2\chardet\big5freq.py'
+adding 'chardet-1.0.2\chardet\big5prober.py'
+...
+adding 'chardet-1.0.2\chardet\universaldetector.py'
+adding 'chardet-1.0.2\chardet\utf8prober.py'
+adding 'chardet-1.0.2\chardet\__init__.py'
+adding 'chardet-1.0.2\docs\faq.html'
+adding 'chardet-1.0.2\docs\history.html'
+adding 'chardet-1.0.2\docs\how-it-works.html'
+adding 'chardet-1.0.2\docs\index.html'
+adding 'chardet-1.0.2\docs\license.html'
+adding 'chardet-1.0.2\docs\supported-encodings.html'
+adding 'chardet-1.0.2\docs\usage.html'
+adding 'chardet-1.0.2\docs\images\caution.png'
+adding 'chardet-1.0.2\docs\images\important.png'
+adding 'chardet-1.0.2\docs\images\note.png'
+adding 'chardet-1.0.2\docs\images\permalink.gif'
+adding 'chardet-1.0.2\docs\images\tip.png'
+adding 'chardet-1.0.2\docs\images\warning.png'
+removing 'chardet-1.0.2' (and everything under it)</samp></pre>
+
+<p>有几件事情需要注意：<ul>
+<li>Distutils发现了清单文件( <code>MANIFEST.in</code> )</li><li>Distutils 成功地解析了清单文件，并添加了我们所需要的文件——&nbsp;<code>COPYING.txt</code> 和在 <code>docs/</code> 目录下的 <abbr>HTML</abbr> 与图像文件。</li><li>如果你进入你的项目目录，你会看到 Distutils 创建了一个 <code>dist/</code> 目录。你可以分发在 <code>dist/</code> 目录中的 <code>.zip</code> 文件。</li></ul>
+
+<pre class=screen>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd><mark>dir dist</mark></kbd>
+<samp> Volume in drive C has no label.
+ Volume Serial Number is DED5-B4F8
+
+ Directory of c:\Users\pilgrim\chardet\dist
+
+07/30/2009  06:29 PM    &lt;DIR&gt;          .
+07/30/2009  06:29 PM    &lt;DIR&gt;          ..
+07/30/2009  06:29 PM           206,440 <mark>chardet-1.0.2.zip</mark>
+               1 File(s)        206,440 bytes
+               2 Dir(s)  61,424,635,904 bytes free</samp></pre>
+
+<p class=a>⁂
+
+<h2 id=bdist>创建图形化安装程序</h2>
+
+<p>在我看来，每一个 Python 库都应该为 Windows 用户提供图形安装程序。这很容易做（即使你并没有运行 Windows ），而且 Windows 用户会对此表示感激。<p>通过传递 <code>bdist_wininst</code> 命令到你的 Distutils 安装脚本，它可以<a href=http://docs.python.org/3.1/distutils/builtdist.html#creating-windows-installers>为你创建一个图形化的 Windows 安装程序</a> 。<pre class=screen>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd><mark>c:\python31\python.exe setup.py bdist_wininst</mark></kbd>
+<samp>running bdist_wininst
+running build
+running build_py
+creating build
+creating build\lib
+creating build\lib\chardet
+copying chardet\big5freq.py -&gt; build\lib\chardet
+copying chardet\big5prober.py -&gt; build\lib\chardet
+...
+copying chardet\universaldetector.py -&gt; build\lib\chardet
+copying chardet\utf8prober.py -&gt; build\lib\chardet
+copying chardet\__init__.py -&gt; build\lib\chardet
+installing to build\bdist.win32\wininst
+running install_lib
+creating build\bdist.win32
+creating build\bdist.win32\wininst
+creating build\bdist.win32\wininst\PURELIB
+creating build\bdist.win32\wininst\PURELIB\chardet
+copying build\lib\chardet\big5freq.py -&gt; build\bdist.win32\wininst\PURELIB\chardet
+copying build\lib\chardet\big5prober.py -&gt; build\bdist.win32\wininst\PURELIB\chardet
+...
+copying build\lib\chardet\universaldetector.py -&gt; build\bdist.win32\wininst\PURELIB\chardet
+copying build\lib\chardet\utf8prober.py -&gt; build\bdist.win32\wininst\PURELIB\chardet
+copying build\lib\chardet\__init__.py -&gt; build\bdist.win32\wininst\PURELIB\chardet
+running install_egg_info
+Writing build\bdist.win32\wininst\PURELIB\chardet-1.0.2-py3.1.egg-info
+creating 'c:\users\pilgrim\appdata\local\temp\tmp2f4h7e.zip' and adding '.' to it
+adding 'PURELIB\chardet-1.0.2-py3.1.egg-info'
+adding 'PURELIB\chardet\big5freq.py'
+adding 'PURELIB\chardet\big5prober.py'
+...
+adding 'PURELIB\chardet\universaldetector.py'
+adding 'PURELIB\chardet\utf8prober.py'
+adding 'PURELIB\chardet\__init__.py'
+removing 'build\bdist.win32\wininst' (and everything under it)</samp>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd><mark>dir dist</mark></kbd>
+<samp>c:\Users\pilgrim\chardet&gt;dir dist
+ Volume in drive C has no label.
+ Volume Serial Number is AADE-E29F
+
+ Directory of c:\Users\pilgrim\chardet\dist
+
+07/30/2009  10:14 PM    &lt;DIR&gt;          .
+07/30/2009  10:14 PM    &lt;DIR&gt;          ..
+07/30/2009  10:14 PM           371,236 <mark>chardet-1.0.2.win32.exe</mark>
+07/30/2009  06:29 PM           206,440 chardet-1.0.2.zip
+               2 File(s)        577,676 bytes
+               2 Dir(s)  61,424,070,656 bytes free</samp></pre>
+
+<h3 id=linux>为其它操作系统编译安装包</h3>
+
+<p>Distutils 可以帮助你<a href=http://docs.python.org/3.1/distutils/builtdist.html#creating-rpm-packages>为 Linux 用户构建可安装包</a> 。我认为，这可能不值得你浪费时间。如果你希望在 Linux 中分发你的软件，你最好将时间花在与那些社区成员进行交流上，他们专门为主流 Linux 发行版打包软件。<p>例如，我的 <code>chardet</code> 库包含在 Debian GNU/Linux 软件仓库中（因而也包含<a href=http://packages.ubuntu.com/python-chardet>在 Ubuntu 的软件仓库</a>中）。我不曾做任何事情，我只在那里将安装包展示了一天。Debian 社区拥有<a href=http://www.debian.org/doc/packaging-manuals/python-policy/>他们自己的关于打包 Python 库的政策</a>，并且Debian 的 <code>python-chardet</code> 包被设计为遵循这些公约。由于这个包存在在 Debian 的软件仓库中，依赖于 Debian 用户所选择的管理自己计算机的系统设置，他们会收到该包的安全更新和（或）新版本。<p>Distutils构建的包不具有Linux包所提供的任何优势。你的时间最好花在其他地方。<p class=a>⁂
+
+<h2 id=pypi>将软件添加到 Python 安装包列表</h2>
+
+<p>上传软件到 Python 包索引需要三个步骤。<ol>
+<li>注册你自己</li><li>注册你的软件</li><li>上传你通过 <code>setup.py sdist</code> 和 <code>setup.py bdist_*</code> 创建的包。
+</li></ol>
+
+<p>要注册自己，访问 <a href="http://pypi.python.org/pypi?:action=register_form">PyPI用户注册页面</a>。输入你想要的用户名和密码，提供一个有效的电子邮件地址，然后点击  <code>Register</code> 按钮。（如果你有一个 <abbr>PGP</abbr> 或 <abbr>GPG</abbr> 密钥，你也可以提供。如果你没有或者不知道这是什么意思，不用担心。）检查你的电子邮件，在几分钟之内，你应该会收到一封来自 PyPI 的包含验证链接的邮件。点击链接以完成注册过程。<p>现在，你需要在PyPI注册你的软件并上传它。你可以用一步完成。<pre class=screen>
+<a><samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd>c:\python31\python.exe setup.py register sdist bdist_wininst upload</kbd>  <span class=u>①</span></a>
+<samp>running register
+We need to know who you are, so please choose either:
+ 1. use your existing login,
+ 2. register as a new user,
+ 3. have the server generate a new password for you (and email it to you), or
+ 4. quit</samp>
+<a><samp class=p>Your selection [default 1]:  </samp><kbd>1</kbd>                                                                 <span class=u>②</span></a>
+<a><samp class=p>Username: </samp><kbd>MarkPilgrim</kbd>                                                                          <span class=u>③</span></a>
+<samp class=p>Password:</samp>
+<a><samp>Registering chardet to http://pypi.python.org/pypi</samp>                                             <span class=u>④</span></a>
+<samp>Server response (200): OK</samp>
+<a><samp>running sdist</samp>                                                                                  <span class=u>⑤</span></a>
+<samp>... output trimmed for brevity ...</samp>
+<a><samp>running bdist_wininst</samp>                                                                          <span class=u>⑥</span></a>
+<samp>... output trimmed for brevity ...</samp>
+<a><samp>running upload</samp>                                                                                 <span class=u>⑦</span></a>
+<samp>Submitting dist\chardet-1.0.2.zip to http://pypi.python.org/pypi
+Server response (200): OK
+Submitting dist\chardet-1.0.2.win32.exe to http://pypi.python.org/pypi
+Server response (200): OK
+I can store your PyPI login so future submissions will be faster.
+(the login will be stored in c:\home\.pypirc)</samp>
+<a><samp class=p>Save your login (y/N)?</samp><kbd class=pp>n</kbd>                                                                        <span class=u>⑧</span></a></pre>
+<ol>
+<li>当你第一次发布你的项目时，Distutils 会将你的软件加入到Python包索引中并给出它的 <abbr>URL</abbr>。在这之后，它只会用你在 <code>setup.py</code> 参数所做的任何改变来更新项目的元数据。之后，它构建一个源代码发布 (<code>sdist</code>) 和一个 Windows 安装程序 (<code>bdist_wininst</code>) 并把他们上传到PyPI (<code>upload</code>)。</li><li>键入 <kbd>1</kbd> 或 <kbd>ENTER</kbd> 选择“ 使用已有的账户登录【use your existing login.】”。</li><li>输入你在<a href="http://pypi.python.org/pypi?:action=register_form"> PyPI 用户注册页面</a>所选择的用户名和密码。Distuils不会回显你的密码，它甚至不会在相应的位置显示星号。只需输入你的密码，然后按 <kbd>回车键</kbd> 。</li><li>Distutils 在 Python 包索引注册你的包……</li><li>……构建源代码分发……</li><li>……构建Windows安装程序……</li><li>……并把它们上传至 Python 包索引。</li><li>如果你想自动完成发布新版本的过程，你需要将你的PyPI凭据保存在一个本地文件中。这完全是不安全的而且是完全可选的。</li></ol>
+
+<p>恭喜你，现在，在Python包索引中有你自己的页面了！地址是 <code>http://pypi.python.org/pypi/<i>NAME</i></code>，其中 <i>NAME</i> 是你在 <code>setup.py</code> 文件中 <var>name</var> 参数所传递的字符串。<p>如果你想发布一个新版本，只需以新的版本号更新 <code>setup.py</code> 文件，然后再一次运行相同的上传命令:<pre class='nd screen'>
+<samp class=p>c:\Users\pilgrim\chardet&gt; </samp><kbd>c:\python31\python.exe setup.py register sdist bdist_wininst upload</kbd>
+</pre>
+
+<p class=a>⁂
+
+<h2 id=future>Python 打包工具的一些可能的将来</h2>
+
+<p>Distutils并非是一个代替所有并终结所有的 Python 打包，但在写本书时（2009年8月），它是唯一可以工作在 Python 3 下的打包框架。对于Python 2，还有许多其他的框架，有的重在安装，有的重在测试，还有的重在部署。在未来，它们中的一部分或全体都将移植到Python 3。<p>以下框架重在安装：<ul>
+<li><a href=http://pypi.python.org/pypi/setuptools>Setuptools</a>
+</li><li><a href=http://pypi.python.org/pypi/pip>Pip</a>
+</li><li><a href=http://bitbucket.org/tarek/distribute/>Distribute</a>
+</li></ul>
+
+<p>以下框架重在测试和部署：<ul>
+<li><a href=http://pypi.python.org/pypi/virtualenv><code>virtualenv</code></a>
+</li><li><a href=http://pypi.python.org/pypi/zc.buildout><code>zc.buildout</code></a>
+</li><li><a href=http://www.blueskyonmars.com/projects/paver/>Paver</a>
+</li><li><a href=http://fabfile.org/>Fabric</a>
+</li><li><a href=http://www.py2exe.org/><code>py2exe</code></a>
+</li></ul>
+
+<p class=a>⁂
+
+<h2 id=furtherreading>深入阅读</h2>
+
+<p>关于 Distutils：<ul>
+<li><a href=http://docs.python.org/3.1/distutils/>通过 Distutils 发布 Python 模块</a>
+</li><li><a href=http://docs.python.org/3.1/distutils/apiref.html#module-distutils.core>核心发布功能</a> 列出了 <code>setup()</code> 函数的所有可能参数</li><li><a href=http://wiki.python.org/moin/Distutils/Cookbook>Distutils 食谱</a>
+</li><li><a href=http://www.python.org/dev/peps/pep-0370/><abbr>PEP</abbr> 370: 每用户 <code>site-packages</code> 目录</a>
+</li><li><a href=http://jessenoller.com/2009/07/19/pep-370-per-user-site-packages-and-environment-stew/><abbr>PEP</abbr> 370 和 “environment stew”</a>
+</li></ul>
+
+<p>其它打包框架：<ul>
+<li><a href=http://groups.google.com/group/django-developers/msg/5407cdb400157259>Python 打包生态系统</a>
+</li><li><a href=http://www.b-list.org/weblog/2008/dec/14/packaging/>关于打包</a>
+</li><li><a href=http://blog.ianbicking.org/2008/12/14/a-few-corrections-to-on-packaging/>对 “关于打包” 的几点纠错</a>
+</li><li><a href=http://www.b-list.org/weblog/2008/dec/15/pip/>我为什么喜欢 Pip</a>
+</li><li><a href=http://cournape.wordpress.com/2009/04/01/python-packaging-a-few-observations-cabal-for-a-solution/>Python 打包：几点看法</a>
+</li><li><a href=http://jacobian.org/writing/nobody-expects-python-packaging/>没有人期望 Python 打包！</a>
+</li></ul>
+
+<p class=v><a rel=prev href="case-study-porting-chardet-to-python-3.html" title="back to &#8220;Case Study: Porting chardet to Python 3&#8221;"><span class=u>☜</span></a> <a rel=next href="porting-code-to-python-3-with-2to3.html" title="onward to &#8220;Porting Code to Python 3 with 2to3&#8221;"><span class=u>☞</span></a>
+<p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>接下来阅读什么 - 深入 Python 3</title><!--[if IE]><script src=j/html5.js></script><![endif]-->
+
+<link rel=stylesheet href="dip3.css">
+<style>
+h1:before{counter-increment:h1;content:'Appendix C. '}
+h2:before{counter-increment:h2;content:'C.' counter(h2) '. '}
+h3:before{counter-increment:h3;content:'C.' counter(h2) '.' counter(h3) '. '}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=搜索></div></form>
+<p>当前位置: <a href="index.html">首页</a> <span class=u>‣</span> <a href="table-of-contents.html#where-to-go-from-here">深入 Python 3</a> <span class=u>‣</span>
+<h1>接下来阅读什么？</h1>
+<blockquote class=q>
+<p><span class=u>❝</span> Go forth on your path, as it exists only through your walking. <span class=u>❞</span><br>— St. Augustine of Hippo (attributed)
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=things-to-read>要阅读的对象</h2>
+<p class=f>鉴于一些主题有免费的教程，因此我决定不在本书中加以阐述。<p>修饰器：<ul>
+<li><a href=http://programmingbits.pythonblogs.com/27_programmingbits/archive/50_function_decorators.html>函数修饰器</a> 作者： Ariel Ortiz</li><li><a href=http://programmingbits.pythonblogs.com/27_programmingbits/archive/51_more_on_function_decorators.html>关于函数修饰器的更多讨论</a> 作者： Ariel Ortiz</li><li><a href=http://www.ibm.com/developerworks/linux/library/l-cpdecor.html>可爱的 Python：修饰器使魔法更轻松</a> 作者： David Mertz</li><li>官方 Python 文档中的 <a href=http://docs.python.org/reference/compound_stmts.html#function>函数定义</a> </li></ul>
+
+<p>属性：<ul>
+<li><a href=http://adam.gomaa.us/blog/2008/aug/11/the-python-property-builtin/>Python 内建 <code>属性</code> </a> 作者： Adam Gomaa</li><li><a href=http://tomayko.com/writings/getters-setters-fuxors>Getters/Setters/Fuxors</a> 作者： Ryan Tomayko</li><li>官方 Python 文档中的 <a href=http://docs.python.org/library/functions.html#property><code>property()</code> 函数</a> </li></ul>
+
+<p>描述符：<ul>
+<li><a href=http://users.rcn.com/python/download/Descriptor.htm>描述符的 How-To 指南</a> 作者: Raymond Hettinger</li><li><a href=http://www.ibm.com/developerworks/linux/library/l-python-elegance-2.html>可爱的 Python: Python 的简洁与累赘，第二部分</a> 作者： David Mertz</li><li><a href='http://www.informit.com/articles/printerfriendly.aspx?p=1309289'>Python 描述符</a> 作者： Mark Summerfield</li><li>Python 官方文档中的 <a href=http://docs.python.org/3.1/reference/datamodel.html#invoking-descriptors>调用描述符</a> </li></ul>
+
+<p>线程 <i class=baa>&amp;</i> 多进程:</p>
+
+<ul>
+<li><a href=http://docs.python.org/3.1/library/threading.html><code>threading</code> 模块</a>
+</li><li><a href=http://www.doughellmann.com/PyMOTW/threading/><code>线程</code>&nbsp;—&nbsp;管理并发线程</a>
+</li><li><a href=http://docs.python.org/3.1/library/multiprocessing.html><code>multiprocessing</code> 模块</a>
+</li><li><a href=http://www.doughellmann.com/PyMOTW/multiprocessing/><code>多进程</code>&nbsp;—&nbsp;像管理线程那样管理进程</a>
+</li><li><a href=http://jessenoller.com/2009/02/01/python-threads-and-the-global-interpreter-lock/>Python 线程和全局解释器锁</a> 作者： Jesse Noller</li><li><a href=http://blip.tv/file/2232410>Python <abbr>GIL</abbr> 揭密（视频）</a> 作者： David Beazley</li></ul>
+
+<p>元类<ul>
+<li><a href=http://www.ibm.com/developerworks/linux/library/l-pymeta.html>Python 中的元类编程</a> 作者： David Mertz 和 Michele Simionato</li><li><a href=http://www.ibm.com/developerworks/linux/library/l-pymeta2/>Python 中的元类编程，第二部分</a> 作者： David Mertz 和 Michele Simionato</li><li><a href=http://www.ibm.com/developerworks/linux/library/l-pymeta3.html>Python 中的元类编程，第三部分</a> 作者： David Mertz 和 Michele Simionato</li></ul>
+
+<p>此外，Doug Hellman 之 <a href=http://www.doughellmann.com/PyMOTW/contents.html>本周 Python 模块</a> 是对Python 标准类库模块的极好指南<h2 id=code>到哪里找与 Python 3-兼容的代码</h2>
+
+<p>由于 Python 3 相对较新，其非常缺乏兼容类库。以下地方可用于查找在 Python 3 之下能够正常运作的代码：<ul>
+<li><a href='http://pypi.python.org/pypi?:action=browse&amp;c=533&amp;show=all'>Python 安装包索引：Python 3 安装包清单</a>
+</li><li><a href='http://code.activestate.com/recipes/langs/python/tags/python3/'>Python 食谱：标记了 “python3”的内容清单</a>
+</li><li><a href='http://code.google.com/hosting/search?q=label:python3'>以 Google 为宿主的项目：标记为 “python3”的项目清单</a>
+</li><li><a href='http://sourceforge.net/search/?words=%22python+3%22'>SourceForge: 符合 “Python 3”的项目清单</a>
+</li><li><a href='http://github.com/search?type=Repositories&amp;language=python&amp;q=python3'>GitHub: 符合 “python3”的项目清单</a> (以及 <a href='http://github.com/search?type=Repositories&amp;language=python&amp;q=python+3'>符合 “python 3”的项目清单</a>)</li><li><a href='http://bitbucket.org/repo/all/?name=python3'>BitBucket: 符合 “python3”的项目清单</a> (以及 <a href='http://bitbucket.org/repo/all/?name=python+3'>符合 “python 3”的项目清单</a>)</li></ul>
+
+<p class=v><a rel=prev href="special-method-names.html" title="back to &#8220;Special Method Names&#8221;"><span class=u>☜</span></a> <a href="blank.html" rel=next><span class=u>☞</span></a>
+
+<p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/dip3.js"></script>

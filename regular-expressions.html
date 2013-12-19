@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!-- readable source @ http://hg.diveintopython3.org/hgweb.cgi/file/tip/regular-expressions.html -->
+<meta charset=utf-8><title>Regular expressions - Dive Into Python 3</title><!--[if IE]><script src=j/html5.js></script><![endif]--><style>body,.w a{font:medium/1.75 'Gill Sans','Gill Sans MT',Corbel,Helvetica,'Nimbus Sans L',sans-serif;word-spacing:.1em}pre,kbd,samp,code,var,.b,pre span{font:small/2.154 Consolas,'Andale Mono',Monaco,'Liberation Mono','Bitstream Vera Sans Mono','DejaVu Sans Mono',monospace;word-spacing:0}.u{font:medium/1.75 'Arial Unicode MS',FreeSerif,OpenSymbol,'DejaVu Sans',sans-serif}pre .u,td .u,pre .u span,.a{font:medium/1.75 'Arial Unicode MS','DejaVu Sans',FreeSerif,OpenSymbol,sans-serif;color:#222}.baa{font:oblique 105% Constantia,Baskerville,Palatino,'Palatino Linotype','URW Palladio L',serif}.q{text-align:right;font-style:oblique}.q span{font-size:large}.note{margin:3.5em 4.94em}.note span{display:block;float:left;font-size:xx-large;line-height:.875;margin:0 .22em 0 -1.22em;color:steelblue}.c,.w a{line-height:2.154}.f:first-letter{float:left;color:lightsteelblue;padding:.11em 4px 0 0;font:normal 4em/0.68 serif;text-shadow:steelblue 1px 1px 1px}p,ul,ol{margin:1.75em 0;font-size:medium}html{background:#fff;color:#222}body{margin:1.75em 28px}.c,.a{clear:both;text-align:center}.c{margin:2.154em 0}.a{font-size:xx-large;line-height:.875;color:#82b445}form div,#level{float:right}#level span{color:#82b445}a{text-decoration:none;border-bottom:1px dotted}a:hover{border-bottom:1px solid}a:link,.w a{color:steelblue}a:visited{color:#b44582}.c a{color:inherit}a.hl:link,a.hl:visited{color:#fff;padding-left:.2em;text-decoration:none;border:0}a.hl:hover,h2[id]:hover a.hl,h3[id]:hover a.hl{background:transparent;color:gainsboro}pre{padding-left:2.154em;border-left:1px solid #ddd}.w{float:left}.c,.w,.w a{font-size:small}.b,ol,p,blockquote,h1,h2,h3{clear:left}pre a,.w a{padding:.4375em 0}.w a{text-decoration:underline}pre span,.p{color:#667}li ol,.q{margin:0}code,var,samp{line-height:inherit!important}pre a,.w a,pre a:hover{border:0}h1,h2,h3,aside{font-family:"Book Antiqua",Palatino,Georgia,serif}h1,h2,h3{font-variant:small-caps}h1,h2{letter-spacing:-1px}h1{font-size:xx-large;line-height:1.3125}h2,h2 code{font-size:x-large;line-height:1.167;margin:1.167em 0}h3{font-size:large;line-height:1.556;margin:1.556em 0}h1{border-bottom:4px double;width:100%;margin:1.49em 0;counter-reset:h2}h1:before{content:"Chapter " counter(h1) ". "}h2:before{counter-increment:h2;content:counter(h1) "." counter(h2) ". "}h2{counter-reset:h3}#toc+h2:before{content:""}h3:before{counter-increment:h3;content:counter(h1) "." counter(h2) "." counter(h3) ". "}aside{display:block;float:right;font-style:oblique;font-size:xx-large;width:25%;margin:1.75em 0 .75em 1.75em;background:steelblue;color:white;padding:1.75em;border:1px solid;-moz-border-radius:1em;-webkit-border-radius:1em;border-radius:1em}.v a{text-decoration:none;border:0;display:block}.v a{float:left}.v a+a{float:right}.v span{font-size:1000%;line-height:1;margin:0;text-shadow:gainsboro 3px 3px 3px}.str{color:#080}.kwd{color:#008}.com,.traceback{color:#800}.typ{color:#606}.lit{color:#066}.pun{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec{color:#606}body{counter-reset:h1 5}@media screen and (max-device-width:480px){body,.c,span,pre span,.c,.note,p,ul,ol{font:normal 12px/18px sans-serif}pre,kbd,samp,code,var{font:normal 12px/18px monospace}.baa{font:normal 14px/18px serif}.c,.note,p,ul,ol,h2,h3{margin:1.75em 0}html{color:#000}body{margin:4px 2px 0 2px}a{text-decoration:underline;border-bottom:0}pre a{text-decoration:none}h1,h2,h3,pre{padding:0;border:0;letter-spacing:0}h1{margin:0}h1{font:normal 18px/18px serif}h2,h2 code{font:normal 16px/18px serif}h3{font:normal 14px/18px serif}h1:before{content:""}.w,aside,form,form+p,.note span,.q span,.a{display:none}}@media print{body,.w a{font-size:12pt}pre,kbd,samp,code,var,.b{font-size:10pt;line-height:2.1}span{font-size:12pt}.baa{font-size:13pt}.q span{font-size:13pt}.f:first-letter{color:#888;font:normal 48pt/0.68 serif}p,ul,ol{font-size:12pt}html,body{background:#fff;margin:0;padding:0}a{text-decoration:none;border-bottom:1px dotted}html,a:link,a:visited,.w a,.note span{color:#000}pre{border:0}.c{font-size:10pt;line-height:2.1}h1{font-size:24pt}h2,h2 code{font-size:18pt}h3{font-size:13pt}aside{font-size:24pt;background:#667;color:#fff}.w,form,form+p,#level,#toc{display:none!important}.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun{color:#440}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}}</style><meta name=viewport content='initial-scale=1.0'><form action="http://www.google.com/cse"><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google™">&nbsp;<input type=submit name=root value=Search></div></form>
+<p>当前位置:首页</a> <span class=u>‣</span> <a href="table-of-contents.html#regular-expressions">深入Python 3</a> <span class=u>‣</span>
+<p id=level>Updated <a title='60 changes since February 16, 2009' href="http://hg.diveintopython3.org/hgweb.cgi/log/tip/regular-expressions.html">October 7, 2009</a> • Difficulty level: <span class=u title=intermediate>♦♦♦♢♢</span>
+<h1>正则表达式</h1>
+<blockquote class=q><p><span class=u>❝</span> Some people, when confronted with a problem, think “I know, I’ll use regular expressions.”  Now they have two problems. <span class=u>❞</span><br>— <a href="http://www.jwz.org/hacks/marginal.html">Jamie Zawinski</a></blockquote><p id=toc>
+<h2 id=divingin>深入</h2>
+<p class=f>所有的现代编程语言都有内建字符串处理函数。在python里查找，替换字符串的方法是：index()、 find()、split()、 count()、 replace()等。但这些方法都只是最简单的字符串处理。比如：用index()方法查找单个子字符串，而且查找总是区分大小写的。为了使用不区分大小写的查找，可以使用s.lower()或者s.upper()，但要确认你查找的字符串的大小写是匹配的。replace() 和split() 方法有相同的限制。</p>
+ <p>如果使用string的方法就可以达到你的目的，那么你就使用它们。它们速度快又简单，并且很容易阅读。但是如果你发现自己要使用大量的if语句，以及很多字符串函数来处理一些特例，或者说你需要组合调用split() 和 join() 来切片、合并你的字符串，你就应该使用正则表达式。
+ <p>正则表达式有强大并且标准化的方法来处理字符串查找、替换以及用复杂模式来解析文本。正则表达式的语法比我们的程序代码更紧凑，格式更严格，比用组合调用字符串处理函数的方法更具有可读性。甚至你可以在正则表达式中嵌入注释信息，这样就可以使它有自文档化的功能。
+ <blockquote class='note compare perl5'>
+   <p><span class=u>☞</span>如果你在其他语言中使用过正则表达式（比如perl，javascript或者php），python的正则表达式语法和它们的很像。阅读re模块的摘要信息可以了解到一些处理函数以及它们参数的一些概况。
+ </blockquote><p class=a>⁂
+<h2 id=streetaddresses>案例研究: 街道地址</h2>
+<p>下面一系列的示例的灵感来自于现实生活中我几年前每天的工作。我需要把一些街道地址导入一个新的系统，在这之前我要从一个遗留的老系统中清理和标准化这些街道地址。下面这个例子展示我怎么解决这个问题。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>s = '100 NORTH MAIN ROAD'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>s.replace('ROAD', 'RD.')</kbd>                <span class=u>①</span></a>
+<samp class=pp>'100 NORTH MAIN RD.'</samp>
+<samp class=p>>>> </samp><kbd class=pp>s = '100 NORTH BROAD ROAD'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>s.replace('ROAD', 'RD.')</kbd>                <span class=u>②</span></a>
+<samp class=pp>'100 NORTH BRD. RD.'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>s[:-4] + s[-4:].replace('ROAD', 'RD.')</kbd>  <span class=u>③</span></a>
+<samp class=pp>'100 NORTH BROAD RD.'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>import re</kbd>                               <span class=u>④</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>re.sub('ROAD$', 'RD.', s)</kbd>               <span class=u>⑤</span></a>
+<samp class=pp>'100 NORTH BROAD RD.'</samp></pre><ol>
+<li>我的目的是要标准化街道的格式。而‘ROAD’总是在.RD的前面。刚开始我以为只需要简单的使用string的replace()方法就可以。所有的数据都是大写的，因此不会出现大小写不匹配的问题。而查找的字符串‘ROAD’也是一个常量。在这个简单的例子中s.replace()可以很好的工作。
+<li>事实上，不幸的是，我很快发现一个问题，在一些地址中‘ROAD’出现了两次，一个是前面的街道名里带了‘ROAD’，一个是‘ROAD’本身。repalce()发现了两个就把他们都给替换掉了。这意味着，我的地址错了。
+<li>为了解决地址中出现超过一个‘ROAD’子字符串的问题，你可能会这么考虑：只在地址的最后四个字符中查找和替换‘‘ROAD’（s[-4:]）。然后把剩下的字符串独立开来处理（s[:-4]）。这个方法很笨拙。比如，这个方法会依赖于你要替换的字符串长度（如果你用‘.ST’来替换‘STREET’，就需要在s[-6:]中查找‘STREET’，然后再取s[:-6]。你难道还想半年后回来继续修改BUG？反正我是不想。
+<li>是时候转换到正则表达式了。在python中，所有的正则表达式相关功能都包含在re模块中。
+<li>注意第一个参数‘ROAD$’，这是一个匹配‘ROAD’仅仅出现在字符串结尾的正则表达式。$ 表示“字符串结尾”。（还有一个相应的表示“字符串开头”的字符 ^ ）。正则表达式模块的re.sub()函数可以做字符串替换，它在字符串s中用正则表达式‘ROAD$’来搜索并替换成‘RD.’。它只会匹配字符串结尾的‘ROAD’，而不会匹配到‘BROAD’中的‘ROAD’，因为这种情况它在字符串的中间。
+</ol>
+<aside>^ 匹配字符串开始. $ 匹配字符串结尾</aside>
+<p>继续我的处理街道地址的故事。我很快发现，在之前的例子中，匹配地址结尾的‘ROAD’不够好。因为并不是所有的地址结尾都有它。一些地址简单的用一个街道名结尾。大部分的情况下不会有问题，但如果街道的名字就叫‘BROAD’，这个时候，正则表达式会匹配到‘BROAD’的最后4个字符，这并不是我想要的。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>s = '100 BROAD'</kbd>
+<samp class=p>>>> </samp><kbd class=pp>re.sub('ROAD$', 'RD.', s)</kbd>
+<samp class=pp>'100 BRD.'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.sub('\\bROAD$', 'RD.', s)</kbd>   <span class=u>①</span></a>
+<samp class=pp>'100 BROAD'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.sub(r'\bROAD$', 'RD.', s)</kbd>   <span class=u>②</span></a>
+<samp class=pp>'100 BROAD'</samp>
+<samp class=p>>>> </samp><kbd class=pp>s = '100 BROAD ROAD APT. 3'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.sub(r'\bROAD$', 'RD.', s)</kbd>   <span class=u>③</span></a>
+<samp class=pp>'100 BROAD ROAD APT. 3'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.sub(r'\bROAD\b', 'RD.', s)</kbd>  <span class=u>④</span></a>
+<samp class=pp>'100 BROAD RD. APT 3'</samp></pre><ol><li>我真正想要的‘ROAD’，必须是匹配到字符串结尾，并且是独立的词（他不能是某个比较长的词的一部分）。为了在正则表达式中表达这个独立的词，你可以使用‘\b’。它的意思是“在右边必须有一个分隔符”。在python中，比较复杂的是‘\’字符必须被转义，这有的时候会导致‘\’字符传染（想想可能还要对\字符做转义的情况）。这也是为什么perl中的正则表达式比python的简单的原因之一。另一方面，perl会在正则表达式中混合其他非正则表达式的语法，如果出现了bug，那么很难区分这个bug是在正则表达式中，还是在其他的语法部分。
+<li>为了解决‘\’字符传染的问题，可以使用原始字符串。这只需要在字符串的前面添加一个字符‘r’。它告诉python，字符串中没有任何字符需要转义。‘\t’是一个制表符，但r‘\t’只是一个字符‘\’紧跟着一个字符t。我建议在处理正则表达式的时候总是使用原始字符串。否则，会因为理解正则表达式而消耗大量时间（本身正则表达式就已经够让人困惑的了）。
+<li>哎，不幸的是，我发现了更多的地方与我的逻辑背道而驰。街道地址包含了独立的单词‘ROAD’，但并不是在字符串尾，因为街道后面还有个单元号。因为'ROAD'并不是最靠后，就不能匹配，因此re.sub()最后没有做任何的替换，只是返回了一个原始的字符串，这并不是你想要的。
+<li>为了解决这个问题，我删除了正则表达式尾部的$，然后添加了一个\b。现在这个正则表达式的意思是“在字符串的任意位置匹配独立的‘ROAD’单词”不管是在字符串的结束还是开始，或者中间的任意一个位置。<br>
+</ol>
+<p class=a>⁂
+<h2 id=romannumerals>案例研究: 罗马数字</h2>
+<p>你肯定见过罗马数字，即使你不认识他们。你可能在版权信息、老电影、电视、大学或者图书馆的题词墙看到（用Copyright MCMXLVI” 表示版权信息，而不是用 “Copyright 1946”），你也可能在大纲或者目录参考中看到他们。这种系统的数字表达方式可以追溯到罗马帝国（因此而得名）。
+<p>在罗马数字中，有七个不同的数字可以以不同的方式结合起来表示其他数字。
+<ul><li><code>I = 1</code><li><code>V = 5</code><li><code>X = 10</code><li><code>L = 50</code><li><code>C = 100</code><li><code>D = 500</code><li><code>M = 1000</code></ul>
+<p>下面是几个通常的规则来构成罗马数字：
+<ul><li>大部分时候用字符相叠加来表示数字。I是1， II是2， III是3。VI是6（挨个看来，是“5 和 1”的组合），VII是7，VIII是8。
+<li>含有10的字符（I，X，C和M）最多可以重复出现三个。为了表示4，必须用同一位数的下一个更大的数字5来减去一。不能用IIII来表示4，而应该是IV（意思是比5小1）。40写做XL（比50小10），41写做XLI，42写做XLII，43写做XLIII，44写做XLIV（比50小10并且比5小1）。
+<li>有些时候表示方法恰恰相反。为了表示一个中间的数字，需要从一个最终的值来减。比如：9需要从10来减：8是VIII，但9确是IX（比10小1），并不是VIII（I字符不能重复4次）。90是XC，900是CM。
+<li>表示5的字符不能在一个数字中重复出现。10只能用X表示，不能用VV表示。100只能用C表示，而不是LL。
+<li>罗马数字是从左到右来计算，因此字符的顺序非常重要。DC表示600，而CD完全是另一个数字400（比500小100）。CI是101，IC不是一个罗马数字（因为你不能从100减1，你只能写成XCIX，表示比100小10，且比10小1）。
+</ul>
+<h3 id=thousands>检查千位数</h3>
+<p>怎么验证一个字符串是否是一个合法的罗马数字呢？我们可以每次取一个字符来处理。因为罗马数字总是从高位到低位来书写。我们从最高位的千位开始。表示1000或者更高的位数值，方法是用一系列的M来重复表示。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import re</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?$'</kbd>        <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'M')</kbd>     <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 0106FB58></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MM')</kbd>    <span class=u>③</span></a>
+<samp>&lt;_sre.SRE_Match object at 0106C290></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMM')</kbd>   <span class=u>④</span></a>
+<samp>&lt;_sre.SRE_Match object at 0106AA38></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMMM')</kbd>  <span class=u>⑤</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, '')</kbd>      <span class=u>⑥</span></a>
+<samp>&lt;_sre.SRE_Match object at 0106F4A8></samp></pre><ol><li>这个模式有三部分。^表示必须从字符串开头匹配。如果没有指定^，这个模式将在任意位置匹配M，这个可能并不是你想要的。你需要确认是否要匹配字符串开始的M，还是匹配单个M字符。因为它重复了三次，你要在一行中的任意位置匹配0到3次的M字符。$匹配字符串结束。当它和匹配字符串开始的^一起使用，表示匹配整个字符串。没有任何一个字符可在M的前面或者后面。
+<li>re模块最基本的方法是search()函数。它使用正则表达式来匹配字符串（M）。如果成功匹配，search()返回一个匹配对象。匹配对象中有很多的方法来描述这个匹配结果信息。如果没有匹配到，search()返回None。你只需要关注search()函数的返回值就可以知道是否匹配成功。‘M’被正则表达式匹配到了。原因是正则表达式中的第一个可选的M匹配成功，第二个和第三个被忽略掉了。
+<li>‘MM’匹配成功。因为正则表达式中的第一个和第二个可选的M匹配到，第三个被忽略。
+<li>‘MMM’匹配成功。因为正则表达式中的所有三个M都匹配到。
+<li>‘MMMM’匹配失败。正则表达式中所有三个M都匹配到，接着正则表达式试图匹配字符串结束，这个时候失败了。因此search()函数返回None。
+<li>有趣的是，空字符串也能匹配成功，因为正则表达式中的所有M都是可选的。
+</ol>
+<h3 id=hundreds>检查百位数</h3>
+<aside>? 表示匹配是可选的</aside>
+<p>百位的匹配比千位复杂。根据值的不同，会有不同的表达方式。
+<ul><li><code>100 = C</code><li><code>200 = CC</code><li><code>300 = CCC</code><li><code>400 = CD</code><li><code>500 = D</code><li><code>600 = DC</code><li><code>700 = DCC</code><li><code>800 = DCCC</code><li><code>900 = CM</code></ul><p>因此会有四种可能的匹配模式：
+<ul><li><code>CM</code><li><code>CD</code><li>可能有0到3个字符C（0个表示千位为0）。
+<li>D紧跟在0到3个字符C的后面。
+</ul>
+<p>这两个模式还可以组合起来表示：
+<ul><li>一个可选的D，后面跟着0到3个字符C。
+</ul>
+<p>下面的例子展示了怎样在罗马数字中验证百位。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import re</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?(CM|CD|D?C?C?C?)$'</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCM')</kbd>             <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 01070390></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MD')</kbd>              <span class=u>③</span></a>
+<samp>&lt;_sre.SRE_Match object at 01073A50></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMMCCC')</kbd>          <span class=u>④</span></a>
+<samp>&lt;_sre.SRE_Match object at 010748A8></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCMC')</kbd>            <span class=u>⑤</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, '')</kbd>                <span class=u>⑥</span></a>
+<samp>&lt;_sre.SRE_Match object at 01071D98></samp></pre><ol>
+<li>这个正则表达式的写法从上面千位的匹配方法接着往后写。检查字符串开始（^），然后是千位，后面才是新的部分。这里用圆括号定义了三个不同的匹配模式，他们是用竖线分隔的：CM，CD和D?C?C?C?（这表示是一个可选的D，以及紧跟的0到3个可选的字符C）。正则表达式按从左到右的顺序依次匹配，如果第一个CM匹配成功，用竖线分隔这几个中的后面其他的都会被忽略。
+<li>‘MCM’匹配成功。因为第一个M匹配到，第二个和第三个M被忽略。后面的CM匹配到（因此后面的CD和D?C?C?C?根本就不被考虑匹配了）。MCM在罗马数字中表示1900。
+<li>‘MD’匹配成功。因为第一个M匹配到，第二个和第三个M被忽略。然后D?C?C?C?匹配到D（后面的三个C都是可选匹配的，都被忽略掉）。MD在罗马数字中表示1500。
+<li>‘MMMCCC’匹配成功。因为前面三个M都匹配到。后面的D?C?C?C?匹配CCC（D是可选的，它被忽略了）。MMMCCC在罗马数字中表示3300。
+<li>‘MCMC’匹配失败。第一个M被匹配，第二个和第三个M被忽略，然后CM匹配成功。紧接着$试图匹配字符串结束，但后面是C，匹配失败。C也不能被D?C?C?C?匹配到，因为CM和它只能匹配其中一个，而CM已经匹配过了。
+<li>有趣的是，空字符串仍然可以匹配成功。因为所有的M都是可选的，都可以被忽略。并且后面的D?C?C?C?也是这种情况。
+</ol>
+<p>哈哈，看看正则表达式如此快速的处理了这些令人厌恶的东西。你已经可以找到千位数和百位数了！后面的十位和个位的处理和千位、百位的处理是一样的。但我们可以看看怎么用另一种方式来写这个正则表达式。
+<p class=a>⁂
+<h2 id=nmsyntax>使用语法<code>{n,m}</code> </h2>
+<aside>{1,4} 匹配1到4个前面的模式</aside>
+<p>在上一节中，你处理过同样的字符可以重复0到3次的情况。实际上，还有另一种正则表达式的书写方式可以表达同样的意思，而且这种表达方式更具有可读性。首先看看我们在前面例子中使用的方法。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import re</kbd>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?$'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'M')</kbd>     <span class=u>①</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EE090></samp>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?$'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MM')</kbd>    <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?$'</kbd>
+<a><samp>>>> </samp><kbd class=pp>re.search(pattern, 'MMM')</kbd>   <span class=u>③</span></a>
+<samp class=pp>&lt;_sre.SRE_Match object at 0x008EE090></samp>
+<a><samp>>>> </samp><kbd class=pp>re.search(pattern, 'MMMM')</kbd>  <span class=u>④</span></a>
+<samp class=p>>>> </samp></pre><ol><li>正则表达式匹配字符串开始，然后是第一个可选的字符M，但没有第二个和第三个M（没问题！因为他们是可选的），接着是字符串结尾。
+<li>正则表达式匹配字符串开始，然后是第一个和第二个M，第三个被忽略（因为它是可选的），最后匹配字符串结尾。
+<li>正则表达式匹配字符串开始，然后是三个M，接着是字符串结尾。
+<li>正则表达式匹配字符串开始，然后是三个M，但匹配字符串结尾失败（因为后面还有个M）。因此，这次匹配返回None。
+</ol>
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>pattern = '^M{0,3}$'</kbd>        <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'M')</kbd>     <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MM')</kbd>    <span class=u>③</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EE090></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMM')</kbd>   <span class=u>④</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEDA8></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMMM')</kbd>  <span class=u>⑤</span></a>
+<samp>>>> </samp></pre><ol><li>这个正则表达式的意思是“匹配字符串开始，然后是任意的0到3个M字符，再是字符串结尾”。0和3的位置可以写任意的数字。如果你想表示可以匹配的最小次数为1次，最多为3次M字符，可以写成M{1,3}。
+<li>匹配字符串开始，然后匹配了1次M，这在0到3的范围内，接着是字符串结尾。
+<li>匹配字符串开始，然后匹配了2次M，这在0到3的范围内，接着是字符串结尾。
+<li>匹配字符串开始，然后匹配了3次M，这在0到3的范围内，接着是字符串结尾。
+<li>匹配字符串开始，然后匹配了3次M，这在0到3的范围内，但无法匹配后面的字符串结尾。正则表达式在字符串结尾之前最多允许匹配3次M，但这里有4个。因此本次匹配返回None。
+</ol>
+<h3 id=tensandones>检查十位和个位</h3>
+<p>现在，我们继续解释正则表达式匹配罗马数字中的十位和个位。下面的例子是检查十位。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?(CM|CD|D?C?C?C?)(XC|XL|L?X?X?X?)$'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCMXL')</kbd>     <span class=u>①</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCML')</kbd>      <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCMLX')</kbd>     <span class=u>③</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCMLXXX')</kbd>   <span class=u>④</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCMLXXXX')</kbd>  <span class=u>⑤</span></a>
+<samp class=p>>>> </samp></pre><ol><li>匹配字符串开始，然后是第一个可选的M，接着是CM，XL，以及字符串结尾。记住：（A|B|C）的意思是“只匹配A，B或者C中的一个”。你匹配了XL，因此XC和L?X?X?X?被忽略，紧接着将检查字符串结尾。MCMXL在罗马数字中表示1940。
+<li>匹配字符串开始，然后是第一个可选的M，接着是CM。后面的L被L?X?X?X?匹配，这里忽略掉L后面所有的X。然后检查字符串结尾。MCML在罗马数字中表示1950。
+<li>匹配字符串开始，然后是第一个可选的M，接着是CM，还有可选的L以及第一个X，跳过后面的第二个和第三个X。然后检查字符串结尾。MCMLX表示1960。
+<li>匹配字符串开始，然后是第一个可选的M，接着是CM，还有可选的L以及所有的三个X。然后是字符串结尾。MCMLXXX表示1980。
+<li>匹配字符串开始，然后是第一个可选的M，接着是CM，还有可选的L以及所有的三个X。但匹配字符串结尾失败。因为后面还有一个X。整个匹配失败，返回None。MCMLXXXX不是一个合法的罗马数字。
+</ol>
+<aside>(A|B) 匹配A模式或者B模式中的一个</aside>
+<p>个位数的匹配是同样的模式，我会告诉你细节以及最终结果。
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '^M?M?M?(CM|CD|D?C?C?C?)(XC|XL|L?X?X?X?)(IX|IV|V?I?I?I?)$'</kbd>
+</pre>
+<p>使用{n,m}的语法来替代上面的写法会是什么样子呢？下面的例子展示了这种新的语法。	
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MDLV')</kbd>              <span class=u>①</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMDCLXVI')</kbd>          <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMMDCCCLXXXVIII')</kbd>   <span class=u>③</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'I')</kbd>                 <span class=u>④</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp></pre><ol><li>^匹配字符串开始，然后表达式M{0,3}可以匹配0到3个的M。这里只能匹配一个M，也是可以的。接着，D?C{0,3}可以匹配一个可选的D，以及0到3个可能的C。这里我们实际只有一个D可以匹配到，正则表达式中的C全部忽略。往后，L?X{0,3}只能匹配到一个可选的L，没有X。接着V?I{0,3}匹配到一个可选的V，没有字符I。最后$匹配字符串结束。MDLV表示1555。
+<li>^匹配字符串开始，然后匹配到2个M，D?C{0,3}匹配到可选的D，以及1个可能的C。往后，L?X{0,3}匹配到可选的L和1个X。接着V?I{0,3}匹配可选的V以及1个可选的I字符。最后匹配字符串结束。MMDCLXVI表示2666。
+<li>^匹配字符串开始，然后是3个M，D?C{0,3}匹配到可选的D，以及3个C。往后，L?X{0,3}匹配可选的L和3个X。接着V?I{0,3}匹配可选的V以及3个I。最后匹配字符串结束。MMMDCCCLXXXVIII表示3888。这是你不用扩展语法写出来的最长罗马数字。
+<li>靠近一点，（我就像一个魔术师：“靠近一点，孩子们。我要从帽子里拿出一只兔子。”）^匹配字符串开始，然后M可以不被匹配（因为是匹配0到3次），接着匹配D?C{0,3}，这里跳过了可选的D，并且也没有匹配到C，下面L?X{0,3}也一样，跳过了L，没有匹配X。V?I{0,3}也跳过了V，匹配了1个I。然后匹配字符串结尾。太让人惊奇了！
+</ol>
+<p>如果你一次性就理解了上面所有的例子，那你会做的比我还好！现在想象一下以前的做法，在一个大程序用条件判断和函数来处理现在正则表达式处理的内容，或者想象一下前面写的正则表达式。我们发现，那些做法一点也不漂亮。
+<p>现在我们来研究一下怎么让你的正则表达式更具有维护性，但表达的意思却是相同的。
+<p class=a>⁂
+<h2 id=verbosere>松散正则表达式</h2>
+<p>到目前为止，你只是处理了一些小型的正则表达式。就像你所看到的，他们难以阅读，甚至你不能保证半年后，你还能理解这些东西，并指出他们是干什么的。所以你需要在正则表达式内部添加一些说明信息。
+<p>python允许你使用松散正字表达式来达到目的。松散正字表达式和普通紧凑的正则表达式有两点不同：
+<ul><li>空白符被忽略。空格、制表符和回车在正则表达式中并不会匹配空格、制表符、回车。如果你想在正则表达式中匹配他们，可以在前面加一个\来转义。
+<li>注释信息被忽略。松散正字表达式中的注释和python代码中的一样，都是以#开头直到行尾。它可以在多行正则表达式中增加注释信息，这就避免了在python代码中的多行注释。他们的工作方式是一样的。<br>
+</ul>
+<p>下面是一个更加清楚的例子。我们再来看看把上面的紧凑正则表达式改写成松散正字表达式后的样子。	
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>pattern = '''
+    ^                   # beginning of string
+    M{0,3}              # thousands - 0 to 3 Ms
+    (CM|CD|D?C{0,3})    # hundreds - 900 (CM), 400 (CD), 0-300 (0 to 3 Cs),
+                        #            or 500-800 (D, followed by 0 to 3 Cs)
+    (XC|XL|L?X{0,3})    # tens - 90 (XC), 40 (XL), 0-30 (0 to 3 Xs),
+                        #        or 50-80 (L, followed by 0 to 3 Xs)
+    (IX|IV|V?I{0,3})    # ones - 9 (IX), 4 (IV), 0-3 (0 to 3 Is),
+                        #        or 5-8 (V, followed by 0 to 3 Is)
+    $                   # end of string
+    '''</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'M', re.VERBOSE)</kbd>                 <span class=u>①</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MCMLXXXIX', re.VERBOSE)</kbd>         <span class=u>②</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'MMMDCCCLXXXVIII', re.VERBOSE)</kbd>   <span class=u>③</span></a>
+<samp>&lt;_sre.SRE_Match object at 0x008EEB48></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>re.search(pattern, 'M')</kbd>                             <span class=u>④</span></a></pre><ol><li>注意，如果要使用松散正则表达式，需要传递一个叫re.VERBOSE的参数。就像你看到的那样，正则表达式中有很多空白符，他们都被忽略掉了。还有一些注释信息，当然也被正则表达式忽略掉。当空白符和注释信息被忽略掉后，这个正则表达式和上面的是完全一样的，但是它有更高的可读性。
+<li>匹配字符串开始，然后是1个M，接着是CM，还有一个L和三个X，后面是IX，最后匹配字符串结尾。
+ 
+<li>匹配字符串开始，然后是3个M，接着是D和三个C，以及三个X，一个V，三个I，最后匹配字符串结尾。</li>
+ 
+<li>这个不能匹配成功。为什么呢？因为他没有re.VERBOSE标记。因此search()会把他们整个当成一个紧凑的正则表达式，包括里面的空白符。python不会自动检测一个正则表达式是否是松散正则表达式，而需要明确的指定。⁂</ol>
+<h2 id=phonenumbers>案例研究: 解析电话号码</h2>
+<aside>\d 匹配所有0-9的数字. \D 匹配除了数字外的所有字符.</aside>
+<p>到目前为止，我们主要关注于整个表达式是否能匹配到，要么整个匹配，要么整个都不匹配。但正则表达式还有更加强大的功能。如果正则表达式成功匹配，你可以找到正则表达式中某一部分匹配到什么。
+<p>这个例子来自于我在真实世界中遇到的另一个问题。这个问题是：解析一个美国电话号码。客户想用自由的格式来输入电话号码（在单个输入框），这需要存储区域码，交换码以及后四码（美国的电话分为区域码、交换码和后四码）。我在网上搜索，发现了很多解决这个问题的正则表达式，但是它们都能不完全满足我的要求。
+<p>下面是我要接受的电话号码格式：
+<ul><li><code>800-555-1212</code><li><code>800 555 1212</code><li><code>800.555.1212</code><li><code>(800) 555-1212</code><li><code>1-800-555-1212</code><li><code>800-555-1212-1234</code><li><code>800-555-1212x1234</code><li><code>800-555-1212 ext. 1234</code><li><code>work 1-(800) 555.1212 #1234</code></ul><p>样式够多的！在上面的例子中，我知道区域码是800，交换码是555，以及最后的后四码是1212。如果还有分机号，那就是1234。
+<p>我们来解决这个电话号码解析问题。下面的例子是第一步。
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'^(\d{3})-(\d{3})-(\d{4})$')</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212').groups()</kbd>             <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212-1234')</kbd>                 <span class=u>③</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212-1234').groups()</kbd>        <span class=u>④</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+AttributeError: 'NoneType' object has no attribute 'groups'</samp></pre><ol>
+<li>我们通常从左到右的阅读正则表达式。首先是匹配字符串开始位置，然后是(\d{3})。\d{3}表示什么意思？\d表示任意的数字（0到9），{3}表示一定要匹配3个数字。这个是你前面看到的{n,m}表示方法。把他们放在圆括号中，表示必须匹配3个数字，并且把他们记做一个组。分组的概念我们后面会说到。然后匹配一个连字符，接着匹配另外的3个数字，他们也同样作为一个组。然后又是一个连字符，后面还要准确匹配4个数字，他们也作为一位分组。最后匹配字符串结尾。
+<li>为了使用正则表达式匹配到的这些分组，需要对search()函数的返回值调用groups()方法。它会返回一个这个正则表达式中定义的所有分组结果组成的元组。在这里，我们定义了三个分组，一个三个数字，另一个是三个数字，以及一个四个数字
+<li>这个正则表达式并不是最终答案。因为它还没有处理有分机号的情况。为了处理这种情况，必须要对这个正则表达式进行扩展。
+
+<li>这是为什么你不能在产品代码中链式调用search()和groups()的原因。如果search()方法匹配不成功，也就是返回None，这就不是返回的一个正则表达式匹配对象。它没有groups()方法，所以调用None.groups()将会抛出一个异常。（当然，在你的代码中，这个异常很明显。在这里我说了我的一些经验。）
+  </li>
+
+</ol>
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'^(\d{3})-(\d{3})-(\d{4})-(\d+)$')</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212-1234').groups()</kbd>              <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800 555 1212 1234')</kbd>                       <span class=u>③</span></a>
+<samp class=p>>>> </samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212')</kbd>                            <span class=u>④</span></a>
+<samp class=p>>>> </samp></pre><ol><li>这个正则表达式和前面的一样。匹配了字符串开始位置，然后是一个三个数字的分组，接着一个连字符，又是一个三个数字的分组，又是一个连字符，然后一个四个数字的分组。这三个分组匹配的内容都会被记忆下来。和上面不同的是，这里多匹配了一个连字符以及一个分组，这个分组里的内容是匹配一个或更多个数字。最后是字符串结尾。
+<li>现在groups()方法返回有四个元素的元组。因为正则表达式现在定义了四个组。
+<li>不幸的是，这个正则表达式仍然不是最终答案。因为它假设这些数字是有连字符分隔的。实际上还有用空格，逗号和点分隔的情况。这就需要用更加通用的解决方案来匹配这些不同的分隔符。
+<li>噢，这个正则表达式不但不能做到你想要的，而且还不如上一个了！因为我们现在不能匹配没有分机号的电话号码。这绝对不是你想要的。如果有分机号，你希望取到，但如果没有，你同样也希望匹配到电话号码其他的部分。<br>
+</ol>
+<p>下面的例子展示了正则表达式中怎么处理电话号码中各个部分之间使用了不同分隔符的情况。
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'^(\d{3})\D+(\d{3})\D+(\d{4})\D+(\d+)$')</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800 555 1212 1234').groups()</kbd>  <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212-1234').groups()</kbd>  <span class=u>③</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('80055512121234')</kbd>              <span class=u>④</span></a>
+<samp class=p>>>> </samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212')</kbd>                <span class=u>⑤</span></a>
+<samp class=p>>>> </samp></pre><ol><li>注意了！你匹配了字符串开始，然后是3个数字的分组，接着是\D+，这是什么？好吧，\D匹配除了数字以外的任意字符，+的意思是一个或多个。因此\D+匹配一个或一个以上的非数字字符。这就是你用来替换连字符的东西，它用来匹配不同的分隔符。
+<li>用\D+替换-，意味着你可以匹配分隔符为空格的情况。
+<li>当然，分隔符为连字符一样可以正确工作。
+<li>不幸的是，这仍然不是最终答案。因为这里我们假设有分隔符的存在，如果是根本就没有空格或者是连字符呢?
+<li>天啊，它仍然没有解决分机号的问题。现在你有两个问题没有解决，但是我们可以用相同的技术来解决他们。
+</ol>
+<p>下面的例子展示用正则表达式处理电话号码没有分隔符的情况。
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'^(\d{3})\D*(\d{3})\D*(\d{4})\D*(\d*)$')</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('80055512121234').groups()</kbd>      <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800.555.1212 x1234').groups()</kbd>  <span class=u>③</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212').groups()</kbd>        <span class=u>④</span></a>
+<samp class=pp>('800', '555', '1212', '')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('(800)5551212 x1234')</kbd>           <span class=u>⑤</span></a>
+<samp class=p>>>> </samp></pre><ol>
+<li>这里和上面唯一不同的地方是，把所有的+换成了*。号码之间的分隔符不再用\D+来匹配，而是使用\D*。还记得+表示一个或更多吧？好，现在可以解析号码之间没有分隔符的情况了。<li>你看，它真的可以工作。为什么呢？首先匹配字符串开始，然后是3个数字的分组（800），分组匹配的内容会被记忆下来。然后是0个非数字分隔字符，然后又是3个数字的分组（555），同样也会被记忆下来。后面是0个非数字字符，接着是4个数字的分组（1212），然后又是0个非数字字符，还有一个任意个数字的分机号（1234）。最后匹配字符串结尾。
+ 
+<li>其他字符作为分隔符一样可以工作。这里点替代了之前的连字符，分机号的前面还可以是空格和x。</li>
+  
+<li>最后我们解决了这个长久以来的问题：分机号是可选的。如果分机号不存在，groups()仍然可以返回一个4元素的元组，只是第四个元素为空字符串。
+<li>我讨厌坏消息。这还没有结束。还有什么问题呢？在区域码前面还可能有其他字符。但正则表达式假设区域码在字符串的开头。没关系，你还可以使用0个或更多的非数字字符串来跳过区位码前面的字符。
+</ol>
+<p>下面的例子展示怎么处理电话号码前面还有其他字符的情况。
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'^\D*(\d{3})\D*(\d{3})\D*(\d{4})\D*(\d*)$')</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('(800)5551212 ext. 1234').groups()</kbd>                  <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212').groups()</kbd>                            <span class=u>③</span></a>
+<samp class=pp>('800', '555', '1212', '')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('work 1-(800) 555.1212 #1234')</kbd>                      <span class=u>④</span></a>
+<samp class=p>>>> </samp></pre><ol><li>现在除了在第一个分组之前要用\d*匹配0个或更多非数字字符外，这和前面的例子是相同的。注意你不会对这些非数字字符分组，因为他们不在圆括号内，也就是说不是一个组。如果发现有这些字符，这里只是跳过他们，然后开始对后面的区域码匹配、分组。
+<li>即使区位码之前有圆括号，你也可以成功的解析电话号码了。（右边的圆括号已经处理，它被\D*匹配成一个非数字字符。）
+<li>这只是一个全面的检查，来确认以前能正确工作的现在仍然可以正确工作。因为首字符是可选的，因此首先匹配字符串开始，0个非数字字符，然后是三个数字并分组，接着是一个非数字字符，后面是三个数字并且分组，然后又是一个非数字分隔符，又是一个4个数字且分组，还有0个非数字字符，以及0个数字并且分组。最后匹配字符串结尾。
+<li>还有问题。为什么不能匹配这个电话号码？因为在区域码前面还有一个1，但你假设的是区位码前面的第一个字符是非数字字符（\d*）
+</ol>
+<p>我们回过头看看。到目前为止，所有的正则表达式都匹配了字符串开始位置。但现在在字符串的开头可能有一些你想忽略掉的不确定的字符。为了匹配到想要的数据，你需要跳过他们。我们来看看不明确匹配字符串开始的方法。
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'(\d{3})\D*(\d{3})\D*(\d{4})\D*(\d*)$')</kbd>  <span class=u>①</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('work 1-(800) 555.1212 #1234').groups()</kbd>         <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212')</kbd>                                 <span class=u>③</span></a>
+<samp class=pp>('800', '555', '1212', '')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('80055512121234')</kbd>                               <span class=u>④</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp></pre><ol><li>注意正则表达式没有^。不会再匹配字符串开始位置了。正则表达式不会匹配整个字符串，而是试图找到一个字符串开始匹配的位置，然后从这个位置开始匹配。
+<li>现在，你可以正确的解析出字符串开头有不需要的字符、数字或者其他分隔符的情况了。
+<li>全面性检查，同样正常工作了。
+<li>这里也仍然可以工作。
+</ol>
+<p>看看正则表达式失控有多快？快速回顾一下之前的例子。你能说出他们的区别吗？
+<p>你看到了最终的答案（这就是最终答案！如果你发现还有它不能正确处理的情况，我也不想知道了 ）。在你忘掉它之前，我们来把它改写成松散正则表达式吧。
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>phonePattern = re.compile(r'''
+                # don't match beginning of string, number can start anywhere
+    (\d{3})     # area code is 3 digits (e.g. '800')
+    \D*         # optional separator is any number of non-digits
+    (\d{3})     # trunk is 3 digits (e.g. '555')
+    \D*         # optional separator
+    (\d{4})     # rest of number is 4 digits (e.g. '1212')
+    \D*         # optional separator
+    (\d*)       # extension is optional and can be any number of digits
+    $           # end of string
+    ''', re.VERBOSE)</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('work 1-(800) 555.1212 #1234').groups()</kbd>  <span class=u>①</span></a>
+<samp class=pp>('800', '555', '1212', '1234')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>phonePattern.search('800-555-1212')</kbd>                          <span class=u>②</span></a>
+<samp class=pp>('800', '555', '1212', '')</samp></pre><ol><li>除了这里是用多行表示的以外，它和上面最后的那个是完全一样的。它一样可以处理之前的相同的情况。
+<li>最后我们的全面检查也通过。很好，你终于完成了。
+</ol>
+<p class=a>⁂
+<h2 id=summary>小结</h2>
+<p>这只是正则表达式能完成的工作中的冰山一角。换句话说，尽管你可能很受打击，相信我，你已经不是什么都不知道了。
+<p>现在，你应该已经熟悉了下面的技巧：
+<ul>
+<li><code>^</code> 匹配字符串开始位置。
+<li><code>$</code> 匹配字符串结束位置。
+<li><code>\b</code> 匹配一个单词边界。
+<li><code>\d</code> 匹配一个数字。
+<li><code>\D</code> 匹配一个任意的非数字字符。
+<li><code>x?</code> 匹配可选的x字符。换句话说，就是0个或者1个x字符。
+<li><code>x*</code> 匹配0个或更多的x。
+<li><code>x+</code> 匹配1个或者更多x。
+<li><code>x{n,m}</code> 匹配n到m个x，至少n个，不能超过m个。
+<li><code>(a|b|c)</code> 匹配单独的任意一个a或者b或者c。
+<li><code>(x)</code> 这是一个组，它会记忆它匹配到的字符串。你可以用re.search返回的匹配对象的groups()函数来获取到匹配的值。
+</ul>
+<p>正则表达式非常强大，但它也并不是解决每一个问题的正确答案。你需要更多的了解来判断哪些情况适合使用正则表达式。某些时候它可以解决你的问题，某些时候它可能带来更多的问题。
+<p class=v><a href="strings.html" rel=prev title='back to “Strings”'><span class=u>☜</span></a> <a href="generators.html" rel=next title='onward to “Closures &amp; Generators”'><span class=u>☞</span></a><p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a><script src="http://woodpecker.org.cn/diveintopython3/j/1529220a542f.js"></script><script>var gaJsHost="http://www.";document.write(unescape("%3Cscript src='"+gaJsHost+"google-analytics.com/ga.js'%3E%3C/script%3E"));</script><script>try{var pageTracker=_gat._getTracker("UA-7434570-3");pageTracker._trackPageview();}catch(err){}</script>

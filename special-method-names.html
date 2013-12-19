@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>特殊方法名称 - 深入 Python 3</title><!--[if IE]><script src=j/html5.js></script><![endif]-->
+
+<link rel=stylesheet href="dip3.css">
+<style>
+h1:before{counter-increment:h1;content:'Appendix B. '}
+h2:before{counter-increment:h2;content:'B.' counter(h2) '. '}
+h3:before{counter-increment:h3;content:'B.' counter(h2) '.' counter(h3) '. '}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=搜索></div></form>
+<p>当前位置: <a href="index.html">首页</a> <span class=u>‣</span> <a href="table-of-contents.html#special-method-names">深入 Python 3</a> <span class=u>‣</span>
+<p id=level>难度级别: <span class=u title=pro>♦♦♦♦♦</span>
+<h1>特殊方法名称</h1>
+<blockquote class=q>
+<p><span class=u>❝</span> My specialty is being right when other people are wrong. <span class=u>❞</span><br>— <a href=http://en.wikiquote.org/wiki/George_Bernard_Shaw>George Bernard Shaw</a>
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>深入</h2>
+<p class=f>在本书其它几处，我们已经见识过一些特殊方法——即在使用某些语法时 Python 所调用的“神奇”方法。使用特殊方法，类用起来如同序列、字典、函数、迭代器，或甚至像个数字！本附录为我们已经见过特殊方法提供了参考，并对一些更加深奥的特殊方法进行了简要介绍。<h2 id=basics>基础知识</h2>
+
+<p>如果曾阅读 <a href="iterators.html#divingin">《类的简介》</a>一章，你可能已经见识过了最常见的特殊方法： <code>__init__()</code> 方法。盖章结束时，我写的类多数需要进行一些初始化工作。还有一些其它的基础特殊方法对调试自定义类也特别有用。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>①
+<td>初始化一个实例</td><td><code class=pp>x = MyClass()</code>
+</td><td><a href=http://docs.python.org/3.1/reference/datamodel.html#object.__init__><code>x.<dfn>__init__</dfn>()</code></a>
+</td></th></tr><tr><th>②
+<td>字符串的“官方”表现形式</td><td><code class=pp><dfn>repr</dfn>(x)</code>
+</td><td><a href=http://docs.python.org/3.1/reference/datamodel.html#object.__repr__><code>x.<dfn>__repr__</dfn>()</code></a>
+</td></th></tr><tr><th>③
+<td>字符串的“非正式”值</td><td><a href=http://docs.python.org/3.1/reference/datamodel.html#object.__str__><code><dfn>str</dfn>(x)</code></a>
+</td><td><code class=pp>x.<dfn>__str__</dfn>()</code>
+</td></th></tr><tr><th>④
+<td>字节数组的“非正式”值</td><td><code class=pp><dfn>bytes</dfn>(x)</code>
+</td><td><code class=pp>x.<dfn>__bytes__</dfn>()</code>
+</td></th></tr><tr><th>⑤
+<td>格式化字符串的值</td><td><code class=pp>format(x, <var>format_spec</var>)</code>
+</td><td><a href=http://docs.python.org/3.1/reference/datamodel.html#object.__format__><code>x.<dfn>__format__</dfn>(<var>format_spec</var>)</code></a>
+</td></th></tr></table>
+<ol>
+<li>对 <code>__init__()</code> 方法的调用发生在实例被创建 <em>之后</em> 。如果要控制实际创建进程，请使用 <a href="special-method-names.html#esoterica"><code>__new__()</code> 方法</a>。</li><li>按照约定， <code>__repr__()</code> 方法所返回的字符串为合法的 Python 表达式。</li><li>在调用 <code>print(x)</code> 的同时也调用了 <code>__str__()</code> 方法。</li><li>由于 <code>bytes</code> 类型的引入而<em>从 Python 3 开始出现</em>。</li><li>按照约定，<var>format_spec</var> 应当遵循 <a href=http://www.python.org/doc/3.1/library/string.html#formatspec>迷你语言格式规范【Format Specification Mini-Language】</a>。Python 标准类库中的 <code>decimal.py</code> 提供了自己的 <code>__format__()</code> 方法。</li></ol>
+
+<h2 id=acts-like-iterator>行为方式与迭代器类似的类</h2>
+
+<p>在 <a href="iterators.html">《迭代器》一章中</a>，我们已经学习了如何使用 <code>__iter__()</code> 和 <code>__next__()</code> 方法从零开始创建迭代器。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>①
+<td>遍历某个序列</td><td><code class=pp><dfn>iter</dfn>(seq)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__iter__><code>seq.<dfn>__iter__</dfn>()</code></a>
+</td></th></tr><tr><th>②
+<td>从迭代器中获取下一个值</td><td><code class=pp><dfn>next</dfn>(seq)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__next__><code>seq.<dfn>__next__</dfn>()</code></a>
+</td></th></tr><tr><th>③
+<td>按逆序创建一个迭代器</td><td><code class=pp><dfn>reversed</dfn>(seq)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__reversed__><code>seq.<dfn>__reversed__</dfn>()</code></a>
+</td></th></tr></table>
+<ol>
+<li>无论何时创建迭代器都将调用 <code>__iter__()</code> 方法。这是用初始值对迭代器进行初始化的绝佳之处。</li><li>无论何时从迭代器中获取下一个值都将调用 <code>__next__()</code> 方法。</li><li><code>__reversed__()</code> 方法并不常用。它以一个现有序列为参数，并将该序列中所有元素从尾到头以逆序排列生成一个新的迭代器。</li></ol>
+
+<p>正如我们在 <a href="iterators.html#a-fibonacci-iterator">《迭代器》一章</a>中看到的，<code>for</code> 循环也可用作迭代器。在下面的循环中：<pre class='nd pp'><code>for x in seq:
+    print(x)</code></pre>
+
+<p>Python 3 将会调用 <code>seq.__iter__()</code> 以创建一个迭代器，然后对迭代器调用 <code>__next__()</code> 方法以获取 <var>x</var> 的每个值。当 <code>__next__()</code> 方法引发 <code>StopIteration</code> 例外时， <code>for</code> 循环正常结束。<h2 id=computed-attributes>计算属性</h2>
+
+<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>①
+<td>获取一个计算属性（无条件的）</td><td><code class=pp>x.my_property</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__getattribute__><code>x.<dfn>__getattribute__</dfn>(<var>'my_property'</var>)</code></a>
+</td></th></tr><tr><th>②
+<td>获取一个计算属性（后备）</td><td><code class=pp>x.my_property</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__getattr__><code>x.<dfn>__getattr__</dfn>(<var>'my_property'</var>)</code></a>
+</td></th></tr><tr><th>③
+<td>设置某属性</td><td><code class=pp>x.my_property = value</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__setattr__><code>x.<dfn>__setattr__</dfn>(<var>'my_property'</var>, <var>value</var>)</code></a>
+</td></th></tr><tr><th>④
+<td>删除某属性</td><td><code class=pp>del x.my_property</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__delattr__><code>x.<dfn>__delattr__</dfn>(<var>'my_property'</var>)</code></a>
+</td></th></tr><tr><th>⑤
+<td>列出所有属性和方法</td><td><code class=pp>dir(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__dir__><code>x.<dfn>__dir__</dfn>()</code></a>
+</td></th></tr></table>
+<ol>
+<li>如果某个类定义了 <code>__getattribute__()</code> 方法，在 <em>每次引用属性或方法名称时</em> Python 都调用它（特殊方法名称除外，因为那样将会导致讨厌的无限循环）。</li><li>如果某个类定义了 <code>__getattr__()</code> 方法，Python 将只在正常的位置查询属性时才会调用它。如果实例 <var>x</var> 定义了属性 <var>color</var>， <code>x.color</code> 将 <em>不会</em> 调用 <code>x.__getattr__('color')</code>；而只会返回 <var>x.color</var> 已定义好的值。</li><li>无论何时给属性赋值，都会调用 <code>__setattr__()</code> 方法。</li><li>无论何时删除一个属性，都将调用 <code>__delattr__()</code> 方法。</li><li>如果定义了 <code>__getattr__()</code> 或 <code>__getattribute__()</code> 方法， <code>__dir__()</code> 方法将非常有用。通常，调用 <code>dir(x)</code> 将只显示正常的属性和方法。如果 <code>__getattr()__</code> 方法动态处理 <var>color</var> 属性， <code>dir(x)</code> 将不会将 <var>color</var> 列为可用属性。可通过覆盖 <code>__dir__()</code> 方法允许将 <var>color</var> 列为可用属性，对于想使用你的类但却不想深入其内部的人来说，该方法非常有益。</li></ol>
+
+<p><code>__getattr__()</code> 和 <code>__getattribute__()</code> 方法的区别非常细微，但非常重要。可以用两个例子来解释一下：<pre class=screen>
+<code>class Dynamo:
+    def __getattr__(self, key):
+<a>        if key == 'color':         <span class=u>①</span></a>
+            return 'PapayaWhip'
+        else:
+<a>            raise AttributeError   <span class=u>②</span></a></code>
+
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn = Dynamo()</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn.color</kbd>                      <span class=u>③</span></a>
+<samp class=pp>'PapayaWhip'</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn.color = 'LemonChiffon'</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn.color</kbd>                      <span class=u>④</span></a>
+<samp class=pp>'LemonChiffon'</samp></pre>
+<ol>
+<li>属性名称以字符串的形式传入 <code>__getattr()__</code> 方法。如果名称为 <code>'color'</code>，该方法返回一个值。（在此情况下，它只是一个硬编码的字符串，但可以正常地进行某些计算并返回结果。）</li><li>如果属性名称未知， <code>__getattr()__</code> 方法必须引发一个 <code>AttributeError</code> 例外，否则在访问未定义属性时，代码将只会默默地失败。（从技术角度而言，如果方法不引发例外或显式地返回一个值，它将返回 <code>None</code> ——Python 的空值。这意味着 <em>所有</em> 未显式定义的属性将为 <code>None</code>，几乎可以肯定这不是你想看到的。）</li><li><var>dyn</var> 实例没有名为 <var>color</var> 的属性，因此在提供计算值时将调用 <code>__getattr__()</code> 。</li><li>在显式地设置 <var>dyn.color</var> 之后，将不再为提供 <var>dyn.color</var> 的值而调用 <code>__getattr__()</code> 方法，因为 <var>dyn.color</var> 已在该实例中定义。</li></ol>
+
+<p>另一方面，<code>__getattribute__()</code> 方法是绝对的、无条件的。<pre class=screen>
+<code>class SuperDynamo:
+    def __getattribute__(self, key):
+        if key == 'color':
+            return 'PapayaWhip'
+        else:
+            raise AttributeError</code>
+
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn = SuperDynamo()</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn.color</kbd>                      <span class=u>①</span></a>
+<samp class=pp>'PapayaWhip'</samp>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn.color = 'LemonChiffon'</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>dyn.color</kbd>                      <span class=u>②</span></a>
+<samp class=pp>'PapayaWhip'</samp></pre>
+<ol>
+<li>在获取 <var>dyn.color</var> 的值时将调用 <code>__getattribute__()</code> 方法。</li><li>即便已经显式地设置 <var>dyn.color</var>，在获取 <var>dyn.color</var> 的值时, <em>仍将调用</em> <code>__getattribute__()</code> 方法。如果存在 <code>__getattribute__()</code> 方法，将在每次查找属性和方法时 <em>无条件地调用</em> 它，哪怕在创建实例之后已经显式地设置了属性。</li></ol>
+
+<blockquote class=note>
+<p><span class=u>☞</span> 如果定义了类的 <code>__getattribute__()</code> 方法，你可能还想定义一个 <code>__setattr__()</code> 方法，并在两者之间进行协同，以跟踪属性的值。否则，在创建实例之后所设置的值将会消失在黑洞中。</blockquote>
+
+<p>必须特别小心 <code>__getattribute__()</code> 方法，因为 Python 在查找类的方法名称时也将对其进行调用。<pre class=screen>
+<code>class Rastan:
+    def __getattribute__(self, key):
+<a>        raise AttributeError           <span class=u>①</span></a>
+    def swim(self):
+        pass</code>
+
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>hero = Rastan()</kbd>
+<a><samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>hero.swim()</kbd>                        <span class=u>②</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+  File "&lt;stdin&gt;", line 3, in __getattribute__
+AttributeError</samp></pre>
+<ol>
+<li>该类定义了一个总是引发 <code>AttributeError</code> 例外的 <code>__getattribute__()</code> 方法。没有属性或方法的查询会成功。</li><li>调用 <code>hero.swim()</code> 时，Python 将在 <code>Rastan</code> 类中查找 <code>swim()</code> 方法。该查找将执行整个 <code>__getattribute__()</code> 方法，因为所有的属性和方法查找都通过 <code>__getattribute__()</code> 方法。在此例中， <code>__getattribute__()</code> 方法引发 <code>AttributeError</code> 例外，因此该方法查找过程将会失败，而方法调用也将失败。</li></ol>
+
+<h2 id=acts-like-function>行为方式与函数类似的类</h2>
+
+<p>可以让类的实例变得可调用——就像函数可以调用一样——通过定义 <code>__call__()</code> 方法。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>像调用函数一样“调用”一个实例</td><td><code class=pp>my_instance()</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__call__><code>my_instance.<dfn>__call__</dfn>()</code></a>
+</td></th></tr></table>
+
+<p><a href=http://docs.python.org/3.1/library/zipfile.html><code>zipfile</code> 模块</a> 通过该方式定义了一个可以使用给定密码<dfn>解密</dfn> <dfn>经加密</dfn> <dfn>zip</dfn> 文件的类。该 zip <dfn>解密</dfn> 算法需要在解密的过程中保存状态。通过将解密器定义为类，使我们得以在 decryptor 类的单个实例中对该状态进行维护。状态在 <code>__init__()</code> 方法中进行初始化，如果文件 <dfn>经加密</dfn> 则进行更新。但由于该类像函数一样“可调用”，因此可以将实例作为 <code>map()</code> 函数的第一个参数传入，代码如下：<pre class=pp><code># excerpt from zipfile.py
+class _ZipDecrypter:
+.
+.
+.
+    def __init__(self, pwd):
+<a>        self.key0 = 305419896               <span class=u>①</span></a>
+        self.key1 = 591751049
+        self.key2 = 878082192
+        for p in pwd:
+            self._UpdateKeys(p)
+
+<a>    def __call__(self, c):                  <span class=u>②</span></a>
+        assert isinstance(c, int)
+        k = self.key2 | 2
+        c = c ^ (((k * (k^1)) &gt;&gt; 8) &amp; 255)
+        self._UpdateKeys(c)
+        return c
+.
+.
+.
+<a>zd = _ZipDecrypter(pwd)                    <span class=u>③</span></a>
+bytes = zef_file.read(12)
+<a>h = list(map(zd, bytes[0:12]))             <span class=u>④</span></a></code></pre>
+<ol>
+<li><code>_ZipDecryptor</code> 类维护了以三个旋转密钥形式出现的状态，该状态稍后将在 <code>_UpdateKeys()</code> 方法中更新（此处未展示）。</li><li>该类定义了一个 <code>__call__()</code> 方法，使得该类可像函数一样调用。在此例中，<code>__call__()</code> 对 zip 文件的单个字节进行解密，然后基于经解密的字节对旋转密码进行更新。</li><li><var>zd</var> 是 <code>_ZipDecryptor</code> 类的一个实例。变量 <var>pwd</var> 被传入 <code>__init__()</code> 方法，并在其中被存储和用于首次旋转密码更新。</li><li>给出 zip 文件的头 12 个字节，将这些字节映射给 <var>zd</var> 进行解密，实际上这将导致调用 <code>__call__()</code> 方法 12 次，也就是 更新内部状态并返回结果字节 12 次。</li></ol>
+
+<h2 id=acts-like-list>行为方式与序列类似的类</h2>
+
+<p>如果类作为一系列值的容器出现——也就是说如果对某个类来说，是否“包含”某值是件有意义的事情——那么它也许应该定义下面的特殊方法已，让它的行为方式与序列类似。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>序列的长度</td><td><code class=pp><dfn>len</dfn>(seq)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__len__><code>seq.<dfn>__len__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>了解某序列是否包含特定的值</td><td><code class=pp>x in seq</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__contains__><code>seq.<dfn>__contains__</dfn>(<var>x</var>)</code></a>
+</td></th></tr></table>
+
+<p id=acts-like-list-example><a href=http://docs.python.org/3.1/library/cgi.html><code>cgi</code> 模块</a> 在其 <code>FieldStorage</code> 类中使用了这些方法，该类用于表示提交给动态网页的所有表单字段或查询参数。<pre class=pp><code># A script which responds to http://example.com/search?q=cgi
+import cgi
+fs = cgi.FieldStorage()
+<a>if 'q' in fs:                                               <span class=u>①</span></a>
+  do_search()
+
+# An excerpt from cgi.py that explains how that works
+class FieldStorage:
+.
+.
+.
+<a>    def __contains__(self, key):                            <span class=u>②</span></a>
+        if self.list is None:
+            raise TypeError('not indexable')
+<a>        return any(item.name == key for item in self.list)  <span class=u>③</span></a>
+
+<a>    def __len__(self):                                      <span class=u>④</span></a>
+<a>        return len(self.keys())                             <span class=u>⑤</span></a></code></pre>
+<ol>
+<li>一旦创建了 <code>cgi.FieldStorage</code> 类的实例，就可以使用 “<code>in</code>” 运算符来检查查询字符串中是否包含了某个特定参数。</li><li>而 <code>__contains__()</code> 方法是令该魔法生效的主角。</li><li>如果代码为 <code>if 'q' in fs</code>，Python 将在 <var>fs</var> 对象中查找 <code>__contains__()</code> 方法，而该方法在 <code>cgi.py</code> 中已经定义。<code>'q'</code> 的值被当作 <var>key</var> 参数传入 <code>__contains__()</code> 方法。</li><li>同样的 <code>FieldStorage</code> 类还支持返回其长度，因此可以编写代码 <code>len(<var>fs</var>)</code> 而其将调用 <code>FieldStorage</code> 的 <code>__len__()</code> 方法，并返回其识别的查询参数个数。</li><li><code>self.keys()</code> 方法检查 <code>self.list is None</code> 是否为真值，因此 <code>__len__</code> 方法无需重复该错误检查。</li></ol>
+
+<h2 id=acts-like-dict>行为方式与字典类似的类</h2>
+
+<p>在前一节的基础上稍作拓展，就不仅可以对 “<code>in</code>” 运算符和 <code>len()</code> 函数进行响应，还可像全功能字典一样根据键来返回值。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>通过键来获取值</td><td><code class=pp>x[key]</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__getitem__><code>x.<dfn>__getitem__</dfn>(<var>key</var>)</code></a>
+</td></th></tr><tr><th>
+<td>通过键来设置值</td><td><code class=pp>x[key] = value</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__setitem__><code>x.<dfn>__setitem__</dfn>(<var>key</var>, <var>value</var>)</code></a>
+</td></th></tr><tr><th>
+<td>删除一个键值对</td><td><code class=pp>del x[key]</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__delitem__><code>x.<dfn>__delitem__</dfn>(<var>key</var>)</code></a>
+</td></th></tr><tr><th>
+<td>为缺失键提供默认值</td><td><code class=pp>x[nonexistent_key]</code>
+</td><td><a href=http://docs.python.org/3.1/library/collections.html#collections.defaultdict.__missing__><code>x.<dfn>__missing__</dfn>(<var>nonexistent_key</var>)</code></a>
+</td></th></tr></table>
+
+<p><a href=http://docs.python.org/3.1/library/cgi.html><code>cgi</code> 模块</a> 的 <a href="special-method-names.html#acts-like-list-example"><code>FieldStorage</code> 类</a> 同样定义了这些特殊方法，也就是说可以像下面这样编码：<pre class=pp><code># A script which responds to http://example.com/search?q=cgi
+import cgi
+fs = cgi.FieldStorage()
+if 'q' in fs:
+<a>  do_search(fs['q'])                              <span class=u>①</span></a>
+
+# An excerpt from cgi.py that shows how it works
+class FieldStorage:
+.
+.
+.
+<a>    def __getitem__(self, key):                   <span class=u>②</span></a>
+        if self.list is None:
+            raise TypeError('not indexable')
+        found = []
+        for item in self.list:
+            if item.name == key: found.append(item)
+        if not found:
+            raise KeyError(key)
+        if len(found) == 1:
+            return found[0]
+        else:
+            return found</code></pre>
+<ol>
+<li><var>fs</var> 对象是 <code>cgi.FieldStorage</code> 类的一个实例，但仍然可以像 <code>fs['q']</code> 这样估算表达式。</li><li><code>fs['q']</code> 将 <var>key</var> 参数设置为 <code>'q'</code> 来调用 <code>__getitem__()</code> 方法。然后它将在其内部维护的查询参数列表 (<var>self.list</var>) 中查找一个 <code>.name</code> 与给定键相符的字典项。</li></ol>
+
+<h2 id=acts-like-number>行为方式与数值类似的类</h2>
+
+<p>使用适当的特殊方法，可以将类的行为方式定义为与数字相仿。也就是说，可以进行相加、相减，并进行其它数学运算。这就是 <dfn>分数</dfn> 的实现方式—— <code><dfn>Fraction</dfn></code> 类实现了这些特殊方法，然后就可以进行下列运算了：<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>from fractions import Fraction</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x = Fraction(1, 3)</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x / 3</kbd>
+<samp class=pp>Fraction(1, 9)</samp></pre>
+
+<p>以下是实现“类数字”类的完整特殊方法清单：<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>加法</td><td><code class=pp>x + y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__add__><code>x.<dfn>__add__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>减法</td><td><code class=pp>x - y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__sub__><code>x.<dfn>__sub__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>乘法</td><td><code class=pp>x * y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__mul__><code>x.<dfn>__mul__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>除法</td><td><code class=pp>x / y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__truediv__><code>x.<dfn>__truediv__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>地板除</td><td><code>x // y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__floordiv__><code>x.<dfn>__floordiv__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>取模（取余）</td><td><code class=pp>x % y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__mod__><code>x.<dfn>__mod__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>地板除 <i class=baa>&amp;</i> 取模</td><td><code class=pp>divmod(x, y)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__divmod__><code>x.<dfn>__divmod__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>乘幂</td><td><code class=pp>x ** y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__pow__><code>x.<dfn>__pow__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>左位移</td><td><code class=pp>x &lt;&lt; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__lshift__><code>x.<dfn>__lshift__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>右位移</td><td><code class=pp>x &gt;&gt; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rshift__><code>x.<dfn>__rshift__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>按位 <code>and</code>
+</td><td><code class=pp>x &amp; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__and__><code>x.<dfn>__and__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>按位 <code>xor</code>
+</td><td><code class=pp>x ^ y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__xor__><code>x.<dfn>__xor__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>按位 <code>or</code>
+</td><td><code class=pp>x | y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__or__><code>x.<dfn>__or__</dfn>(<var>y</var>)</code></a>
+</td></th></tr></table>
+
+<p>如果 <var>x</var> 是某个实现了所有这些方法的类的实例，那么万事大吉。但如果未实现其中之一呢？或者更糟，如果实现了，但却无法处理某几类参数会怎么样？例如：<pre class=screen>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>from fractions import Fraction</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>x = Fraction(1, 3)</kbd>
+<samp class=p>&gt;&gt;&gt; </samp><kbd class=pp>1 / x</kbd>
+<samp class=pp>Fraction(3, 1)</samp></pre>
+
+<p>这并 <em>不是</em> 传入一个 <code>分数</code> 并将其除以一个整数（如前例那样）的情况。前例中的情况非常直观： <code>x / 3</code> 调用 <code>x.__truediv__(3)</code>，而<code>Fraction</code> 的 <code>__truediv__()</code> 方法处理所有的数学运算。但整数并不“知道”如何对分数进行数学计算。因此本例该如何运作呢？<p>和 <i>反映操作</i> 相关的还有第二部分算数特殊方法。给定一个二元算术运算 （<i>例如：</i> <code>x / y</code>），有两种方法来实现它：<ol>
+<li>告诉 <var>x</var> 将自己除以 <var>y</var>，或者</li><li>告诉 <var>y</var> 去除 <var>x</var>
+</li></ol>
+
+<p>之前提到的特殊方法集合采用了第一种方式：对于给定 <code>x / y</code>，它们为 <var>x</var> 提供了一种途径来表述“我知道如何将自己除以 <var>y</var>。”下面的特殊方法集合采用了第二种方法：它们向 <var>y</var> 提供了一种途径来表述“我知道如何成为分母，并用自己去除 <var>x</var>。”<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>加法</td><td><code class=pp>x + y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__radd__><code>y.<dfn>__radd__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>减法</td><td><code class=pp>x - y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rsub__><code>y.<dfn>__rsub__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>乘法</td><td><code class=pp>x * y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rmul__><code>y.<dfn>__rmul__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>除法</td><td><code class=pp>x / y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rtruediv__><code>y.<dfn>__rtruediv__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>地板除</td><td><code>x // y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rfloordiv__><code>y.<dfn>__rfloordiv__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>取模（取余）</td><td><code class=pp>x % y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rmod__><code>y.<dfn>__rmod__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>地板除 <i class=baa>&amp;</i> 取模</td><td><code class=pp>divmod(x, y)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rdivmod__><code>y.<dfn>__rdivmod__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>乘幂</td><td><code class=pp>x ** y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rpow__><code>y.<dfn>__rpow__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>左位移</td><td><code class=pp>x &lt;&lt; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rlshift__><code>y.<dfn>__rlshift__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>右位移</td><td><code class=pp>x &gt;&gt; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rrshift__><code>y.<dfn>__rrshift__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>按位 <code>and</code>
+</td><td><code class=pp>x &amp; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rand__><code>y.<dfn>__rand__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>按位 <code>xor</code>
+</td><td><code class=pp>x ^ y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__rxor__><code>y.<dfn>__rxor__</dfn>(<var>x</var>)</code></a>
+</td></th></tr><tr><th>
+<td>按位 <code>or</code>
+</td><td><code class=pp>x | y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ror__><code>y.<dfn>__ror__</dfn>(<var>x</var>)</code></a>
+</td></th></tr></table>
+
+<p>但是等一下！还有更多特殊方法！如果在进行“原地”操作，如： <code>x /= 3</code>，还可定义更多的特殊方法。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>原地加法</td><td><code class=pp>x += y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__iadd__><code>x.<dfn>__iadd__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地减法</td><td><code class=pp>x -= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__isub__><code>x.<dfn>__isub__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地乘法</td><td><code class=pp>x *= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__imul__><code>x.<dfn>__imul__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地除法</td><td><code class=pp>x /= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__itruediv__><code>x.<dfn>__itruediv__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地地板除法</td><td><code>x //= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ifloordiv__><code>x.<dfn>__ifloordiv__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地取模</td><td><code class=pp>x %= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__imod__><code>x.<dfn>__imod__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地乘幂</td><td><code class=pp>x **= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ipow__><code>x.<dfn>__ipow__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地左位移</td><td><code class=pp>x &lt;&lt;= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ilshift__><code>x.<dfn>__ilshift__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地右位移</td><td><code class=pp>x &gt;&gt;= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__irshift__><code>x.<dfn>__irshift__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地按位 <code>and</code>
+</td><td><code class=pp>x &amp;= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__iand__><code>x.<dfn>__iand__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地按位 <code>xor</code>
+</td><td><code class=pp>x ^= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ixor__><code>x.<dfn>__ixor__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>原地按位 <code>or</code>
+</td><td><code class=pp>x |= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ior__><code>x.<dfn>__ior__</dfn>(<var>y</var>)</code></a>
+</td></th></tr></table>
+
+<p>注意：多数情况下，并不需要原地操作方法。如果未对特定运算定义“就地”方法，Python 将会试着使用（普通）方法。例如，为执行表达式 <code>x /= y</code>，Python 将会：<ol>
+<li>试着调用 <code>x.__itruediv__(<var>y</var>)</code>。如果该方法已经定义，并返回了 <code>NotImplemented</code> 之外的值，那已经大功告成了。</li><li>试图调用 <code>x.__truediv__(<var>y</var>)</code>。如果该方法已定义并返回一个 <code>NotImplemented</code> 之外的值， <var>x</var> 的旧值将被丢弃，并将所返回的值替代它，就像是进行了 <code> x = x / y</code> 运算。</li><li>试图调用 <code>y.__rtruediv__(<var>x</var>)</code>。如果该方法已定义并返回了一个 <code>NotImplemented</code> 之外的值，<var>x</var> 的旧值将被丢弃，并用所返回值进行替换。</li></ol>
+
+<p>因此如果想对原地运算进行优化，仅需像 <code>__itruediv__()</code> 方法一样定义“原地”方法。否则，基本上 Python 将会重新生成原地运算公式，以使用常规的运算及变量赋值。<p>还有一些“一元”数学运算，可以对“类-数字”对象自己执行。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>负数</td><td><code class=pp>-x</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__neg__><code>x.<dfn>__neg__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>正数</td><td><code class=pp>+x</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__pos__><code>x.<dfn>__pos__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>绝对值</td><td><code class=pp>abs(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__abs__><code>x.<dfn>__abs__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>取反</td><td><code class=pp>~x</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__invert__><code>x.<dfn>__invert__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>复数</td><td><code class=pp>complex(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__complex__><code>x.<dfn>__complex__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>整数转换</td><td><code class=pp>int(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__int__><code>x.<dfn>__int__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>浮点数</td><td><code class=pp>float(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__float__><code>x.<dfn>__float__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>四舍五入至最近的整数</td><td><code class=pp>round(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__round__><code>x.<dfn>__round__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>四舍五入至最近的 <var>n</var> 位小数</td><td><code class=pp>round(x, n)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__round__><code>x.<dfn>__round__</dfn>(n)</code></a>
+</td></th></tr><tr><th>
+<td><code>&gt;= x</code> 的最小整数
+</td><td><code class=pp>math.ceil(x)</code>
+</td><td><a href=http://docs.python.org/3.1/library/math.html#math.ceil><code>x.<dfn>__ceil__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td><code>&lt;= x</code>的最大整数
+</td><td><code class=pp>math.floor(x)</code>
+</td><td><a href=http://docs.python.org/3.1/library/math.html#math.floor><code>x.<dfn>__floor__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>对 <code>x</code> 朝向 0 取整</td><td><code class=pp>math.trunc(x)</code>
+</td><td><a href=http://docs.python.org/3.1/library/math.html#math.trunc><code>x.<dfn>__trunc__</dfn>()</code></a>
+</td></th></tr><tr><th><span class=inherit><a href=http://www.python.org/dev/peps/pep-0357/>PEP 357</a></span>
+<td>作为列表索引的数字</td><td><code class=pp>a_list[<var>x</var>]</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__index__><code>a_list[x.<dfn>__index__</dfn>()]</code></a>
+</td></th></tr></table>
+
+<h2 id=rich-comparisons>可比较的类</h2>
+
+<p>我将此内容从前一节中拿出来使其单独成节，是因为“比较”操作并不局限于数字。许多数据类型都可以进行比较——字符串、列表，甚至字典。如果要创建自己的类，且对象之间的比较有意义，可以使用下面的特殊方法来实现比较。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>相等</td><td><code class=pp>x == y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__eq__><code>x.<dfn>__eq__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>不相等</td><td><code class=pp>x != y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ne__><code>x.<dfn>__ne__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>小于</td><td><code class=pp>x &lt; y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__lt__><code>x.<dfn>__lt__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>小于或等于</td><td><code class=pp>x &lt;= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__le__><code>x.<dfn>__le__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>大于</td><td><code class=pp>x &gt;  y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__gt__><code>x.<dfn>__gt__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>大于或等于</td><td><code class=pp>x &gt;= y</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__ge__><code>x.<dfn>__ge__</dfn>(<var>y</var>)</code></a>
+</td></th></tr><tr><th>
+<td>布尔上上下文环境中的真值</td><td><code class=pp>if x:</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__bool__><code>x.<dfn>__bool__</dfn>()</code></a>
+</td></th></tr></table>
+
+<blockquote class=note>
+<p><span class=u>☞</span>如果定义了 <code>__lt__()</code> 方法但没有定义 <code>__gt__()</code> 方法，Python 将通过经交换的算子调用 <code>__lt__()</code> 方法。然而，Python 并不会组合方法。例如，如果定义了 <code>__lt__()</code> 方法和 <code>__eq()__</code> 方法，并试图测试是否 <code>x &lt;= y</code>，Python 不会按顺序调用 <code>__lt__()</code> 和 <code>__eq()__</code> 。它将只调用 <code>__le__()</code> 方法。</blockquote>
+
+<h2 id=pickle>可序列化的类</h2><!--see http://docs.python.org/3.1/library/pickle.html:-->
+
+
+<p>Python 支持 <a href="serializing.html">任意对象的序列化和反序列化</a>。（多数 Python 参考资料称该过程为 “pickling” 和 “unpickling”）。该技术对与将状态保存为文件并在稍后恢复它非常有意义。所有的 <a href="native-datatypes.html">内置数据类型</a> 均已支持 pickling 。如果创建了自定义类，且希望它能够 pickle，阅读 <a href=http://docs.python.org/3.1/library/pickle.html> pickle 协议</a> 了解下列特殊方法何时以及如何被调用。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>自定义对象的复制</td><td><code class=pp>copy.copy(x)</code>
+</td><td><a href=http://docs.python.org/3.1/library/copy.html><code>x.<dfn>__copy__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>自定义对象的深度复制</td><td><code class=pp>copy.deepcopy(x)</code>
+</td><td><a href=http://docs.python.org/3.1/library/copy.html><code>x.<dfn>__deepcopy__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>在 pickling 之前获取对象的状态</td><td><code class=pp>pickle.dump(x, <var>file</var>)</code>
+</td><td><a href=http://docs.python.org/3.1/library/pickle.html#pickle-state><code>x.<dfn>__getstate__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>序列化某对象</td><td><code class=pp>pickle.dump(x, <var>file</var>)</code>
+</td><td><a href=http://docs.python.org/3.1/library/pickle.html#pickling-class-instances><code>x.<dfn>__reduce__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>序列化某对象（新 pickling 协议）</td><td><code class=pp>pickle.dump(x, <var>file</var>, <var>protocol_version</var>)</code>
+</td><td><a href=http://docs.python.org/3.1/library/pickle.html#pickling-class-instances><code>x.<dfn>__reduce_ex__</dfn>(<var>protocol_version</var>)</code></a>
+</td></th></tr><tr><th>*
+<td>控制 unpickling 过程中对象的创建方式</td><td><code class=pp>x = pickle.load(<var>file</var>)</code>
+</td><td><a href=http://docs.python.org/3.1/library/pickle.html#pickling-class-instances><code>x.<dfn>__getnewargs__</dfn>()</code></a>
+</td></th></tr><tr><th>*
+<td>在 unpickling 之后还原对象的状态</td><td><code class=pp>x = pickle.load(<var>file</var>)</code>
+</td><td><a href=http://docs.python.org/3.1/library/pickle.html#pickle-state><code>x.<dfn>__setstate__</dfn>()</code></a>
+</td></th></tr></table>
+
+<p>* 要重建序列化对象，Python 需要创建一个和被序列化的对象看起来一样的新对象，然后设置新对象的所有属性。<code>__getnewargs__()</code> 方法控制新对象的创建过程，而 <code>__setstate__()</code> 方法控制属性值的还原方式。<h2 id=context-managers>可在 <code>with</code> 语块中使用的类</h2>
+
+<p><code>with</code> 语块定义了 <a href=http://www.python.org/doc/3.1/library/stdtypes.html#typecontextmanager>运行时刻上下文环境</a>；在执行 <code>with</code> 语句时将“进入”该上下文环境，而执行该语块中的最后一条语句将“退出”该上下文环境。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>在进入 <code>with</code> 语块时进行一些特别操作</td><td><code class=pp>with x:</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__enter__><code>x.<dfn>__enter__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>在退出 <code>with</code> 语块时进行一些特别操作</td><td><code class=pp>with x:</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__exit__><code>x.<dfn>__exit__</dfn>()</code></a>
+</td></th></tr></table>
+
+<p>以下是 <a href="files.html#with"><code>with <var>file</var></code> 习惯用法</a> 的运作方式：<pre class=pp><code># excerpt from io.py:
+def _checkClosed(self, msg=None):
+    '''Internal: raise an ValueError if file is closed
+    '''
+    if self.closed:
+        raise ValueError('I/O operation on closed file.'
+                         if msg is None else msg)
+
+def __enter__(self):
+    '''Context management protocol.  Returns self.'''
+<a>    self._checkClosed()                                <span class=u>①</span></a>
+<a>    return self                                        <span class=u>②</span></a>
+
+def __exit__(self, *args):
+    '''Context management protocol.  Calls close()'''
+<a>    self.close()                                       <span class=u>③</span></a></code></pre>
+<ol>
+<li>该文件对象同时定义了一个 <code>__enter__()</code> 和一个 <code>__exit__()</code> 方法。该 <code>__enter__()</code> 方法检查文件是否处于打开状态；如果没有， <code>_checkClosed()</code> 方法引发一个例外。</li><li><code>__enter__()</code> 方法将始终返回 <var>self</var>&nbsp;—— 这是 <code>with</code> 语块将用于调用属性和方法的对象</li><li>在 <code>with</code> 语块结束后，文件对象将自动关闭。怎么做到的？在 <code>__exit__()</code> 方法中调用了 <code>self.close()</code> .</li></ol>
+
+<blockquote class=note>
+<p><span class=u>☞</span>该 <code>__exit__()</code> 方法将总是被调用，哪怕是在 <code>with</code> 语块中引发了例外。实际上，如果引发了例外，该例外信息将会被传递给 <code>__exit__()</code> 方法。查阅 <a href=http://www.python.org/doc/3.1/reference/datamodel.html#with-statement-context-managers>With 状态上下文环境管理器</a> 了解更多细节。</blockquote>
+
+<p>要了解关于上下文管理器的更多内容，请查阅 <a href="files.html#with">《自动关闭文件》</a> 和 <a href="files.html#redirect">《重定向标准输出》</a>。<h2 id=esoterica>真正神奇的东西</h2>
+
+<p>如果知道自己在干什么，你几乎可以完全控制类是如何比较的、属性如何定义，以及类的子类是何种类型。<table>
+<tr><th>序号</th><th>目的</th><th>所编写代码</th><th>Python 实际调用</th></tr><tr><th>
+<td>类构造器</td><td><code class=pp>x = MyClass()</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__new__><code>x.<dfn>__new__</dfn>()</code></a>
+</td></th></tr><tr><th>*
+<td>类析构器</td><td><code class=pp>del x</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__del__><code>x.<dfn>__del__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>只定义特定集合的某些属性</td><td>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__slots__><code>x.<dfn>__slots__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>自定义散列值</td><td><code class=pp>hash(x)</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__hash__><code>x.<dfn>__hash__</dfn>()</code></a>
+</td></th></tr><tr><th>
+<td>获取某个属性的值</td><td><code class=pp>x.color</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__get__><code>type(x).<dfn>__dict__</dfn>['color'].__get__(x, type(x))</code></a>
+</td></th></tr><tr><th>
+<td>设置某个属性的值</td><td><code class=pp>x.color = 'PapayaWhip'</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__set__><code>type(x).<dfn>__dict__</dfn>['color'].__set__(x, 'PapayaWhip')</code></a>
+</td></th></tr><tr><th>
+<td>删除某个属性</td><td><code class=pp>del x.color</code>
+</td><td><a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__delete__><code>type(x).<dfn>__dict__</dfn>['color'].__del__(x)</code></a>
+</td></th></tr><tr><th>
+<td>控制某个对象是否是该对象的实例 your class</td><td><code class=pp>isinstance(x, MyClass)</code>
+</td><td><a href=http://www.python.org/dev/peps/pep-3119/#overloading-isinstance-and-issubclass><code>MyClass.<dfn>__instancecheck__</dfn>(x)</code></a>
+</td></th></tr><tr><th>
+<td>控制某个类是否是该类的子类</td><td><code class=pp>issubclass(C, MyClass)</code>
+</td><td><a href=http://www.python.org/dev/peps/pep-3119/#overloading-isinstance-and-issubclass><code>MyClass.<dfn>__subclasscheck__</dfn>(C)</code></a>
+</td></th></tr><tr><th>
+<td>控制某个类是否是该抽象基类的子类</td><td><code class=pp>issubclass(C, MyABC)</code>
+</td><td><a href=http://docs.python.org/3.1/library/abc.html#abc.ABCMeta.__subclasshook__><code>MyABC.<dfn>__subclasshook__</dfn>(C)</code></a>
+</td></th></tr></table>
+
+<p><sup>*</sup> 确切掌握 Python 何时调用 <code>__del__()</code> 特别方法 <a href=http://www.python.org/doc/3.1/reference/datamodel.html#object.__del__>是件难以置信的复杂</a>事情。要想完全理解它，必须清楚 <a href=http://www.python.org/doc/3.1/reference/datamodel.html#objects-values-and-types>Python 如何在内存中跟踪对象</a>。以下有一篇好文章介绍 <a href=http://www.electricmonk.nl/log/2008/07/07/python-destructor-and-garbage-collection-notes/>Python 垃圾收集和类析构器</a>。还可以阅读 <a href=http://mindtrove.info/articles/python-weak-references/>《弱引用》</a>、<a href=http://docs.python.org/3.1/library/weakref.html>《<code>weakref</code> 模块》</a>，还可以将 <a href=http://www.python.org/doc/3.1/library/gc.html>《<code>gc</code> 模块》</a> 当作补充阅读材料。<h2 id=furtherreading>深入阅读</h2>
+
+<p>本附录中提到的模块：<ul>
+<li><a href=http://docs.python.org/3.1/library/zipfile.html><code>zipfile</code> 模块</a>
+</li><li><a href=http://docs.python.org/3.1/library/cgi.html><code>cgi</code> 模块</a>
+</li><li><a href=http://www.python.org/doc/3.1/library/collections.html><code>collections</code> 模块</a>
+</li><li><a href=http://docs.python.org/3.1/library/math.html><code>math［数学］</code> 模块</a>
+</li><li><a href=http://docs.python.org/3.1/library/pickle.html><code>pickle</code> 模块</a>
+</li><li><a href=http://docs.python.org/3.1/library/copy.html><code>copy</code> 模块</a>
+</li><li><a href=http://docs.python.org/3.1/library/abc.html><code>abc</code> (“抽象基类”) 模块</a>
+</li></ul>
+
+<p>其它启发式阅读：<ul>
+<li><a href=http://www.python.org/doc/3.1/library/string.html#formatspec>迷你语言格式规范</a>
+</li><li><a href=http://www.python.org/doc/3.1/reference/datamodel.html>Python 数据模型</a>
+</li><li><a href=http://www.python.org/doc/3.1/library/stdtypes.html>内建类型</a>
+</li><li><a href=http://www.python.org/dev/peps/pep-0357/><abbr>PEP</abbr> 357: 使任何对象可以使用切片</a>
+</li><li><a href=http://www.python.org/dev/peps/pep-3119/><abbr>PEP</abbr> 3119: 抽象基类简介</a>
+</li></ul>
+
+<p class=v><a href="porting-code-to-python-3-with-2to3.html" rel=prev title="back to &#8220;Porting code to Python 3 with 2to3&#8221;"><span class=u>☜</span></a> <a rel=next href="where-to-go-from-here.html" title="onward to &#8220;Where To Go From Here&#8221;"><span class=u>☞</span></a>
+<p class=c>© 2001–9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

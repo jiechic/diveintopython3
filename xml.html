@@ -1,0 +1,679 @@
+﻿<!DOCTYPE html>
+<meta charset=utf-8>
+<title>XML - 深入Python 3</title>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 12}
+mark{display:inline}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=root value=Search></div></form>
+<p>你的位置: <a href="index.html">Home</a> <span class=u>&#8227;</span> <a href="table-of-contents.html#xml">Dive Into Python 3</a> <span class=u>&#8227;</span>
+<p id=level>难度等级: <span class=u title=advanced>&#x2666;&#x2666;&#x2666;&#x2666;&#x2662;</span>
+<h1>XML</h1>
+<blockquote class=q>
+<p><span class=u>&#x275D;</span> In the archonship of Aristaechmus, Draco enacted his ordinances. <span class=u>&#x275E;</span><br>&mdash; <a href='http://www.perseus.tufts.edu/cgi-bin/ptext?doc=Perseus:text:1999.01.0046;query=chapter%3D%235;layout=;loc=3.1'>Aristotle</a>
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>概述</h2>
+<p class=f>这本书的大部分章节都是以样例代码为中心的。但是<abbr>XML</abbr>这章不是；它以数据为中心。最常见的<abbr>XML</abbr>应用为&#8220;聚合订阅(syndication feeds)&#8221;，它用来展示博客，论坛或者其他会经常更新的网站的最新内容。大多数的博客软件都会在新文章，新的讨论区，或者新博文发布的时候自动生成和更新feed。我们可以通过&#8220;订阅(subscribe)&#8221;feed来关注它们，还可以使用专门的&#8220;<a href=http://en.wikipedia.org/wiki/List_of_feed_aggregators>feed聚合工具(feed aggregator)</a>&#8221;，比如<a href=http://www.google.com/reader/>Google Reader</a>。
+
+<p>以下的<abbr>XML</abbr>数据是我们这一章中要用到的。它是一个feed&nbsp;&mdash;&nbsp;更确切地说是一个<a href=http://atompub.org/rfc4287.html>Atom聚合feed</a>
+
+<p class=d>[<a href="examples/feed.xml">download <code>feed.xml</code></a>]
+<pre class=pp><code>&lt;?xml version='1.0' encoding='utf-8'?>
+&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>
+  &lt;title>dive into mark&lt;/title>
+  &lt;subtitle>currently between addictions&lt;/subtitle>
+  &lt;id>tag:diveintomark.org,2001-07-29:/&lt;/id>
+  &lt;updated>2009-03-27T21:56:07Z&lt;/updated>
+  &lt;link rel='alternate' type='text/html' href='http://diveintomark.org/'/>
+  &lt;link rel='self' type='application/atom+xml' href='http://diveintomark.org/feed/'/>
+  &lt;entry>
+    &lt;author>
+      &lt;name>Mark&lt;/name>
+      &lt;uri>http://diveintomark.org/&lt;/uri>
+    &lt;/author>
+    &lt;title>Dive into history, 2009 edition&lt;/title>
+    &lt;link rel='alternate' type='text/html'
+      href='http://diveintomark.org/archives/2009/03/27/dive-into-history-2009-edition'/>
+    &lt;id>tag:diveintomark.org,2009-03-27:/archives/20090327172042&lt;/id>
+    &lt;updated>2009-03-27T21:56:07Z&lt;/updated>
+    &lt;published>2009-03-27T17:20:42Z&lt;/published>
+    &lt;category scheme='http://diveintomark.org' term='diveintopython'/>
+    &lt;category scheme='http://diveintomark.org' term='docbook'/>
+    &lt;category scheme='http://diveintomark.org' term='html'/>
+  &lt;summary type='html'>Putting an entire chapter on one page sounds
+    bloated, but consider this &amp;amp;mdash; my longest chapter so far
+    would be 75 printed pages, and it loads in under 5 seconds&amp;amp;hellip;
+    On dialup.&lt;/summary>
+  &lt;/entry>
+  &lt;entry>
+    &lt;author>
+      &lt;name>Mark&lt;/name>
+      &lt;uri>http://diveintomark.org/&lt;/uri>
+    &lt;/author>
+    &lt;title>Accessibility is a harsh mistress&lt;/title>
+    &lt;link rel='alternate' type='text/html'
+      href='http://diveintomark.org/archives/2009/03/21/accessibility-is-a-harsh-mistress'/>
+    &lt;id>tag:diveintomark.org,2009-03-21:/archives/20090321200928&lt;/id>
+    &lt;updated>2009-03-22T01:05:37Z&lt;/updated>
+    &lt;published>2009-03-21T20:09:28Z&lt;/published>
+    &lt;category scheme='http://diveintomark.org' term='accessibility'/>
+    &lt;summary type='html'>The accessibility orthodoxy does not permit people to
+      question the value of features that are rarely useful and rarely used.&lt;/summary>
+  &lt;/entry>
+  &lt;entry>
+    &lt;author>
+      &lt;name>Mark&lt;/name>
+    &lt;/author>
+    &lt;title>A gentle introduction to video encoding, part 1: container formats&lt;/title>
+    &lt;link rel='alternate' type='text/html'
+      href='http://diveintomark.org/archives/2008/12/18/give-part-1-container-formats'/>
+    &lt;id>tag:diveintomark.org,2008-12-18:/archives/20081218155422&lt;/id>
+    &lt;updated>2009-01-11T19:39:22Z&lt;/updated>
+    &lt;published>2008-12-18T15:54:22Z&lt;/published>
+    &lt;category scheme='http://diveintomark.org' term='asf'/>
+    &lt;category scheme='http://diveintomark.org' term='avi'/>
+    &lt;category scheme='http://diveintomark.org' term='encoding'/>
+    &lt;category scheme='http://diveintomark.org' term='flv'/>
+    &lt;category scheme='http://diveintomark.org' term='GIVE'/>
+    &lt;category scheme='http://diveintomark.org' term='mp4'/>
+    &lt;category scheme='http://diveintomark.org' term='ogg'/>
+    &lt;category scheme='http://diveintomark.org' term='video'/>
+    &lt;summary type='html'>These notes will eventually become part of a
+      tech talk on video encoding.&lt;/summary>
+  &lt;/entry>
+&lt;/feed></code></pre>
+ 
+<p class=a>&#x2042;
+
+<h2 id=xml-intro>5分钟XML速成</h2>
+
+<p>如果你已经了解<abbr>XML</abbr>，可以跳过这一部分。
+
+<p><abbr>XML</abbr>是一种描述层次结构化数据的通用方法。<abbr>XML</abbr><i>文档</i>包含由<i>起始和结束标签(tag)</i>分隔的一个或多个<i>元素(element)</i>。以下也是一个完整的(虽然空洞)<abbr>XML</abbr>文件：
+
+<pre class='nd pp'><code><a>&lt;foo>   <span class=u>&#x2460;</span></a>
+<a>&lt;/foo>  <span class=u>&#x2461;</span></a></code></pre>
+<ol>
+<li>这是<code>foo</code>元素的<i>起始标签</i>。
+<li>这是<code>foo</code>元素对应的<i>结束标签</i>。就如写作、数学或者代码中需要平衡括号一样，每一个起始标签必须有对应的结束标签来<i>闭合</i>（匹配）。
+</ol>
+
+<p>元素可以<i>嵌套</i>到任意层次。位于<code>foo</code>中的元素<code>bar</code>可以被称作其<i>子元素</i>。
+
+<pre class='nd pp'><code>&lt;foo>
+  <mark>&lt;bar>&lt;/bar></mark>
+&lt;/foo>
+</code></pre>
+
+<p><abbr>XML</abbr>文档中的第一个元素叫做<i>根元素(root element)</i>。并且每份<abbr>XML</abbr>文档只能有一个根元素。以下不是一个<abbr>XML</abbr>文档，因为它存在两个&#8220;根元素&#8221;。
+
+<pre class='nd pp'><code>&lt;foo>&lt;/foo>
+&lt;bar>&lt;/bar></code></pre>
+
+<p>元素可以有其<i>属性(attribute)</i>，它们是一些名字-值(name-value)对。属性由空格分隔列举在元素的起始标签中。一个元素中<i>属性名</i>不能重复。<i>属性值</i>必须用引号包围起来。单引号、双引号都是可以。
+
+<pre class='nd pp'><code><a>&lt;foo <mark>lang='en'</mark>>                          <span class=u>&#x2460;</span></a>
+<a>  &lt;bar id='papayawhip' <mark>lang="fr"</mark>>&lt;/bar>  <span class=u>&#x2461;</span></a>
+&lt;/foo>
+</code></pre>
+<ol>
+<li><code>foo</code>元素有一个叫做<code>lang</code>的属性。<code>lang</code>的值为<code>en</code>
+<li><code>bar</code>元素则有两个属性，分别为<code>id</code>和<code>lang</code>。其中<code>lang</code>属性的值为<code>fr</code>。它不会与<code>foo</code>的那个属性产生冲突。每个元素都其独立的属性集。
+</ol>
+
+<p>如果元素有多个属性，书写的顺序并不重要。元素的属性是一个无序的键-值对集，跟Python中的列表对象一样。另外，元素中属性的个数是没有限制的。
+
+<p>元素可以有其<i>文本内容(text content)</i>
+
+<pre class='nd pp'><code>&lt;foo lang='en'>
+  &lt;bar lang='fr'><mark>PapayaWhip</mark>&lt;/bar>
+&lt;/foo>
+</code></pre>
+
+<p>如果某一元素既没有文本内容，也没有子元素，它也叫做<i>空元素</i>。
+
+<pre class='nd pp'><code>&lt;foo>&lt;/foo></code></pre>
+
+<p>表达空元素有一种简洁的方法。通过在起始标签的尾部添加<code>/</code>字符，我们可以省略结束标签。上一个例子中的<abbr>XML</abbr>文档可以写成这样：
+
+<pre class='nd pp'><code>&lt;foo<mark>/</mark>></code></pre>
+
+<p>就像Python函数可以在不同的<i>模块(modules)</i>中声明一样，也可以在不同的<i>名字空间(namespace)</i>中声明<abbr>XML</abbr>元素。<abbr>XML</abbr>文档的名字空间通常看起来像URL。我们可以通过声明<code>xmlns</code>来定义<i>默认名字空间</i>。名字空间声明跟元素属性看起来很相似，但是它们的作用是不一样的。
+
+<pre class='nd pp'><code><a>&lt;feed <mark>xmlns='http://www.w3.org/2005/Atom'</mark>>  <span class=u>&#x2460;</span></a>
+<a>  &lt;title>dive into mark&lt;/title>             <span class=u>&#x2461;</span></a>
+&lt;/feed>
+</code></pre>
+<ol>
+<li><code>feed</code>元素处在名字空间<code>http://www.w3.org/2005/Atom</code>中。
+<li><code>title</code>元素也是。名字空间声明不仅会作用于当前声明它的元素，还会影响到该元素的所有子元素。
+</ol>
+
+<p>也可以通过<code>xmlns:<var>prefix</var></code>声明来定义一个名字空间并取其名为<i>prefix</i>。然后该名字空间中的每个元素都必须显式地使用这个前缀(<var>prefix</var>)来声明。
+
+<pre class='nd pp'><code><a>&lt;atom:feed <mark>xmlns:atom='http://www.w3.org/2005/Atom'</mark>>  <span class=u>&#x2460;</span></a>
+<a>  &lt;atom:title>dive into mark&lt;/atom:title>             <span class=u>&#x2461;</span></a>
+&lt;/atom:feed></code></pre>
+<ol>
+<li><code>feed</code>元素属于名字空间<code>http://www.w3.org/2005/Atom</code>。
+<li><code>title</code>元素也在那个名字空间。
+</ol>
+
+<p>对于<abbr>XML</abbr>解析器而言，以上两个<abbr>XML</abbr>文档是<em>一样的</em>。名字空间 + 元素名 = <abbr>XML</abbr>标识。前缀只是用来引用名字空间的，所以对于解析器来说，这些前缀名(<code>atom:</code>)其实无关紧要的。名字空间相同，元素名相同，属性（或者没有属性）相同，每个元素的文本内容相同，则<abbr>XML</abbr>文档相同。
+
+<p>最后，在根元素之前，<a href="strings.html#one-ring-to-rule-them-all">字符编码信息</a>可以出现在<abbr>XML</abbr>文档的第一行。（这里存在一个两难的局面(catch-22)，直观上来说，解析<abbr>XML</abbr>文档需要这些编码信息，而这些信息又存在于<abbr>XML</abbr>文档中，如果你对<abbr>XML</abbr>如何解决此问题有兴趣，请参阅<a href=http://www.w3.org/TR/REC-xml/#sec-guessing-no-ext-info><abbr>XML</abbr>规范中 F 章节</a>）
+
+<pre class='nd pp'><code>&lt;?xml version='1.0' <mark>encoding='utf-8'</mark>?></code></pre>
+
+<p>现在我们已经知道足够多的<abbr>XML</abbr>知识，可以开始探险了！
+<br>
+
+<p class=a>&#x2042;
+
+<h2 id=xml-structure>Atom Feed的结构</h2>
+
+<p>想像一下网络上的博客，或者互联网上任何需要频繁更新的网站，比如<a href=http://www.cnn.com/>CNN.com</a>。该站点有一个标题(&#8220;CNN.com&#8221;)，一个子标题(&#8220;Breaking News, U.S., World, Weather, Entertainment <i class=baa>&amp;</i> Video News&#8221;)，包含上次更新的日期(&#8220;updated 12:43 p.m. EDT, Sat May 16, 2009&#8221;)，还有在不同时期发布的文章的列表。每一篇文章也有自己的标题，第一次发布的日期（如果曾经修订过或者改正过某个输入错误，或许也有一个上次更新的日期），并且每篇文章有自己唯一的URL。
+
+<p>Atom聚合格式被设计成可以包含所有这些信息的标准格式。我的博客无论在设计，主题还是读者上都与CNN.com大不相同，但是它们的基本结构是相同的。CNN.com能做的事情，我的博客也能做&hellip;
+
+<p>每一个Atom订阅都共享着一个<i>根元素</i>：即在名字空间<code>http://www.w3.org/2005/Atom</code>中的元素<code>feed</code>。
+<br>
+
+<pre class=pp><code><a>&lt;feed xmlns='http://www.w3.org/2005/Atom'  <span class=u>&#x2460;</span></a>
+<a>      xml:lang='en'>                       <span class=u>&#x2461;</span></a></code></pre>
+<ol>
+<li><code>http://www.w3.org/2005/Atom</code>表示名字空间Atom。
+<li>每一个元素都可以包含<code>xml:lang</code>属性，它用来声明该元素及其子元素使用的语言。在当前样例中，<code>xml:lang</code>在根元素中被声明了一次，也就意味着，整个feed都使用英文。
+</ol>
+
+<p>描述Atom feed自身的一些信息在根元素<code>feed</code>的子元素中被声明。
+
+<pre class=pp><code>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>
+<a>  &lt;title>dive into mark&lt;/title>                                             <span class=u>&#x2460;</span></a>
+<a>  &lt;subtitle>currently between addictions&lt;/subtitle>                         <span class=u>&#x2461;</span></a>
+<a>  &lt;id>tag:diveintomark.org,2001-07-29:/&lt;/id>                                <span class=u>&#x2462;</span></a>
+<a>  &lt;updated>2009-03-27T21:56:07Z&lt;/updated>                                   <span class=u>&#x2463;</span></a>
+<a>  &lt;link rel='alternate' type='text/html' href='http://diveintomark.org/'/>  <span class=u>&#x2464;</span></a></code></pre>
+<ol>
+<li>该行表示这个feed的标题为<code>dive into mark</code>。
+<li>这一行表示子标题为<code>currently between addictions</code>。
+<li>每一个feed都要有一个全局唯一标识符(globally unique identifier)。想要知道如何创建它，请查阅<a href=http://www.ietf.org/rfc/rfc4151.txt>RFC 4151</a>。
+<li>表示当前feed上次更新的时间为March 27, 2009, at 21:56 GMT。通常来说，它与最近一篇文章最后一次被修改的时间是一样的。
+<li>事情开始变得有趣了&hellip;<code>link</code>元素没有文本内容，但是它有三个属性：<code>rel</code>，<code>type</code>和<code>href</code>。<code>rel</code>元素的值能告诉我们链接的类型；<code>rel='alternate'</code>表示这个链接指向当前feed的另外一个版本。<code>type='text/html'</code>表示链接的目标是一个<abbr>HTML</abbr>页面。然后目标地址在<code>href</code>属性中指出。
+</ol>
+
+<p>现在我们知道这个feed上一更新是在on March 27, 2009，它是为一个叫做&#8220;dive into mark&#8221;的站点准备的，并且站点的地址为<a href=http://diveintomark.org/><code>http://diveintomark.org/</code></a>。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>在有一些<abbr>XML</abbr>文档中，元素的排列顺序是有意义的，但是Atom feed中不需要这样做。
+</blockquote>
+
+<p>feed级的元数据后边就是最近文章的列表了。单独的一篇文章就像这样：
+
+<pre class=pp><code>&lt;entry>
+<a>  &lt;author>                                                                 <span class=u>&#x2460;</span></a>
+    &lt;name>Mark&lt;/name>
+    &lt;uri>http://diveintomark.org/&lt;/uri>
+  &lt;/author>
+<a>  &lt;title>Dive into history, 2009 edition&lt;/title>                           <span class=u>&#x2461;</span></a>
+<a>  &lt;link rel='alternate' type='text/html'                                   <span class=u>&#x2462;</span></a>
+    href='http://diveintomark.org/archives/2009/03/27/dive-into-history-2009-edition'/>
+<a>  &lt;id>tag:diveintomark.org,2009-03-27:/archives/20090327172042&lt;/id>        <span class=u>&#x2463;</span></a>
+<a>  &lt;updated>2009-03-27T21:56:07Z&lt;/updated>                                  <span class=u>&#x2464;</span></a>
+  &lt;published>2009-03-27T17:20:42Z&lt;/published>        
+<a>  &lt;category scheme='http://diveintomark.org' term='diveintopython'/>       <span class=u>&#x2465;</span></a>
+  &lt;category scheme='http://diveintomark.org' term='docbook'/>
+  &lt;category scheme='http://diveintomark.org' term='html'/>
+<a>  &lt;summary type='html'>Putting an entire chapter on one page sounds        <span class=u>&#x2466;</span></a>
+    bloated, but consider this &amp;amp;mdash; my longest chapter so far
+    would be 75 printed pages, and it loads in under 5 seconds&amp;amp;hellip;
+    On dialup.&lt;/summary>
+<a>&lt;/entry>                                                                   <span class=u>&#x2467;</span></a></code></pre>
+<ol>
+<li><code>author</code>元素指示文章的作者：一个叫做Mark的伙计，并且我们可以在<code>http://diveintomark.org/</code>找到他的事迹。（这就像是feed元素里的备用链接，但是没有规定一定要这样。许多网络日志由多个作者完成，他们都有自己的个人主页。）
+<li><code>title</code>元素给出这篇文章的标题，即&#8220;Dive into history, 2009 edition&#8221;。
+<li>如<code>feed</code>元素中的备用链接一样，<code>link</code>元素给出这篇文章的<abbr>HTML</code>版本地址。
+<li>每个条目也像feed一样，需要一个唯一的标识。
+<li>每个条目有两个日期与其相关：第一次发布日期(<code>published</code>)和上次修改日期(<code>updated</code>)。
+<li>条目可以属于任意多个类别。这篇文章被归类到<code>diveintopython</code>，<code>docbook</code>，和<code>html</code>。
+<li><code>summary</code>元素中有这篇文章的概要性描述。（还有一个元素这里没有展示出来，即<code>content</code>，我们可以把整篇文章的内容都放在里边。）当前样例中，<code>summary</code>元素含有一个Atom特有的<code>type='html'</code>属性，它用来告知这份概要为<abbr>HTML</abbr>格式，而非纯文本。这非常重要，因为概要内容中包含了<abbr>HTML</abbr>中特有的实体（<code>&amp;mdash;</code>和<code>&amp;hellip;</code>），它们不应该以纯文本直接显示，正确的形式应该为&#8220;&mdash;&#8221;和&#8220;&hellip;&#8221;。
+<li>最后就是<code>entry</code>元素的结束标记了，它指示文章元数据的结尾。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=xml-parse>解析XML</h2>
+
+<p>Python可以使用几种不同的方式解析<abbr>XML</abbr>文档。它包含了<a href=http://en.wikipedia.org/wiki/XML#DOM><abbr>DOM</abbr></a>和<a href=http://en.wikipedia.org/wiki/Simple_API_for_XML><abbr>SAX</abbr></a>解析器，但是我们焦点将放在另外一个叫做ElementTree的库上边。
+
+<p class=d>[<a href="examples/feed.xml">download <code>feed.xml</code></a>]
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>import xml.etree.ElementTree as etree</kbd>    <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>tree = etree.parse('examples/feed.xml')</kbd>  <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>root = tree.getroot()</kbd>                    <span class=u>&#x2462;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>root</kbd>                                     <span class=u>&#x2463;</span></a>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}feed at cd1eb0></samp></pre>
+<ol>
+<li>ElementTree属于Python标准库的一部分，它的位置为<code>xml.etree.ElementTree</code>。
+<li><code>parse()</code>函数是ElementTree库的主要入口，它使用文件名或者<a href="files.html#file-like-objects">流对象</a>作为参数。<code>parse()</code>函数会立即解析完整个文档。如果内存资源紧张，也可以<a href=http://effbot.org/zone/element-iterparse.htm>增量式地解析<abbr>XML</abbr>文档</a>
+<li><code>parse()</code>函数会返回一个能代表整篇文档的对象。这<em>不是</em>根元素。要获得根元素的引用可以调用<code>getroot()</code>方法。
+<li>如预期的那样，根元素即<code>http://www.w3.org/2005/Atom</code>名字空间中的<code>feed</code>。该字符串表示再次重申了非常重要的一点：<abbr>XML</abbr>元素由名字空间和标签名（也称作<i>本地名(local name)</i>）组成。这篇文档中的每个元素都在名字空间Atom中，所以根元素被表示为<code>{http://www.w3.org/2005/Atom}feed</code>。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>ElementTree使用<code>{<var>namespace</var>}<var>localname</var></code>来表达<abbr>XML</abbr>元素。我们将会在ElementTree的<abbr>API</abbr>中多次见到这种形式。
+</blockquote>
+
+<h3 id=xml-elements>元素即列表</h3>
+
+<p>在ElementTree API中，元素的行为就像列表一样。列表中的项即该元素的子元素。
+
+<pre class=screen>
+# continued from the previous example
+<a><samp class=p>>>> </samp><kbd class=pp>root.tag</kbd>                        <span class=u>&#x2460;</span></a>
+<samp>'{http://www.w3.org/2005/Atom}feed'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>len(root)</kbd>                       <span class=u>&#x2461;</span></a>
+<samp class=pp>8</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>for child in root:</kbd>              <span class=u>&#x2462;</span></a>
+<a><samp class=p>... </samp><kbd class=pp>  print(child)</kbd>                  <span class=u>&#x2463;</span></a>
+<samp class=p>... </samp>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}title at e2b5d0>
+&lt;Element {http://www.w3.org/2005/Atom}subtitle at e2b4e0>
+&lt;Element {http://www.w3.org/2005/Atom}id at e2b6c0>
+&lt;Element {http://www.w3.org/2005/Atom}updated at e2b6f0>
+&lt;Element {http://www.w3.org/2005/Atom}link at e2b4b0>
+&lt;Element {http://www.w3.org/2005/Atom}entry at e2b720>
+&lt;Element {http://www.w3.org/2005/Atom}entry at e2b510>
+&lt;Element {http://www.w3.org/2005/Atom}entry at e2b750></samp></pre>
+<ol>
+<li>紧接前一例子，根元素为<code>{http://www.w3.org/2005/Atom}feed</code>。
+<li>根元素的&#8220;长度&#8221;即子元素的个数。
+<li>我们可以像使用迭代器一样来遍历其子元素。
+<li>从输出可以看到，根元素总共有8个子元素：所有feed级的元数据（<code>title</code>，<code>subtitle</code>，<code>id</code>，<code>updated</code>和<code>link</code>），还有紧接着的三个<code>entry</code>元素。
+</ol>
+
+<p>也许你已经注意到了，但我还是想要指出来：该列表只包含<em>直接</em>子元素。每一个<code>entry</code>元素都有其子元素，但是并没有包括在这个列表中。这些子元素本可以包括在<code>entry</code>元素的列表中，但是确实不属于<code>feed</code>的子元素。但是，无论这些元素嵌套的层次有多深，总是有办法定位到它们的；在这章的后续部分我们会介绍两种方法。
+
+<h3 id=xml-attributes>属性即字典</h3>
+
+<p><abbr>XML</abbr>不只是元素的集合；每一个元素还有其属性集。一旦获取了某个元素的引用，我们可以像操作Python的字典一样轻松获取到其属性。
+
+<pre class=screen>
+# continuing from the previous example
+<a><samp class=p>>>> </samp><kbd class=pp>root.attrib</kbd>                           <span class=u>&#x2460;</span></a>
+<samp class=pp>{'{http://www.w3.org/XML/1998/namespace}lang': 'en'}</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>root[4]</kbd>                               <span class=u>&#x2461;</span></a>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}link at e181b0></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>root[4].attrib</kbd>                        <span class=u>&#x2462;</span></a>
+<samp class=pp>{'href': 'http://diveintomark.org/',
+ 'type': 'text/html',
+ 'rel': 'alternate'}</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>root[3]</kbd>                               <span class=u>&#x2463;</span></a>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}updated at e2b4e0></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>root[3].attrib</kbd>                        <span class=u>&#x2464;</span></a>
+<samp class=pp>{}</samp></pre>
+<ol>
+<li><code>attrib</code>是一个代表元素属性的字典。这个地方原来的标记语言是这样描述的：<code>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'></code>。前缀<code>xml:</code>指示一个内置的名字空间，每一个<abbr>XML</abbr>不需要声明就可以使用它。
+<li>第五个子元素&nbsp;&mdash;&nbsp;以0为起始的列表中即<code>[4]</code>&nbsp;&mdash;&nbsp;为元素<code>link</code>。
+<li><code>link</code>元素有三个属性：<code>href</code>，<code>type</code>，和<code>rel</code>。
+<li>第四个子元素&nbsp;&mdash;&nbsp;<code>[3]</code>&nbsp;&mdash;&nbsp;为<code>updated</code>。
+<li>元素<code>updated</code>没有子元素，所以<code>.attrib</code>是一个空的字典对象。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=xml-find>在XML文档中查找结点</h2>
+
+<p>到目前为止，我们已经&#8220;自顶向下&#8220;地从根元素开始，一直到其子元素，走完了整个文档。但是许多情况下我们需要找到<abbr>XML</abbr>中特定的元素。Etree也能完成这项工作。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import xml.etree.ElementTree as etree</kbd>
+<samp class=p>>>> </samp><kbd class=pp>tree = etree.parse('examples/feed.xml')</kbd>
+<samp class=p>>>> </samp><kbd class=pp>root = tree.getroot()</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>root.findall('{http://www.w3.org/2005/Atom}entry')</kbd>    <span class=u>&#x2460;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}entry at e2b4e0>,
+ &lt;Element {http://www.w3.org/2005/Atom}entry at e2b510>,
+ &lt;Element {http://www.w3.org/2005/Atom}entry at e2b540>]</samp>
+<samp class=p>>>> </samp><kbd class=pp>root.tag</kbd>
+<samp class=pp>'{http://www.w3.org/2005/Atom}feed'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>root.findall('{http://www.w3.org/2005/Atom}feed')</kbd>     <span class=u>&#x2461;</span></a>
+<samp class=pp>[]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>root.findall('{http://www.w3.org/2005/Atom}author')</kbd>   <span class=u>&#x2462;</span></a>
+<samp class=pp>[]</samp></pre>
+<ol>
+<li><code>findfall()</code>方法查找匹配特定格式的子元素。（关于查询的格式稍后会讲到。）
+<li>每个元素&nbsp;&mdash;&nbsp;包括根元素及其子元素&nbsp;&mdash;&nbsp;都有<code>findall()</code>方法。它会找到所有匹配的子元素。但是为什么没有看到任何结果呢？也许不太明显，这个查询只会搜索其子元素。由于根元素<code>feed</code>中不存在任何叫做<code>feed</code>的子元素，所以查询的结果为一个空的列表。
+<li>这个结果也许也在你的意料之外。<a href="xml.html#divingin">在这篇文档中确实存在<code>author</code>元素</a>；事实上总共有三个（每个<code>entry</code>元素中都有一个）。但是那些<code>author</code>元素不是根元素的<em>直接子元素</em>。我们可以在任意嵌套层次中查找<code>author</code>元素，但是查询的格式会有些不同。
+</ol>
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>tree.findall('{http://www.w3.org/2005/Atom}entry')</kbd>    <span class=u>&#x2460;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}entry at e2b4e0>,
+ &lt;Element {http://www.w3.org/2005/Atom}entry at e2b510>,
+ &lt;Element {http://www.w3.org/2005/Atom}entry at e2b540>]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>tree.findall('{http://www.w3.org/2005/Atom}author')</kbd>   <span class=u>&#x2461;</span></a>
+<samp class=pp>[]</samp>
+</pre>
+<ol>
+<li>为了方便，对象<code>tree</code>（调用<code>etree.parse()</code>的返回值）中的一些方法是根元素中这些方法的镜像。在这里，如果调用<code>tree.getroot().findall()</code>，则返回值是一样的。
+<li>也许有些意外，这个查询请求也没有找到文档中的<code>author</code>元素。为什么没有呢？因为它只是<code>tree.getroot().findall('{http://www.w3.org/2005/Atom}author')</code>的一种简洁表示，即&#8220;查询所有是根元素的子元素的<code>author</code>&#8221;。因为这些<code>author</code>是<code>entry</code>元素的子元素，所以查询没有找到任何匹配的。
+</ol>
+
+<p><code>find()</code>方法用来返回第一个匹配到的元素。当我们认为只会有一个匹配，或者有多个匹配但我们只关心第一个的时候，这个方法是很有用的。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>entries = tree.findall('{http://www.w3.org/2005/Atom}entry')</kbd>           <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>len(entries)</kbd>
+<samp class=p>3</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>title_element = entries[0].find('{http://www.w3.org/2005/Atom}title')</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>title_element.text</kbd>
+<samp class=pp>'Dive into history, 2009 edition'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>foo_element = entries[0].find('{http://www.w3.org/2005/Atom}foo')</kbd>      <span class=u>&#x2462;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>foo_element</kbd>
+<samp class=p>>>> </samp><kbd class=pp>type(foo_element)</kbd>
+<samp class=pp>&lt;class 'NoneType'></samp>
+</pre>
+<ol>
+<li>在前一样例中已经看到。这一句返回所有的<code>atom:entry</code>元素。
+<li><code>find()</code>方法使用ElementTree作为参数，返回第一个匹配到的元素。
+<li>在<code>entries[0]</code>中没有叫做<code>foo</code>的元素，所以返回值为<code>None</code>。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>可逮住你了，在这里<code>find()</code>方法非常容易被误解。在布尔上下文中，如果ElementTree元素对象不包含子元素，其值则会被认为是<code>False</code>（<i>即</i>如果<code>len(element)</code>等于0）。这就意味着<code>if element.find('...')</code>并非在测试是否<code>find()</code>方法找到了匹配项；这条语句是在测试匹配到的元素是否包含子元素！想要测试<code>find()</code>方法是否返回了一个元素，则需使用<code>if element.find('...') is not None</code>。
+</blockquote>
+
+<p>也<em>可以</em>在所有<em>派生(descendant)</em>元素中搜索，<i>即</i>任意嵌套层次的子元素，孙子元素等&hellip;
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>all_links = tree.findall('//{http://www.w3.org/2005/Atom}link')</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>all_links</kbd>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}link at e181b0>,
+ &lt;Element {http://www.w3.org/2005/Atom}link at e2b570>,
+ &lt;Element {http://www.w3.org/2005/Atom}link at e2b480>,
+ &lt;Element {http://www.w3.org/2005/Atom}link at e2b5a0>]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>all_links[0].attrib</kbd>                                              <span class=u>&#x2461;</span></a>
+<samp class=pp>{'href': 'http://diveintomark.org/',
+ 'type': 'text/html',
+ 'rel': 'alternate'}</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>all_links[1].attrib</kbd>                                              <span class=u>&#x2462;</span></a>
+<samp class=pp>{'href': 'http://diveintomark.org/archives/2009/03/27/dive-into-history-2009-edition',
+ 'type': 'text/html',
+ 'rel': 'alternate'}</samp>
+<samp class=p>>>> </samp><kbd class=pp>all_links[2].attrib</kbd>
+<samp class=pp>{'href': 'http://diveintomark.org/archives/2009/03/21/accessibility-is-a-harsh-mistress',
+ 'type': 'text/html',
+ 'rel': 'alternate'}</samp>
+<samp class=p>>>> </samp><kbd class=pp>all_links[3].attrib</kbd>
+<samp class=pp>{'href': 'http://diveintomark.org/archives/2008/12/18/give-part-1-container-formats',
+ 'type': 'text/html',
+ 'rel': 'alternate'}</samp></pre>
+<ol>
+<li><code>//{http://www.w3.org/2005/Atom}link</code>与前一样例很相似，除了开头的两条斜线。这两条斜线告诉<code>findall()</code>方法&#8220;不要只在直接子元素中查找；查找的范围可以是<em>任意</em>嵌套层次&#8221;。
+<li>查询到的第一个结果<em>是</em>根元素的直接子元素。从它的属性中可以看出，它是一个指向该feed的<abbr>HTML</abbr>版本的备用链接。
+<li>其他的三个结果分别是低一级的备用链接。每一个<code>entry</code>都有单独一个<code>link</code>子元素，由于在查询语句前的两条斜线的作用，我们也能定位到他们。
+</ol>
+
+<!--
+<p>What&#8217;s that? You say you want the power of the <code>findall()</code> method, but you want to work with an iterator instead of building a complete list? ElementTree can do that too.
+
+<pre class=screen>
+# continuing from the previous example
+<a><samp class=p>>>> </samp><kbd class=pp>it = tree.getiterator('{http://www.w3.org/2005/Atom}link')</kbd>  <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>next(it)</kbd>                                                    <span class=u>&#x2461;</span></a>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}link at 122f1b0></samp>
+<samp class=p>>>> </samp><kbd class=pp>next(it)</kbd>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}link at 122f1e0></samp>
+<samp class=p>>>> </samp><kbd class=pp>next(it)</kbd>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}link at 122f210></samp>
+<samp class=p>>>> </samp><kbd class=pp>next(it)</kbd>
+<samp>&lt;Element {http://www.w3.org/2005/Atom}link at 122f1b0></samp>
+<samp class=p>>>> </samp><kbd class=pp>next(it)</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+StopIteration</samp></pre>
+<ol>
+<li>The <code>getiterator()</code> method can take zero or one arguments. If called with no arguments, it returns an iterator that spits out every element and child element in the entire document. Or, as shown here, you can call it with an element name in standard ElementTree format. This returns an iterator that spits out only elements of that name.
+<li>Repeatedly calling the <code>next()</code> function with this iterator will eventually return every element of the document that matches the query you passed to the <code>getiterator()</code> method.
+</ol>
+-->
+
+<p>总的来说，ElementTree的<code>findall()</code>方法是其一个非常强大的特性，但是它的查询语言却让人有些出乎意料。官方描述它为&#8220;<a href=http://effbot.org/zone/element-xpath.htm>有限的XPath支持</a>。&#8221;<a href=http://www.w3.org/TR/xpath>XPath</a>是一种用于查询<abbr>XML</abbr>文档的W3C标准。对于基础地查询来说，ElementTree与XPath语法上足够相似，但是如果已经会XPath的话，它们之间的差异可能会使你感到不快。现在，我们来看一看另外一个第三方<abbr>XML</abbr>库，它扩展了ElementTree的<abbr>API</abbr>以提供对XPath的全面支持。
+
+<p class=a>&#x2042;
+
+<h2 id=xml-lxml>深入lxml</h2>
+
+<p><a href=http://codespeak.net/lxml/><code>lxml</code></a>是一个开源的第三方库，以流行的<a href=http://www.xmlsoft.org/>libxml2 解析器</a>为基础开发。提供了与ElementTree完全兼容的<abbr>API</abbr>，并且扩展它以提供了对XPath 1.0的全面支持，以及改进了一些其他精巧的细节。提供<a href=http://pypi.python.org/pypi/lxml/>Windows的安装程序</a>；Linux用户推荐使用特定发行版自带的工具比如<code>yum</code>或者<code>apt-get</code>从它们的程序库中安装预编译好了的二进制文件。要不然，你就得手工<a href=http://codespeak.net/lxml/installation.html>安装</a>他们了。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>from lxml import etree</kbd>                   <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>tree = etree.parse('examples/feed.xml')</kbd>  <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>root = tree.getroot()</kbd>                    <span class=u>&#x2462;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>root.findall('{http://www.w3.org/2005/Atom}entry')</kbd>  <span class=u>&#x2463;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}entry at e2b4e0>,
+ &lt;Element {http://www.w3.org/2005/Atom}entry at e2b510>,
+ &lt;Element {http://www.w3.org/2005/Atom}entry at e2b540>]</samp></pre>
+<ol>
+<li>导入<code>lxml</code>以后，可以发现它与内置的ElementTree库提供相同的<abbr>API</abbr>。
+<li><code>parse()</code>函数：与ElementTree相同。
+<li><code>getroot()</code>方法：相同。
+<li><code>findall()</code>方法：完全相同。
+</ol>
+
+<p>对于大型的<abbr>XML</abbr>文档，<code>lxml</code>明显比内置的ElementTree快了许多。如果现在只用到了ElementTree的<abbr>API</abbr>，并且想要使用其最快的实现(implementation)，我们可以尝试导入<code>lxml</code>，并且将内置的ElementTree作为备用。
+
+<pre class='nd pp'><code>try:
+    from lxml import etree
+except ImportError:
+    import xml.etree.ElementTree as etree</code></pre>
+
+<p>但是<code>lxml</code>不只是一个更快速的ElementTree。它的<code>findall()</code>方法能够支持更加复杂的表达式。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>import lxml.etree</kbd>                                                                   <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>tree = lxml.etree.parse('examples/feed.xml')</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>tree.findall('//{http://www.w3.org/2005/Atom}*[@href]')</kbd>                             <span class=u>&#x2461;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}link at eeb8a0>,
+ &lt;Element {http://www.w3.org/2005/Atom}link at eeb990>,
+ &lt;Element {http://www.w3.org/2005/Atom}link at eeb960>,
+ &lt;Element {http://www.w3.org/2005/Atom}link at eeb9c0>]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>tree.findall("//{http://www.w3.org/2005/Atom}*[@href='http://diveintomark.org/']")</kbd>  <span class=u>&#x2462;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}link at eeb930>]</samp>
+<samp class=p>>>> </samp><kbd class=pp>NS = '{http://www.w3.org/2005/Atom}'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>tree.findall('//{NS}author[{NS}uri]'.format(NS=NS))</kbd>                                 <span class=u>&#x2463;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}author at eeba80>,
+ &lt;Element {http://www.w3.org/2005/Atom}author at eebba0>]</samp></pre>
+<ol>
+<li>在这个样例中，我使用了<code>import lxml.etree</code>（而非<code>from lxml import etree</code>），以强调这些特性只限于<code>lxml</code>。
+<li>这一句在整个文档范围内搜索名字空间Atom中具有<code>href</code>属性的所有元素。在查询语句开头的<code>//</code>表示&#8220;搜索的范围为整个文档（不只是根元素的子元素）。&#8221; <code>{http://www.w3.org/2005/Atom}</code>指示&#8220;搜索范围仅在名字空间Atom中。&#8221; <code>*</code> 表示&#8220;任意本地名(local name)的元素。&#8221; <code>[@href]</code>表示&#8220;含有<code>href</code>属性。&#8221;
+<li>该查询找出所有包含<code>href</code>属性并且其值为<code>http://diveintomark.org/</code>的Atom元素。
+<li>在简单的<a href="strings.html#formatting-strings">字符串格式化</a>后（要不然这条复合查询语句会变得特别长），它搜索名字空间Atom中包含<code>uri</code>元素作为子元素的<code>author</code>元素。该条语句只返回了第一个和第二个<code>entry</code>元素中的<code>author</code>元素。最后一个<code>entry</code>元素中的<code>author</code>只包含有<code>name</code>属性，没有<code>uri</code>。
+</ol>
+
+<p>仍然不够用？<code>lxml</code>也集成了对任意XPath 1.0表达式的支持。我们不会深入讲解XPath的语法；那可能需要一整本书！但是我会给你展示它是如何集成到<code>lxml</code>去的。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import lxml.etree</kbd>
+<samp class=p>>>> </samp><kbd class=pp>tree = lxml.etree.parse('examples/feed.xml')</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>NSMAP = {'atom': 'http://www.w3.org/2005/Atom'}</kbd>                    <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>entries = tree.xpath("//atom:category[@term='accessibility']/..",</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=p>... </samp><kbd class=pp>    namespaces=NSMAP)</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>entries</kbd>                                                            <span class=u>&#x2462;</span></a>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}entry at e2b630>]</samp>
+<samp class=p>>>> </samp><kbd class=pp>entry = entries[0]</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>entry.xpath('./atom:title/text()', namespaces=NSMAP)</kbd>               <span class=u>&#x2463;</span></a>
+<samp class=pp>['Accessibility is a harsh mistress']</samp></pre>
+<ol>
+<li>要查询名字空间中的元素，首先需要定义一个名字空间前缀映射。它就是一个Python字典对象。
+<li>这就是一个XPath查询请求。这个XPath表达式目的在于搜索<code>category</code>元素，并且该元素包含有值为<code>accessibility</code>的<code>term</code>属性。但是那并不是查询的结果。请看查询字符串的尾端；是否注意到了<code>/..</code>这一块？它的意思是，&#8220;然后返回已经找到的<code>category</code>元素的父元素。&#8221;所以这条XPath查询语句会找到所有包含<code>&lt;category term='accessibility'></code>作为子元素的条目。
+<li><code>xpath()</code>函数返回一个ElementTree对象列表。在这篇文档中，只有一个<code>category</code>元素，并且它的<code>term</code>属性值为<code>accessibility</code>。
+<li>XPath表达式并不总是会返回一个元素列表。技术上说，一个解析了的<abbr>XML</abbr>文档的<abbr>DOM</abbr>模型并不包含元素；它只包含<i>结点(node)</i>。依据它们的类型，结点可以是元素，属性，甚至是文本内容。XPath查询的结果是一个结点列表。当前查询返回一个文本结点列表：<code>title</code>元素(<code>atom:title</code>)的文本内容(<code>text()</code>)，并且<code>title</code>元素必须是当前元素的子元素(<code>./</code>)。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=xml-generate>生成XML</h2>
+
+<p>Python对<abbr>XML</abbr>的支持不只限于解析已存在的文档。我们也可以从头来创建<abbr>XML</abbr>文档。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import xml.etree.ElementTree as etree</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>new_feed = etree.Element('{http://www.w3.org/2005/Atom}feed',</kbd>     <span class=u>&#x2460;</span></a>
+<a><samp class=p>... </samp><kbd class=pp>    attrib={'{http://www.w3.org/XML/1998/namespace}lang': 'en'})</kbd>  <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>print(etree.tostring(new_feed))</kbd>                                   <span class=u>&#x2462;</span></a>
+<samp class=pp>&lt;ns0:feed xmlns:ns0='http://www.w3.org/2005/Atom' xml:lang='en'/></samp></pre>
+<ol>
+<li>实例化<code>Element</code>类来创建一个新元素。可以将元素的名字（名字空间 + 本地名）作为其第一个参数。当前语句在Atom名字空间中创建一个<code>feed</code>元素。它将会成为我们文档的根元素。
+<li>将属性名和值构成的字典对象传递给<var>attrib</var>参数，这样就可以给新创建的元素添加属性。请注意，属性名应该使用标准的ElementTree格式，<code>{<var>namespace</var>}<var>localname</var></code>。
+<li>在任何时候，我们可以使用ElementTree的<code>tostring()</code>函数序列化任意元素（还有它的子元素）。
+</ol>
+
+<p>这种序列化结果有使你感到意外吗？技术上说，ElementTree使用的序列化方法是精确的，但却不是最理想的。在本章开头给出的<abbr>XML</abbr>样例文档中定义了一个<i>默认名字空间(default namespace)</i>(<code>xmlns='http://www.w3.org/2005/Atom'</code>)。对于每个元素都在同一个名字空间中的文档&nbsp;&mdash;&nbsp;比如Atom feeds&nbsp;&mdash;&nbsp;定义默认的名字空间非常有用，因为只需要声明一次名字空间，然后在声明每个元素的时候只需要使用其本地名即可(<code>&lt;feed></code>，<code>&lt;link></code>，<code>&lt;entry></code>)。除非想要定义另外一个名字空间中的元素，否则没有必要使用前缀。
+
+<p>对于<abbr>XML</abbr>解析器来说，它不会&#8220;注意&#8221;到使用默认名字空间和使用前缀名字空间的<abbr>XML</abbr>文档之间有什么不同。当前序列化结果的<abbr>DOM</abbr>为：
+
+<pre class='nd pp'><code>&lt;ns0:feed xmlns:ns0='http://www.w3.org/2005/Atom' xml:lang='en'/></code></pre>
+
+<p>与下列序列化的DOM是一模一样的：
+<br>
+
+<pre class='nd pp'><code>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'/></code></pre>
+
+<p>实际上唯一不同的只是第二个序列化短了几个字符长度。如果我们改动整个样例feed，使每一个起始和结束标签都有一个<code>ns0:</code>前缀，这将为每个起始标签增加 4 个字符 &times; 79 个标签 + 4 个名字空间声明本身用到的字符，总共320个字符。假设我们使用<a href="strings.html#byte-arrays">UTF-8编码</a>，那将是320个额外的字节。（使用gzip压缩以后，大小可以降到21个字节，但是，21个字节也是字节。）也许对个人来说这算不了什么，但是对于像Atom feed这样的东西，只要稍有改变就有可能被下载上千次，每一个请求节约的几个字节就会迅速累加起来。
+
+<p>内置的ElementTree库没有提供细粒度地对序列化时名字空间内的元素的控制，但是<code>lxml</code>有这样的功能。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import lxml.etree</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>NSMAP = {None: 'http://www.w3.org/2005/Atom'}</kbd>                     <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>new_feed = lxml.etree.Element('feed', nsmap=NSMAP)</kbd>                <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>print(lxml.etree.tounicode(new_feed))</kbd>                             <span class=u>&#x2462;</span></a>
+<samp class=pp>&lt;feed xmlns='http://www.w3.org/2005/Atom'/></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>new_feed.set('{http://www.w3.org/XML/1998/namespace}lang', 'en')</kbd>  <span class=u>&#x2463;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>print(lxml.etree.tounicode(new_feed))</kbd>
+<samp class=pp>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'/></samp></pre>
+<ol>
+<li>首先，定义一个用于名字空间映射的字典对象。其值为名字空间；字典中的键即为所需要的前缀。使用<code>None</code>作为前缀来定义默认的名字空间。
+<li>现在我们可以在创建元素的时候，给<code>lxml</code>专有的<var>nsmap</var>参数传值，并且<code>lxml</code>会参照我们所定义的名字空间前缀。
+<li>如所预期的那样，该序列化使用Atom作为默认的名字空间，并且在声明<code>feed</code>元素的时候没有使用名字空间前缀。
+<li>啊噢&hellip; 我们忘了加上<code>xml:lang</code>属性。我们可以使用<code>set()</code>方法来随时给元素添加所需属性。该方法使用两个参数：标准ElementTree格式的属性名，然后，属性值。（该方法不是<code>lxml</code>特有的。在该样例中，只有<var>nsmap</code>参数是<code>lxml</code>特有的，它用来控制序列化输出时名字空间的前缀。）
+</ol>
+
+<p>难道每个<abbr>XML</abbr>文档只能有一个元素吗？当然不了。我们可以创建子元素。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>title = lxml.etree.SubElement(new_feed, 'title',</kbd>          <span class=u>&#x2460;</span></a>
+<a><samp class=p>... </samp><kbd class=pp>    attrib={'type':'html'})</kbd>                               <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>print(lxml.etree.tounicode(new_feed))</kbd>
+<samp class=pp>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>&lt;title type='html'/>&lt;/feed></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>title.text = 'dive into &amp;hellip;'</kbd>                         <span class=u>&#x2462;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>print(lxml.etree.tounicode(new_feed))</kbd>                     <span class=u>&#x2463;</span></a>
+<samp class=pp>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>&lt;title type='html'>dive into &amp;amp;hellip;&lt;/title>&lt;/feed></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>print(lxml.etree.tounicode(new_feed, pretty_print=True))</kbd>  <span class=u>&#x2464;</span></a>
+<samp class=pp>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>
+&lt;title type='html'>dive into&amp;amp;hellip;&lt;/title>
+&lt;/feed></samp></pre>
+<ol>
+<li>给已有元素创建子元素，我们需要实例化<code>SubElement</code>类。它只要求两个参数，父元素（即该样例中的<var>new_feed</var>）和子元素的名字。由于该子元素会从父元素那儿继承名字空间的映射关系，所以这里不需要再声明名字空间前缀。
+<li>我们也可以传递属性字典给它。字典的键即属性名；值为属性的值。
+<li>如预期的那样，新创建的<code>title</code>元素在Atom名字空间中，并且它作为子元素插入到<code>feed</code>元素中。由于<code>title</code>元素没有文件内容，也没有其子元素，所以<code>lxml</code>将其序列化为一个空元素（使用<code>/></code>）。
+<li>设定元素的文本内容，只需要设定其<code>.text</code>属性。
+<li>当前<code>title</code>元素序列化的时候就使用了其文本内容。任何包含了<code><</code>或者<code>&</code>符号的内容在序列化的时候需要被转义。<code>lxml</code>会自动处理转义。
+<li>我们也可以在序列化的时候应用&#8220;漂亮的输出(pretty printing)&#8221;，这会在每个结束标签的末尾，或者含有子元素但没有文本内容的标签的末尾添加换行符。用术语说就是，<code>lxml</code>添加&#8220;无意义的空白(insignificant whitespace)&#8221;以使输出更具可读性。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>你也许也想要看一看<a href=http://github.com/galvez/xmlwitch/tree/master>xmlwitch</a>，它也是用来生成<abbr>XML</abbr>的另外一个第三方库。它大量地使用了<a href="special-method-names.html#context-managers"><code>with</code>语句</a>来使生成的<abbr>XML</abbr>代码更具可读性。
+</blockquote>
+
+<p class=a>&#x2042;
+
+<h2 id=xml-custom-parser>解析破损的XML</h2>
+
+<p><abbr>XML</abbr>规范文档中指出，要求所有遵循<abbr>XML</abbr>规范的解析器使用&#8220;严厉的(draconian)错误处理&#8221;。即，当它们在<abbr>XML</abbr>文档中检测到任何编排良好性(wellformedness)错误的时候，应当立即停止解析。编排良好性错误包括不匹配的起始和结束标签，未定义的实体(entity)，非法的Unicode字符，还有一些只有内行才懂的规则(esoteric rules)。这与其他的常见格式，比如<abbr>HTML</abbr>，形成了鲜明的对比&nbsp;&mdash;&nbsp;即使忘记了封闭<abbr>HTML</abbr>标签，或者在属性值中忘了转义<code>&</code>字符，我们的浏览器也不会停止渲染一个Web页面。（通常大家认为<abbr>HTML</abbr>没有错误处理机制，这是一个常见的误解。<a href=http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#parsing><abbr>HTML</abbr>的错误处理</a>实际上被很好的定义了，但是它比&#8220;遇见第一个错误即停止&#8221;这种机制要复杂得多。）
+
+<p>一些人（包括我自己）认为<abbr>XML</abbr>的设计者强制实行这种严格的错误处理本身是一个失误。请不要误解我；我当然能看到简化错误处理机制的优势。但是在现实中，&#8220;编排良好性&#8221;这种构想比乍听上去更加复杂，特别是对<abbr>XML</abbr>（比如Atom feeds）这种发布在网络上，通过<abbr>HTTP</abbr>传播的文档。早在1997年<abbr>XML</abbr>就标准化了这种严厉的错误处理，尽管<abbr>XML</abbr>已经非常成熟，研究一直表明，网络上相当一部分的Atom feeds仍然存在着编排完整性错误。
+
+<p>所以，从理论上和实际应用两种角度来看，我有理由&#8220;不惜任何代价&#8221;来解析<abbr>XML</abbr>文档，即，当遇到编排良好性错误时，<em>不会</em>中断解析操作。如果你认为你也需要这样做，<code>lxml</code>可以助你一臂之力。
+
+<p>以下是一个破损的<abbr>XML</abbr>文档的片断。其中的编排良好性错误已经被高亮标出来了。
+
+<pre class='nd pp'><code>&lt;?xml version='1.0' encoding='utf-8'?>
+&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>
+  &lt;title>dive into <mark>&amp;hellip;</mark>&lt;/title>
+...
+&lt;/feed></code></pre>
+
+<p>因为实体<code>&amp;hellip;</code>并没有在<abbr>XML</abbr>中被定义，所以这算作一个错误。（它在<abbr>HTML</abbr>中被定义。）如果我们尝试使用默认的设置来解析该破损的feed，<code>lxml</code>会因为这个未定义的实体而停下来。
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>import lxml.etree</kbd>
+<samp class=p>>>> </samp><kbd class=pp>tree = lxml.etree.parse('examples/feed-broken.xml')</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+  File "lxml.etree.pyx", line 2693, in lxml.etree.parse (src/lxml/lxml.etree.c:52591)
+  File "parser.pxi", line 1478, in lxml.etree._parseDocument (src/lxml/lxml.etree.c:75665)
+  File "parser.pxi", line 1507, in lxml.etree._parseDocumentFromURL (src/lxml/lxml.etree.c:75993)
+  File "parser.pxi", line 1407, in lxml.etree._parseDocFromFile (src/lxml/lxml.etree.c:75002)
+  File "parser.pxi", line 965, in lxml.etree._BaseParser._parseDocFromFile (src/lxml/lxml.etree.c:72023)
+  File "parser.pxi", line 539, in lxml.etree._ParserContext._handleParseResultDoc (src/lxml/lxml.etree.c:67830)
+  File "parser.pxi", line 625, in lxml.etree._handleParseResult (src/lxml/lxml.etree.c:68877)
+  File "parser.pxi", line 565, in lxml.etree._raiseParseError (src/lxml/lxml.etree.c:68125)
+lxml.etree.XMLSyntaxError: Entity 'hellip' not defined, line 3, column 28</samp></pre>
+
+<p>为了解析该破损的<abbr>XML</abbr>文档，忽略它的编排良好性错误，我们需要创建一个自定义的<abbr>XML</abbr>解析器。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>parser = lxml.etree.XMLParser(recover=True)</kbd>                  <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>tree = lxml.etree.parse('examples/feed-broken.xml', parser)</kbd>  <span class=u>&#x2461;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>parser.error_log</kbd>                                             <span class=u>&#x2462;</span></a>
+<samp>examples/feed-broken.xml:3:28:FATAL:PARSER:ERR_UNDECLARED_ENTITY: Entity 'hellip' not defined</samp>
+<samp class=p>>>> </samp><kbd class=pp>tree.findall('{http://www.w3.org/2005/Atom}title')</kbd>
+<samp>[&lt;Element {http://www.w3.org/2005/Atom}title at ead510>]</samp>
+<samp class=p>>>> </samp><kbd class=pp>title = tree.findall('{http://www.w3.org/2005/Atom}title')[0]</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>title.text</kbd>                                                   <span class=u>&#x2463;</span></a>
+<samp class=pp>'dive into '</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>print(lxml.etree.tounicode(tree.getroot()))</kbd>                  <span class=u>&#x2464;</span></a>
+<samp class=pp>&lt;feed xmlns='http://www.w3.org/2005/Atom' xml:lang='en'>
+  &lt;title>dive into &lt;/title>
+.
+. [rest of serialization snipped for brevity]
+.</samp></pre>
+<ol>
+<li>实例化<code>lxml.etree.XMLParser</code>类来创建一个自定义的解析器。它可以使用<a href=http://codespeak.net/lxml/parsing.html#parser-options>许多不同的命名参数</a>。在此，我们感兴趣的为<var>recover</var>参数。当它的值被设为<code>True</code>，<abbr>XML</abbr>解析器会尽力尝试从编排良好性错误中&#8220;恢复&#8221;。
+<li>为使用自定的解析器来处理<abbr>XML</abbr>文档，将对象<var>parser</var>作为第二个参数传递给<code>parse()</code>函数。注意，<code>lxml</code>没有因为那个未定义的<code>&amp;hellip;</code>实体而抛出异常。
+<li>解析器会记录它所遇到的所有编排良好性错误。（无论它是否被设置为需要从错误中恢复，这个记录总会存在。）
+<li>由于不知道如果处理该未定义的<code>&amp;hellip;</code>实体，解析器默认会将其省略掉。<code>title</code>元素的文本内容变成了<code>'dive into '</code>。
+<li>从序列化的结果可以看出，实体<code>&amp;hellip;</code>并没有被移到其他地方去；它就是被省略了。
+</ol>
+
+<p>在此，必须反复强调，这种&#8220;可恢复的&#8221;<abbr>XML</abbr>解析器没有<strong>互用性(interoperability)保证</strong>。另一个不同的解析器可能就会认为<code>&amp;hellip;</code>来自<abbr>HTML</abbr>，然后将其替换为<code>&amp;amp;hellip;</code>。这样&#8220;更好&#8221;吗？也许吧。这样&#8220;更正确&#8221;吗？不，两种处理方法都不正确。正确的行为（根据<abbr>XML</abbr>规范）应该是终止解析操作。如果你已经决定不按规范来，你得自己负责。
+
+<p class=a>&#x2042;
+
+<h2 id=furtherreading>进一步阅读</h2>
+
+<ul>
+<li><a href=http://en.wikipedia.org/wiki/XML>维基百科上的词条　<abbr>XML</abbr></a>
+<li><a href=http://docs.python.org/3.1/library/xml.etree.elementtree.html>ElementTree的<abbr>XML</abbr> API</a>
+<li><a href=http://effbot.org/zone/element.htm>元素和树状元素</a>
+<li><a href=http://effbot.org/zone/element-xpath.htm>ElementTree中对XPath的支持</a>
+<li><a href=http://effbot.org/zone/element-iterparse.htm>ElementTree的迭代式解析(iterparse)功能</a>
+<li><a href=http://codespeak.net/lxml/><code>lxml</code></a>
+<li><a href=http://codespeak.net/lxml/1.3/parsing.html>使用<code>lxml</code>解析<abbr>XML</abbr>和<abbr>HTML</abbr> with </a>
+<li><a href=http://codespeak.net/lxml/1.3/xpathxslt.html>使用<code>lxml</code>解析XPath和<abbr>XSLT</abbr></a>
+<li><a href=http://github.com/galvez/xmlwitch/tree/master>xmlwitch</a>
+</ul>
+
+<p class=v><a rel=prev href="files.html" title='back to &#8220;Files&#8221;'><span class=u>&#x261C;</span></a> <a rel=next href="serializing.html" title='onward to &#8220;Serializing Python Objects&#8221;'><span class=u>&#x261E;</span></a>
+<p class=c>&copy; 2001&ndash;9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

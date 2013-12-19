@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>案例研究:将chardet移植到Python 3 - 深入Python 3</title>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 15}
+ins,del{line-height:2.154;text-decoration:none;font-style:normal;display:inline-block;width:100%}
+ins{background:#9f9}
+del{background:#f87}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=Search></div></form>
+<p>你的位置: <a href="index.html">Home</a> <span class=u>&#8227;</span> <a href="table-of-contents.html#case-study-porting-chardet-to-python-3">Dive Into Python 3</a> <span class=u>&#8227;</span>
+<p id=level>难度等级: <span class=u title=pro>&#x2666;&#x2666;&#x2666;&#x2666;&#x2666;</span>
+<h1>案例研究:将<code>chardet</code>移植到Python 3</h1>
+<blockquote class=q>
+<p><span class=u>&#x275D;</span> Words, words. They&#8217;re all we have to go on. <span class=u>&#x275E;</span><br>&mdash; <a href=http://www.imdb.com/title/tt0100519/quotes>Rosencrantz and Guildenstern are Dead</a>
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=divingin>概述</h2>
+<p class=f>未知的或者不正确的字符编码是因特网上无效数据(gibberish text)的头号起因。在<a href="strings.html">第３章</a>，我们讨论过字符编码的历史，还有Unicode的产生，&#8220;一个能处理所有情况的大块头。&#8221;如果在网络上不再存在乱码这回事，我会爱上她的&hellip;因为所有的编辑系统(authoring system)保存有精确的编码信息，所有的传输协议都支持Unicode，所有处理文本的系统在执行编码间转换的时候都可以保持高度精确。
+<p>我也会喜欢pony。
+<p>Unicode　pony。
+<p>Unipony也行。
+<p>这一章我会处理编码的自动检测。
+
+<p class=a>&#x2042;
+
+<h2 id=faq.what>什么是字符编码自动检测？</h2>
+<p>它是指当面对一串不知道编码信息的字节流的时候，尝试着确定一种编码方式以使我们能够读懂其中的文本内容。它就像我们没有解密钥匙的时候，尝试破解出编码。
+
+<h3 id=faq.impossible>那不是不可能的吗？</h3>
+<p>通常来说，是的，不可能。但是，有一些编码方式为特定的语言做了优化，而语言并非随机存在的。有一些字符序列在某种语言中总是会出现，而其他一些序列对该语言来说则毫无意义。一个熟练掌握英语的人翻开报纸，然后发现&#8220;txzqJv 2!dasd0a QqdKjvz&#8221;这样一些序列，他会马上意识到这不是英语（即使它完全由英语中的字母组成）。通过研究许多具有&#8220;代表性(typical)&#8221;的文本，计算机算法可以模拟人的这种对语言的感知，并且对一段文本的语言做出启发性的猜测。
+<p>换句话说就是，检测编码信息就是检测语言的类型，并辅之一些额外信息，比如每种语言通常会使用哪些编码方式。
+<br>
+
+<h3 id=faq.who>这样的算法存在吗？</h3>
+<p>结果证明，是的，它存在。所有主流的浏览器都有字符编码自动检测的功能，因为因特网上总是充斥着大量缺乏编码信息的页面。<a href=http://lxr.mozilla.org/seamonkey/source/extensions/universalchardet/src/base/>Mozilla Firefox包含有一个自动检测字符编码的库</a>，它是开源的。<a href=http://chardet.feedparser.org/>我将它导入到了Python 2</a>，并且取绰号为<code>chardet</code>模块。这一章中，我会带领你一步一步地将<code>chardet</code>模块从Python 2移植到Python 3。
+
+<p class=a>&#x2042;
+
+<h2 id=divingin2>介绍<code>chardet</code>模块</h2>
+<p>在开始代码移植之前，如果我们能理解代码是如何工作的这将非常有帮助！以下是一个简明地关于<code>chardet</code>模块代码结构的手册。<code>chardet</code>库太大，不可能都放在这儿，但是你可以<a href=http://chardet.feedparser.org/download/>从<code>chardet.feedparser.org</code>下载它</a>。
+<aside>编码检测就是语言检测。</aside>
+<p><code>universaldetector.py</code>是检测算法的主入口点，它包含一个类，即<code>UniversalDetector</code>。（可能你会认为入口点是<code>chardet/__init__.py</code>中的<code>detect</code>函数，但是它只是一个便捷的包装方法，它会创建<code>UniversalDetector</code>对象，调用对象的方法，然后返回其结果。）
+<p><code>UniversalDetector</code>共处理５类编码方式：
+<ol>
+<li>包含字节顺序标记(<abbr>BOM</abbr>)的<abbr>UTF-n</abbr>。它包括<abbr>UTF-8</abbr>，大尾端和小尾端的<abbr>UTF-16</abbr>，还有所有４字节顺序的<abbr>UTF-32</abbr>的变体。
+<li>转义编码，它们与７字节的<abbr>ASCII</abbr>编码兼容，非<abbr>ASCII</abbr>编码的字符会以一个转义序列打头。比如：<abbr>ISO-2022-JP</abbr>(日文)和<abbr>HZ-GB-2312</abbr>(中文).
+<li>多字节编码，在这种编码方式中，每个字符使用可变长度的字节表示。比如：<abbr>Big5</abbr>(中文)，<abbr>SHIFT_JIS</abbr>(日文)，<abbr>EUC-KR</abbr>(韩文)和缺少<abbr>BOM</abbr>标记的<abbr>UTF-8</abbr>。
+<li>单字节编码，这种编码方式中，每个字符使用一个字节编码。例如：<abbr>KOI8-R</abbr>(俄语)，<abbr>windows-1255</abbr>(希伯来语)和<abbr>TIS-620</abbr>(泰国语)。
+<li><abbr>windows-1252</abbr>，它主要被根本不知道字符编码的中层管理人员(middle manager)在Microsoft Windows上使用。
+</ol>
+<h3 id=how.bom>有<abbr>BOM</abbr>标记的<abbr>UTF-n</abbr></h3>
+<p>如果文本以<abbr>BOM</abbr>标记打头，我们可以合理地假设它使用了<abbr>UTF-8</abbr>，<abbr>UTF-16</abbr>或者<abbr>UTF-32</abbr>编码。（<abbr>BOM</abbr>会告诉我们是其中哪一种，这就是它的功能。）这个过程在<code>UniversalDetector</code>中完成，并且不需要深入处理，会非常快地返回其结果。
+<h3 id=how.esc>转义编码</h3>
+<p>如果文本包含有可识别的能指示出某种转义编码的转义序列，<code>UniversalDetector</code>会创建一个<code>EscCharSetProber</code>对象（在<code>escprober.py</code>中定义），然后以该文本调用它。
+<p><code>EscCharSetProber</code>会根据<abbr>HZ-GB-2312</abbr>，<abbr>ISO-2022-CN</abbr>，<abbr>ISO-2022-JP</abbr>，和<abbr>ISO-2022-KR</abbr>(在<code>escsm.py</code>中定义)来创建一系列的状态机(state machine)。<code>EscCharSetProber</code>将文本一次一个字节地输入到这些状态机中。如果某一个状态机最终唯一地确定了字符编码，<code>EscCharSetProber</code>迅速地将该有效结果返回给<code>UniversalDetector</code>，然后<code>UniversalDetector</code>将其返回给调用者。如果某一状态机进入了非法序列，它会被放弃，然后使用其他的状态机继续处理。
+<h3 id=how.mb>多字节编码</h3>
+<p>假设没有<abbr>BOM</abbr>标记，<code>UniversalDetector</code>会检测该文本是否包含任何高位字符(high-bit character)。如果有的话，它会创建一系列的&#8220;探测器(probers)&#8221;，检测这段广西是否使用多字节编码，单字节编码，或者作为最后的手段，是否为<code>windows-1252</code>编码。
+<p>这里的多字节编码探测器，即<code>MBCSGroupProber</code>（在<code>mbcsgroupprober.py</code>中定义），实际上是一个管理一组其他探测器的shell，它用来处理每种多字节编码：<abbr>Big5</abbr>，<abbr>GB2312</abbr>，<abbr>EUC-TW</abbr>，<abbr>EUC-KR</abbr>，<abbr>EUC-JP</abbr>，<abbr>SHIFT_JIS</abbr>和<abbr>UTF-8</abbr>。<code>MBCSGroupProber</code>将文本作为每一个特定编码探测器的输入，并且检测其结果。如果某个探测器报告说它发现了一个非法的字节序列，那么该探测器则会被放弃，不再进一步处理（因此，换句话说就是，任何对<code>UniversalDetector</code>.<code>feed()</code>的子调用都会忽略那个探测器）。如果某一探测器报告说它有足够理由确信找到了正确的字符编码，那么<code>MBCSGroupProber</code>会将这个好消息传递给<code>UniversalDetector</code>，然后<code>UniversalDetector</code>将结果返回给调用者。
+<p>大多数的多字节编码探测器从类<code>MultiByteCharSetProber</code>(定义在<code>mbcharsetprober.py</code>中)继承而来，简单地挂上合适的状态机和分布分析器(distribution analyzer)，然后让<code>MultiByteCharSetProber</code>做剩余的工作。<code>MultiByteCharSetProber</code>将文本作为特定编码状态机的输入，每次一个字节，寻找能够指示出一个确定的正面或者负面结果的字节序列。同时，<code>MultiByteCharSetProber</code>会将文本作为特定编码分布分析机的输入。
+<p>分布分析机（在<code>chardistribution.py</code>中定义）使用特定语言的模型，此模型中的字符在该语言被使用得最频繁。一旦<code>MultiByteCharSetProber</code>把足够的文本给了分布分析机，它会根据其中频繁使用字符的数目，字符的总数和特定语言的分配比(distribution ratio)，来计算置信度(confidence rating)。如果置信度足够高，<code>MultiByteCharSetProber</code>会将结果返回给<code>MBCSGroupProber</code>，然后由<code>MBCSGroupProber</code>返回给<code>UniversalDetector</code>，最后<code>UniversalDetector</code>将其返回给调用者。
+<p>对于日语来说检测会更加困难。单字符的分布分析并不总能区别出<code>EUC-JP</code>和<code>SHIFT_JIS</code>，所以<code>SJISProber</code>（在<code>sjisprober.py</code>中定义）也使用双字符的分布分析。<code>SJISContextAnalysis</code>和<code>EUCJPContextAnalysis</code>(都定义在<code>jpcntx.py</code>中，并且都从类<code>JapaneseContextAnalysis</code>中继承）检测文本中的平假名音节字符(Hiragana syllabary characher)的出现次数。一旦处理了足够量的文本，它会返回一个置信度给<code>SJISProber</code>，<code>SJISProber</code>检查两个分析器的结果，然后将置信度高的那个返回给<code>MBCSGroupProber</code>。
+<h3 id=how.sb>单字节编码</h3>
+<aside>说正经的，我的Unicode pony哪儿去了？</aside>
+<p>单字节编码的探测器，即<code>SBCSGroupProber</code>（定义在<code>sbcsgroupprober.py</code>中），也是一个管理一组其他探测器的shell，它会尝试单字节编码和语言的每种组合：<code>windows-1251</code>，<code>KOI8-R</code>，<code>ISO-8859-5</code>，<code>MacCyrillic</code>，<code>IBM855</code>，and <code>IBM866</code>(俄语)；<code>ISO-8859-7</code>和<code>windows-1253</code>(希腊语)；<code>ISO-8859-5</code>和<code>windows-1251</code>(保加利亚语)；<code>ISO-8859-2</code>和<code>windows-1250</code>(匈牙利语)；<code>TIS-620</code>(泰国语)；<code>windows-1255</code>和<code>ISO-8859-8</code>(希伯来语)。
+<p><code>SBCSGroupProber</code>将文本输入给这些特定编码+语言的探测器，然后检测它们的返回值。这些探测器的实现为某一个类，即<code>SingleByteCharSetProber</code>(在<code>sbcharsetprober.py</code>中定义)，它使用语言模型(language model)作为其参数。语言模型定义了典型文本中不同双字符序列出现的频度。<code>SingleByteCharSetProber</code>处理文本，统计出使用得最频繁的双字符序列。一旦处理了足够多的文本，它会根据频繁使用的序列的数目，字符总数和特定语言的分布系数来计算其置信度。
+<p>希伯来语被作为一种特殊的情况处理。如果在双字符分布分析中，文本被认定为是希伯来语，<code>HebrewProber</code>(在<code>hebrewprober.py</code>中定义)会尝试将其从Visual Hebrew（源文本一行一行地被&#8220;反向&#8221;存储，然后一字不差地显示出来，这样就能从右到左的阅读）和Logical Hebrew（源文本以阅读的顺序保存，在客户端从右到左进行渲染）区别开来。因为有一些字符在两种希伯来语中会以不同的方式编码，这依赖于它们是出现在单词的中间或者末尾，这样我们可以合理的猜测源文本的存储方向，然后返回合适的编码方式(<code>windows-1255</code>对应Logical Hebrew，或者<code>ISO-8859-8</code>对应Visual Hebrew)。
+<h3 id=how.windows1252><code>windows-1252</code></h3>
+<p>如果<code>UniversalDetector</code>在文本中检测到一个高位字符，但是其他的多字节编码探测器或者单字节编码探测器都没有返回一个足够可靠的结果，它就会创建一个<code>Latin1Prober</code>对象(在<code>latin1prober.py</code>中定义)，尝试从中检测以<code>windows-1252</code>方式编码的英文文本。这种检测存在其固有的不可靠性，因为在不同的编码中，英文字符通常使用了相同的编码方式。唯一一种区别能出<code>windows-1252</code>的方法是通过检测常用的符号，比如<a href='http://en.wikipedia.org/wiki/Smart_quotes'>弯引号(smart quotes)</a>，撇号(curly apostrophes)，版权符号(copyright symbol)等这一类的符号。如果可能<code>Latin1Prober</code>会自动降低其置信度以使其他更精确的探测器检出结果。
+<p class=a>&#x2042;
+
+<h2 id=running2to3>运行<code>2to3</code></h2>
+<p>我们将要开始移植<code>chardet</code>模块到Python 3了。Python 3自带了一个叫做<code>2to3</code>的实用脚本，它使用Python 2的源代码作为输入，然后尽其可能地将其转换到Python 3的规范。某些情况下这很简单&nbsp;&mdash;&nbsp;一个被重命名或者被移动到其他模块中的函数&nbsp;&mdash;&nbsp;但是有些情况下，这个过程会变得非常复杂。想要了解所有它<em>能</em>做的事情，请参考附录，<a href="porting-code-to-python-3-with-2to3.html">使用<code>2to3</code>将代码移植到Python 3</a>。接下来，我们会首先运行一次<code>2to3</code>，将它作用在<code>chardet</code>模块上，但是就如你即将看到的，在该自动化工具完成它的魔法表演后，仍然存在许多工作需要我们来收拾。
+<p><code>chardet</code>包被分割为一些不同的文件，它们都放在同一个目录下。<code>2to3</code>能够立即处理多个文件：只需要将目录名作为命令行参数传递给<code>2to3</code>，然后它会轮流处理每个文件。
+<pre class=screen><samp class=p>C:\home\chardet> </samp><kbd>python c:\Python30\Tools\Scripts\2to3.py -w chardet\</kbd>
+<samp>RefactoringTool: Skipping implicit fixer: buffer
+RefactoringTool: Skipping implicit fixer: idioms
+RefactoringTool: Skipping implicit fixer: set_literal
+RefactoringTool: Skipping implicit fixer: ws_comma
+--- chardet\__init__.py (original)
++++ chardet\__init__.py (refactored)
+@@ -18,7 +18,7 @@
+ __version__ = "1.0.1"
+
+ def detect(aBuf):
+<del>-    import universaldetector</del>
+<ins>+    from . import universaldetector</ins>
+     u = universaldetector.UniversalDetector()
+     u.reset()
+     u.feed(aBuf)
+--- chardet\big5prober.py (original)
++++ chardet\big5prober.py (refactored)
+@@ -25,10 +25,10 @@
+ # 02110-1301  USA
+ ######################### END LICENSE BLOCK #########################
+
+<del>-from mbcharsetprober import MultiByteCharSetProber</del>
+<del>-from codingstatemachine import CodingStateMachine</del>
+<del>-from chardistribution import Big5DistributionAnalysis</del>
+<del>-from mbcssm import Big5SMModel</del>
+<ins>+from .mbcharsetprober import MultiByteCharSetProber</ins>
+<ins>+from .codingstatemachine import CodingStateMachine</ins>
+<ins>+from .chardistribution import Big5DistributionAnalysis</ins>
+<ins>+from .mbcssm import Big5SMModel</ins>
+
+ class Big5Prober(MultiByteCharSetProber):
+     def __init__(self):
+--- chardet\chardistribution.py (original)
++++ chardet\chardistribution.py (refactored)
+@@ -25,12 +25,12 @@
+ # 02110-1301  USA
+ ######################### END LICENSE BLOCK #########################
+
+<del>-import constants</del>
+<del>-from euctwfreq import EUCTWCharToFreqOrder, EUCTW_TABLE_SIZE, EUCTW_TYPICAL_DISTRIBUTION_RATIO</del>
+<del>-from euckrfreq import EUCKRCharToFreqOrder, EUCKR_TABLE_SIZE, EUCKR_TYPICAL_DISTRIBUTION_RATIO</del>
+<del>-from gb2312freq import GB2312CharToFreqOrder, GB2312_TABLE_SIZE, GB2312_TYPICAL_DISTRIBUTION_RATIO</del>
+<del>-from big5freq import Big5CharToFreqOrder, BIG5_TABLE_SIZE, BIG5_TYPICAL_DISTRIBUTION_RATIO</del>
+<del>-from jisfreq import JISCharToFreqOrder, JIS_TABLE_SIZE, JIS_TYPICAL_DISTRIBUTION_RATIO</del>
+<ins>+from . import constants</ins>
+<ins>+from .euctwfreq import EUCTWCharToFreqOrder, EUCTW_TABLE_SIZE, EUCTW_TYPICAL_DISTRIBUTION_RATIO</ins>
+<ins>+from .euckrfreq import EUCKRCharToFreqOrder, EUCKR_TABLE_SIZE, EUCKR_TYPICAL_DISTRIBUTION_RATIO</ins>
+<ins>+from .gb2312freq import GB2312CharToFreqOrder, GB2312_TABLE_SIZE, GB2312_TYPICAL_DISTRIBUTION_RATIO</ins>
+<ins>+from .big5freq import Big5CharToFreqOrder, BIG5_TABLE_SIZE, BIG5_TYPICAL_DISTRIBUTION_RATIO</ins>
+<ins>+from .jisfreq import JISCharToFreqOrder, JIS_TABLE_SIZE, JIS_TYPICAL_DISTRIBUTION_RATIO</ins>
+
+ ENOUGH_DATA_THRESHOLD = 1024
+ SURE_YES = 0.99
+.
+.
+<mark>. (it goes on like this for a while)</mark>
+.
+.
+RefactoringTool: Files that were modified:
+RefactoringTool: chardet\__init__.py
+RefactoringTool: chardet\big5prober.py
+RefactoringTool: chardet\chardistribution.py
+RefactoringTool: chardet\charsetgroupprober.py
+RefactoringTool: chardet\codingstatemachine.py
+RefactoringTool: chardet\constants.py
+RefactoringTool: chardet\escprober.py
+RefactoringTool: chardet\escsm.py
+RefactoringTool: chardet\eucjpprober.py
+RefactoringTool: chardet\euckrprober.py
+RefactoringTool: chardet\euctwprober.py
+RefactoringTool: chardet\gb2312prober.py
+RefactoringTool: chardet\hebrewprober.py
+RefactoringTool: chardet\jpcntx.py
+RefactoringTool: chardet\langbulgarianmodel.py
+RefactoringTool: chardet\langcyrillicmodel.py
+RefactoringTool: chardet\langgreekmodel.py
+RefactoringTool: chardet\langhebrewmodel.py
+RefactoringTool: chardet\langhungarianmodel.py
+RefactoringTool: chardet\langthaimodel.py
+RefactoringTool: chardet\latin1prober.py
+RefactoringTool: chardet\mbcharsetprober.py
+RefactoringTool: chardet\mbcsgroupprober.py
+RefactoringTool: chardet\mbcssm.py
+RefactoringTool: chardet\sbcharsetprober.py
+RefactoringTool: chardet\sbcsgroupprober.py
+RefactoringTool: chardet\sjisprober.py
+RefactoringTool: chardet\universaldetector.py
+RefactoringTool: chardet\utf8prober.py</samp></pre>
+<p>现在我们对测试工具&nbsp;&mdash;&nbsp;<code>test.py</code>&nbsp;&mdash;&nbsp;应用<code>2to3</code>脚本。
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python c:\Python30\Tools\Scripts\2to3.py -w test.py</kbd>
+<samp>RefactoringTool: Skipping implicit fixer: buffer
+RefactoringTool: Skipping implicit fixer: idioms
+RefactoringTool: Skipping implicit fixer: set_literal
+RefactoringTool: Skipping implicit fixer: ws_comma
+--- test.py (original)
++++ test.py (refactored)
+@@ -4,7 +4,7 @@
+ count = 0
+ u = UniversalDetector()
+ for f in glob.glob(sys.argv[1]):
+<del>-    print f.ljust(60),</del>
+<ins>+    print(f.ljust(60), end=' ')</ins>
+     u.reset()
+     for line in file(f, 'rb'):
+         u.feed(line)
+@@ -12,8 +12,8 @@
+     u.close()
+     result = u.result
+     if result['encoding']:
+<del>-        print result['encoding'], 'with confidence', result['confidence']</del>
+<ins>+        print(result['encoding'], 'with confidence', result['confidence'])</ins>
+     else:
+<del>-        print '******** no result'</del>
+<ins>+        print('******** no result')</ins>
+     count += 1
+<del>-print count, 'tests'</del>
+<ins>+print(count, 'tests')</ins>
+RefactoringTool: Files that were modified:
+RefactoringTool: test.py</samp></pre>
+<p>看吧，还不算太难。只是转换了一些impor和print语句。说到这儿，那些import语句<em>原来</em>到底存在什么问题呢？为了回答这个问题，你需要知道<code>chardet</code>是如果被分割到多个文件的。
+
+<p class=a>&#x2042;
+
+<h2 id=multifile-modules>题外话，关于多文件模块</h2>
+
+<p><code>chardet</code>是一个<i>多文件模块</i>。我也可以将所有的代码都放在一个文件里(并命名为<code>chardet.py</code>)，但是我没有。我创建了一个目录(叫做<code>chardet</code>)，然后我在那个目录里创建了一个<code>__init__.py</code>文件。<em>如果Python看到目录里有一个<code>__init__.py</code>文件，它会假设该目录里的所有文件都是同一个模块的某部分。</em>模块名为目录的名字。目录中的文件可以引用目录中的其他文件，甚至子目录中的也行。（再讲一分钟这个。）但是整个文件集合被作为一个单独的模块呈现给其他的Python代码&nbsp;&mdash;&nbsp;就好像所有的函数和类都在一个<code>.py</code>文件里。
+
+<p>在<code>__init__.py</code>中到底有些什么？什么也没有。一切。界于两者之间。<code>__init__.py</code>文件不需要定义任何东西；它确实可以是一个空文件。或者也可以使用它来定义我们的主入口函数。或者把我们所有的函数都放进去。或者其他函数都放，单单不放某一个函数&hellip;
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>包含有<code>__init__.py</code>文件的目录总是被看作一个多文件的模块。没有<code>__init__.py</code>文件的目录中，那些<code>.py</code>文件是不相关的。
+</blockquote>
+
+<p>我们来看看它实际上是怎样工作的。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import chardet</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>dir(chardet)</kbd>             <span class=u>&#x2460;</span></a>
+<samp class=pp>['__builtins__', '__doc__', '__file__', '__name__',
+ '__package__', '__path__', '__version__', 'detect']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>chardet</kbd>                  <span class=u>&#x2461;</span></a>
+<samp class=pp>&lt;module 'chardet' from 'C:\Python31\lib\site-packages\chardet\__init__.py'></samp></pre>
+<ol>
+<li>除了常见的类属性，在<code>chardet</code>模块中只多了一个<code>detect()</code>函数。
+<li>这是我们发觉<code>chardet</code>模块不只是一个文件的第一个线索：&#8220;module&#8221;被当作文件<code>chardet/</code>目录中的<code>__init__.py</code>文件列出来。
+</ol>
+
+<p>我们再来瞟一眼<code>__init__.py</code>文件。
+
+<pre class=pp><code><a>def detect(aBuf):                              <span class=u>&#x2460;</span></a>
+<a>    from . import universaldetector            <span class=u>&#x2461;</span></a>
+    u = universaldetector.UniversalDetector()
+    u.reset()
+    u.feed(aBuf)
+    u.close()
+    return u.result</code></pre>
+<ol>
+<li><code>__init__.py</code>文件定义了<code>detect()</code>函数，它是<code>chardet</code>库的主入口点。
+<li>但是<code>detect()</code>函数没有任何实际的代码！事实上，它所做的事情只是导入了<code>universaldetector</code>模块然后开始调用它。但是<code>universaldetector</code>定义在哪儿？
+</ol>
+
+<p>答案就在那行古怪的<code>import</code>语句中：
+
+<pre class='nd pp'><code>from . import universaldetector</code></pre>
+
+<p>翻译成中文就是，&#8220;导入<code>universaldetector</code>模块；它跟我在同一目录，&#8221;这里的我即指文件<code>chardet/__init__.py</code>。这是一种提供给多文件模块中文件之间互相引用的方法，不需要担心它会与已经安装的<a href="your-first-python-program.html#importsearchpath">搜索路径</a>中的模块发生命名冲突。该条<code>import</code>语句<em>只会</em>在<code>chardet/</code>目录中查找<code>universaldetector</code>模块。
+
+<p>这两条概念&nbsp;&mdash;&nbsp;<code>__init__.py</code>和相对导入&nbsp;&mdash;&nbsp;意味着我们可以将模块分割为任意多个块。<code>chardet</code>模块由36个<code>.py</code>文件组成&nbsp;&mdash;&nbsp;36！但我们所需要做的只是使用<code>chardet/__init__.py</code>文件中定义的某个函数。还有一件事情没有告诉你，<code>detect()</code>使用了相对导入来引用了<code>chardet/universaldetector.py</code>中定义的一个类，然后这个类又使用了相对导入引用了其他5个文件的内容，它们都在<code>chardet/</code>目录中。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>如果你发现自己正在用Python写一个大型的库（或者更可能的情况是，当你意识到你的小模块已经变得很大的时候），最好花一些时间将它重构为一个多文件模块。这是Python所擅长的许多事情之一，那就利用一下这个优势吧。
+</blockquote>
+
+<p class=a>&#x2042;
+
+<h2 id=manual>修复<code>2to3</code>脚本所不能做的</h2>
+<h3 id=falseisinvalidsyntax><code>False</code> is invalid syntax</h3>
+<aside>你确实有测试样例，对吧？</aside>
+<p>现在开始真正的测试：使用测试集运行测试工具。由于测试集被设计成可以覆盖所有可能的代码路径，它是用来测试移植后的代码，保证bug不会埋伏在某个地方的一种不错的办法。
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 1, in &lt;module>
+    from chardet.universaldetector import UniversalDetector
+  File "C:\home\chardet\chardet\universaldetector.py", line 51
+    self.done = constants.False
+                              ^
+SyntaxError: invalid syntax</samp></pre>
+<p>唔，一个小麻烦。在Python 3中，<code>False</code>是一个保留字，所以不能把它用作变量名。我们来看一看<code>constants.py</code>来确定这是在哪儿定义的。以下是<code>constants.py</code>在执行<code>2to3</code>脚本之前原来的版本。
+<pre class='nd pp'><code>import __builtin__
+if not hasattr(__builtin__, 'False'):
+    False = 0
+    True = 1
+else:
+    False = __builtin__.False
+    True = __builtin__.True</code></pre>
+<p>这一段代码用来允许库在低版本的Python 2中运行，在Python 2.3以前，Python没有内置的<code>bool</code>类型。这段代码检测内置的<code>True</code>和<code>False</code>常量是否缺失，如果必要的话则定义它们。
+<p>但是，Python 3总是有<code>bool</code>类型的，所以整个这片代码都没有必要。最简单的方法是将所有的<code>constants.True</code>和<code>constants.False</code>都分别替换成<code>True</code>和<code>False</code>，然后将这段死代码从<code>constants.py</code>中移除。
+<p>所以<code>universaldetector.py</code>中的以下行：
+<pre class='nd pp'><code>self.done = constants.False</code></pre>
+<p>变成了
+<pre class='nd pp'><code>self.done = False</code></pre>
+<p>啊哈，是不是很有满足感？代码不仅更短了，而且更具可读性。
+<h3 id=nomodulenamedconstants>No module named <code>constants</code></h3>
+<p>是时候再运行一次<code>test.py</code>了，看看它能走多远。
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 1, in &lt;module>
+    from chardet.universaldetector import UniversalDetector
+  File "C:\home\chardet\chardet\universaldetector.py", line 29, in &lt;module>
+    import constants, sys
+ImportError: No module named constants</samp></pre>
+<p>说什么了？不存在叫做<code>constants</code>的模块？可是当然有<code>constants</code>这个模块了。它就在<code>chardet/constants.py</code>中。
+
+<p>还记得什么时候<code>2to3</code>脚本会修复所有那些导入语句吗？这个包内有许多的相对导入&nbsp;&mdash;&nbsp;即，<a href="case-study-porting-chardet-to-python-3.html#multifile-modules">在同一个库中，导入其他模块的模块</a>&nbsp;&mdash;&nbsp;但是在<em>Python 3中相对导入的逻辑已经变了</em>。在Python 2中，我们只需要<code>import constants</code>，然后它就会首先在<code>chardet/</code>目录中查找。在Python 3中，<a href=http://www.python.org/dev/peps/pep-0328/>所有的导入语句默认使用绝对路径</a>。如果想要在Python 3中使用相对导入，你需要显式地说明：
+<pre class='nd pp'><code>from . import constants</code></pre>
+<p>但是。<code>2to3</code>脚本难道不是要自动修复这些的吗？好吧，它确实这样做了，但是该条导入语句在同一行组合了两种不同的导入类型：库内部对<code>constants</code>的相对导入，还有就是对<code>sys</code>模块的绝对导入，<code>sys</code>模块已经预装在了Python的标准库里。在Python 2里，我们可以将其组合到一条导入语句中。在Python 3中，我们不能这样做，并且<code>2to3</code>脚本也不是那样聪明，它不能把这条导入语句分成两条。
+<p>解决的办法是把这条导入语句手动的分成两条。所以这条二合一的导入语句：
+<pre class='nd pp'><code>import constants, sys</code></pre>
+<p>需要变成两条分享的导入语句：
+<pre class='nd pp'><code>from . import constants
+import sys</code></pre>
+<p>在<code>chardet</code>库中还分散着许多这类问题的变体。某些地方它是&#8220;<code>import constants, sys</code>&#8221;；其他一些地方则是&#8220;<code>import constants, re</code>&#8221;。修改的方法是一样的：手工地将其分割为两条语句，一条为相对导入准备，另一条用于绝对导入。
+<p>前进！
+<h3 id=namefileisnotdefined>Name <var>'file'</var> is not defined</h3>
+<aside>open()代替了原来的file()。PapayaWhip则替代了原来的black</aside>
+<p>再来一次，运行<code>test.py</code>来执行我们的测试样例&hellip;
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 9, in &lt;module>
+    for line in file(f, 'rb'):
+NameError: name 'file' is not defined</samp></pre>
+<p>这一条也出乎我的意外，因为在记忆中我一直都在使用这种风格的代码。在Python 2里，全局的<code>file()</code>函数是<code>open()</code>函数的一个别名，<code>open()</code>函数是<a href="files.html#reading">打开文件用于读取</a>的标准方法。在Python 3中，全局的<code>file()</code>函数不再存在了，但是<code>open()</code>还保留着。
+<p>这样的话，最简单的解决办法就是将<code>file()</code>调用替换为对<code>open()</code>的调用：
+<pre class='nd pp'><code>for line in open(f, 'rb'):</code></pre>
+<p>这即是我关于这个问题想要说的。
+<h3 id=cantuseastringpattern>Can&#8217;t use a string pattern on a bytes-like object</h3>
+<p>现在事情开始变得有趣了。对于&#8220;有趣，&#8221;我的意思是&#8220;跟地狱一样让人迷茫。&#8221;
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 10, in &lt;module>
+    u.feed(line)
+  File "C:\home\chardet\chardet\universaldetector.py", line 98, in feed
+    if self._highBitDetector.search(aBuf):
+TypeError: can't use a string pattern on a bytes-like object</samp></pre>
+<p>我们先来看看<var>self._highBitDetector</var>是什么，然后再来调试这个错误。它被定义在<var>UniversalDetector</var>类的<var>__init__</var>方法中。
+<pre class='nd pp'><code>class UniversalDetector:
+    def __init__(self):
+        self._highBitDetector = re.compile(r'[\x80-\xFF]')</code></pre>
+<p>这段代码预编译一条正则表达式，它用来查找在128&ndash;255 (0x80&ndash;0xFF)范围内的非<abbr>ASCII</abbr>字符。等一下，这似乎不太准确；我需要对更精确的术语来描述它。这个模式用来在128-255范围内查找非<abbr>ASCII</abbr>的<em>bytes</em>。
+<p>问题就出在这儿了。
+<p>在Python 2中，字符串是一个字节数组，它的字符编码信息被分开记录着。如果想要Python 2跟踪字符编码，你得使用Unicode编码的字符串(<code>u''</code>)。但是在Python 3中，字符串永远都是Python 2中所谓的Unicode编码的字符串&nbsp;&mdash;&nbsp;即，Unicode字符数组（可能存在可变长字节）。由于这条正则表达式是使用字符串模式定义的，所以它只能用来搜索字符串&nbsp;&mdash;&nbsp;再强调一次，字符数组。但是我们所搜索的并非字符串，它是一个字节数组。看一看traceback，该错误发生在<code>universaldetector.py</code>：
+<pre class='nd pp'><code>def feed(self, aBuf):
+    .
+    .
+    .
+    if self._mInputState == ePureAscii:
+        if self._highBitDetector.search(aBuf):</code></pre>
+<p><var>aBuf</var>是什么？让我们原路回到调用<code>UniversalDetector.feed()</code>的地方。有一处地方调用了它，是测试工具，<code>test.py</code>。
+<pre class='nd pp'><code>u = UniversalDetector()
+.
+.
+.
+for line in open(f, 'rb'):
+    u.feed(line)</code></pre>
+<aside>非字符数组，而是一个字节数组。</aside>
+<p>在此处我们找到了答案：<code>UniversalDetector.feed()</code>方法中，<var>aBuf</var>是从磁盘文件中读到的一行。仔细看一看用来打开文件的参数：<code>'rb'</code>。<code>'r'</code>是用来读取的；OK，没什么了不起的，我们在读取文件。啊，但是<a href="files.html#binary"><code>'b'</code>是用以读取&#8220;二进制&#8221;数据的。</a>如果没有标记<code>'b'</code>，<code>for</code>循环会一行一行地读取文件，然后将其转换为一个字符串&nbsp;&mdash;&nbsp;Unicode编码的字符数组&nbsp;&mdash;&nbsp;根据系统默认的编码方式。但是使用<code>'b'</code>标记后，<code>for</code>循环一行一行地读取文件，然后将其按原样存储为字节数组。该字节数组被传递给了 <code>UniversalDetector.feed()</code>方法，最后给了预编译好的正则表达式，<var>self._highBitDetector</var>，用来搜索高位&hellip;字符。但是没有字符；有的只是字节。苍天哪。
+<p>我们需要该正则表达式搜索的并不是字符数组，而是一个字节数组。
+<p>只要我们认识到了这一点，解决办法就有了。使用字符串定义的正则表达式可以搜索字符串。使用字节数组定义的正则表达式可以搜索字节数组。我们只需要改变用来定义正则表达式的参数的类型为字节数组，就可以定义一个字节数组模式。（还有另外一个该问题的实例，在下一行。）
+<pre class='nd pp'><code>  class UniversalDetector:
+      def __init__(self):
+<del>-         self._highBitDetector = re.compile(r'[\x80-\xFF]')</del>
+<del>-         self._escDetector = re.compile(r'(\033|~{)')</del>
+<ins>+         self._highBitDetector = re.compile(b'[\x80-\xFF]')</ins>
+<ins>+         self._escDetector = re.compile(b'(\033|~{)')</ins>
+          self._mEscCharSetProber = None
+          self._mCharSetProbers = []
+          self.reset()</code></pre>
+<p>在整个代码库内搜索对<code>re</code>模块的使用发现了另外两个该类型问题的实例，出现在<code>charsetprober.py</code>文件中。再次，以上代码将正则表达式定义为字符串，但是却将它们作用在<var>aBuf</var>上，而<var>aBuf</var>是一个字节数组。解决方案还是一样的：将正则表达式模式定义为字节数组。
+<pre class='nd pp'><code>  class CharSetProber:
+      .
+      .
+      .
+      def filter_high_bit_only(self, aBuf):
+<del>-         aBuf = re.sub(r'([\x00-\x7F])+', ' ', aBuf)</del>
+<ins>+         aBuf = re.sub(b'([\x00-\x7F])+', b' ', aBuf)</ins>
+          return aBuf
+    
+      def filter_without_english_letters(self, aBuf):
+<del>-         aBuf = re.sub(r'([A-Za-z])+', ' ', aBuf)</del>
+<ins>+         aBuf = re.sub(b'([A-Za-z])+', b' ', aBuf)</ins>
+          return aBuf</code></pre>
+        
+<h3 id=cantconvertbytesobject>Can't convert <code>'bytes'</code> object to <code>str</code> implicitly</h3>
+<p>奇怪，越来越不寻常了&hellip;
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 10, in &lt;module>
+    u.feed(line)
+  File "C:\home\chardet\chardet\universaldetector.py", line 100, in feed
+    elif (self._mInputState == ePureAscii) and self._escDetector.search(self._mLastChar + aBuf):
+TypeError: Can't convert 'bytes' object to str implicitly</samp></pre>
+<p>在此存在一个Python解释器与代码风格之间的不协调。<code>TypeError</code>可以出现在那一行的任意地方，但是traceback不能明确定地指出错误的位置。可能是第一个或者第二个条件语句(conditional)，对traceback来说，它们是一样的。为了缩小调试的范围，我们需要把这条代码分割成两行，像这样：
+<pre class='nd pp'><code>elif (self._mInputState == ePureAscii) and \
+    self._escDetector.search(self._mLastChar + aBuf):</code></pre>
+<p>然后再运行测试工具：
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 10, in &lt;module>
+    u.feed(line)
+  File "C:\home\chardet\chardet\universaldetector.py", line 101, in feed
+    self._escDetector.search(self._mLastChar + aBuf):
+TypeError: Can't convert 'bytes' object to str implicitly</samp></pre>
+<p>啊哈！错误不在第一个条件语句上(<code>self._mInputState == ePureAscii</code>)，是第二个的问题。但是，是什么引发了<code>TypeError</code>错误呢？也许你会想<code>search()</code>方法需要另外一种类型的参数，但是那样的话，就不会产生当前这种traceback了。Python函数可以使用任何类型参数；只要传递了正确数目的参数，函数就可以执行。如果我们给函数传递了类型不匹配的参数，代码可能就会<em>崩溃</em>，但是这样一来，traceback就会指向函数内部的某一代码块了。但是当前得到的traceback告诉我们，错误就出现在开始调用<code>search()</code>函数那儿。所以错误肯定就出在<code>+</code>操作符上，该操作用于构建最终会传递给<code>search()</code>方法的参数。
+<p>从<a href="case-study-porting-chardet-to-python-3.html#cantuseastringpattern">前一次调试</a>的过程中，我们已经知道<var>aBuf</var>是一个字节数组。那么<code>self._mLastChar</code>又是什么呢？它是一个在<code>reset()</code>中定义的实例变量，而<code>reset()</code>方法刚好就是被<code>__init__()</code>调用的。
+<pre class='nd pp'><code>class UniversalDetector:
+    def __init__(self):
+        self._highBitDetector = re.compile(b'[\x80-\xFF]')
+        self._escDetector = re.compile(b'(\033|~{)')
+        self._mEscCharSetProber = None
+        self._mCharSetProbers = []
+<mark>        self.reset()</mark>
+
+    def reset(self):
+        self.result = {'encoding': None, 'confidence': 0.0}
+        self.done = False
+        self._mStart = True
+        self._mGotData = False
+        self._mInputState = ePureAscii
+<mark>        self._mLastChar = ''</mark></code></pre>
+<p>现在我们找到问题的症结所在了。你发现了吗？<var>self._mLastChar</var>是一个字符串，而<var>aBuf</var>是一个字节数组。而我们不允许对字符串和字节数组做连接操作&nbsp;&mdash;&nbsp;即使是空串也不行。
+<p>那么，<var>self._mLastChar</var>到底是什么呢？在<code>feed()</code>方法中，在traceback报告的位置以下几行就是了。
+<pre class='nd pp'><code>if self._mInputState == ePureAscii:
+    if self._highBitDetector.search(aBuf):
+        self._mInputState = eHighbyte
+    elif (self._mInputState == ePureAscii) and \
+            self._escDetector.search(self._mLastChar + aBuf):
+        self._mInputState = eEscAscii
+
+<mark>self._mLastChar = aBuf[-1]</mark></code></pre>
+<p><code>feed()</code>方法被一次一次地调用，每次都传递给它几个字节。该方法处理好它收到的字节（以<var>aBuf</var>传递进去的），然后将最后一个字节保存在<var>self._mLastChar</var>中，以便下次调用时还会用到。（在多字节编码中，<code>feed()</code>在调用的时候可能只收到了某个字符的一半，然后下次调用时另一半才被传到。）但是因为<var>aBuf</var>已经变成了一个字节数组，所以<var>self._mLastChar</var>也需要与其匹配。可以这样做：
+<pre class='nd pp'><code>  def reset(self):
+      .
+      .
+      .
+<del>-     self._mLastChar = ''</del>
+<ins>+     self._mLastChar = b''</ins></code></pre>
+<p>在代码库中搜索&#8220;<code>mLastChar</code>&#8221;，<code>mbcharsetprober.py</code>中也发现一个相似的问题，与之前不同的是，它记录的是最后<em>2</em>个字符。<code>MultiByteCharSetProber</code>类使用一个单字符列表来记录末尾的两个字符。在Python 3中，这需要使用一个整数列表，因为实际上它记录的并不是是字符，而是字节对象。（字节对象即范围在<code>0-255</code>内的整数。）
+<pre class='nd pp'><code>  class MultiByteCharSetProber(CharSetProber):
+      def __init__(self):
+          CharSetProber.__init__(self)
+          self._mDistributionAnalyzer = None
+          self._mCodingSM = None
+<del>-         self._mLastChar = ['\x00', '\x00']</del>
+<ins>+         self._mLastChar = [0, 0]</ins>
+
+      def reset(self):
+          CharSetProber.reset(self)
+          if self._mCodingSM:
+              self._mCodingSM.reset()
+          if self._mDistributionAnalyzer:
+              self._mDistributionAnalyzer.reset()
+<del>-         self._mLastChar = ['\x00', '\x00']</del>
+<ins>+         self._mLastChar = [0, 0]</ins></code></pre>
+<h3 id=unsupportedoperandtypeforplus>Unsupported operand type(s) for +: <code>'int'</code> and <code>'bytes'</code></h3>
+<p>有好消息，也有坏消息。好消息是我们一直在前进着&hellip;
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 10, in &lt;module>
+    u.feed(line)
+  File "C:\home\chardet\chardet\universaldetector.py", line 101, in feed
+    self._escDetector.search(self._mLastChar + aBuf):
+TypeError: unsupported operand type(s) for +: 'int' and 'bytes'</samp></pre>
+<p>&hellip;坏消息是，我们好像一直都在原地踏步。
+<p>但我们确实一直在取得进展！真的！即使traceback在相同的地方再次出现，这一次的错误毕竟与上次不同。前进！那么，这次又是什么错误呢？上一次我们确认过了，这一行代码不应该会再做连接<code>int</code>型和字节数组(<code>bytes</code>)的操作。事实上，我们刚刚花了相当长一段时间来<a href="case-study-porting-chardet-to-python-3.html#cantconvertbytesobject">保证<var>self._mLastChar</var>是一个字节数组</a>。它怎么会变成<code>int</code>呢？
+<p>答案不在上几行代码中，而在以下几行。
+<pre class='nd pp'><code>if self._mInputState == ePureAscii:
+    if self._highBitDetector.search(aBuf):
+        self._mInputState = eHighbyte
+    elif (self._mInputState == ePureAscii) and \
+            self._escDetector.search(self._mLastChar + aBuf):
+        self._mInputState = eEscAscii
+
+<mark>self._mLastChar = aBuf[-1]</mark></code></pre>
+<aside>字符串中的元素仍然是字符串，字节数组中的元素则为整数。</aside>
+<p>该错误没有发生在<code>feed()</code>方法第一次被调用的时候；而是在<em>第二次</em>调用的过程中，在<var>self._mLastChar</var>被赋值为<var>aBuf</var>末尾的那个字节之后。好吧，这又会有什么问题呢？因为获取字节数组中的单个元素会产生一个整数，而不是字节数组。它们之间的区别，请看以下在交互式shell中的操作：
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>aBuf = b'\xEF\xBB\xBF'</kbd>         <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>len(aBuf)</kbd>
+<samp class=pp>3</samp>
+<samp class=p>>>> </samp><kbd class=pp>mLastChar = aBuf[-1]</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>mLastChar</kbd>                      <span class=u>&#x2461;</span></a>
+<samp class=pp>191</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>type(mLastChar)</kbd>                <span class=u>&#x2462;</span></a>
+<samp class=pp>&lt;class 'int'></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>mLastChar + aBuf</kbd>               <span class=u>&#x2463;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+TypeError: unsupported operand type(s) for +: 'int' and 'bytes'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>mLastChar = aBuf[-1:]</kbd>          <span class=u>&#x2464;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>mLastChar</kbd>
+<samp class=pp>b'\xbf'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>mLastChar + aBuf</kbd>               <span class=u>&#x2465;</span></a>
+<samp class=pp>b'\xbf\xef\xbb\xbf'</samp></pre>
+<ol>
+<li>定义一个长度为3的字节数组。
+<li>字节数组的最后一个元素为191。
+<li>它是一个整数。
+<li>连接整数和字节数组的操作是不允许的。我们重复了在<code>universaldetector.py</code>中发现的那个错误。
+<li>啊，这就是解决办法了。使用<a href="native-datatypes.html#slicinglists">列表分片</a>从数组的最后一个元素中创建一个新的字节数组，而不是直接获取这个元素。即，从最后一个元素开始切割，直到到达数组的末尾。当前<var>mLastChar</var>是一个长度为1的字节数组。
+<li>连接长度分别为1和3的字节数组，则会返回一个新的长度为4的字节数组。
+</ol>
+<p>所以，为了保证<code>universaldetector.py</code>中的<code>feed()</code>方法不管被调用多少次都能够正常运行，我们需要<a href="case-study-porting-chardet-to-python-3.html#cantconvertbytesobject">将<var>self._mLastChar</var>实例化为一个长度为0的字节数组</a>，并且保证它一直是一个字节数组。
+<pre class='nd pp'><code>              self._escDetector.search(self._mLastChar + aBuf):
+          self._mInputState = eEscAscii
+
+<del>- self._mLastChar = aBuf[-1]</del>
+<ins>+ self._mLastChar = aBuf[-1:]</ins></code></pre>
+<h3 id=ordexpectedstring><code>ord()</code> expected string of length 1, but <code>int</code> found</h3>
+<p>困了吗？就要完成了&hellip;
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml                       ascii with confidence 1.0
+tests\Big5\0804.blogspot.com.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 10, in &lt;module>
+    u.feed(line)
+  File "C:\home\chardet\chardet\universaldetector.py", line 116, in feed
+    if prober.feed(aBuf) == constants.eFoundIt:
+  File "C:\home\chardet\chardet\charsetgroupprober.py", line 60, in feed
+    st = prober.feed(aBuf)
+  File "C:\home\chardet\chardet\utf8prober.py", line 53, in feed
+    codingState = self._mCodingSM.next_state(c)
+  File "C:\home\chardet\chardet\codingstatemachine.py", line 43, in next_state
+    byteCls = self._mModel['classTable'][ord(c)]
+TypeError: ord() expected string of length 1, but int found</samp></pre>
+<p>OK，因为<var>c</var>是<code>int</code>类型的，但是<code>ord()</code>需要一个长度为1的字符串。就是这样了。<var>c</var>在哪儿定义的？
+<pre class='nd pp'><code># codingstatemachine.py
+def next_state(self, c):
+    # for each byte we get its class
+    # if it is first byte, we also get byte length
+    byteCls = self._mModel['classTable'][ord(c)]</code></pre>
+<p>不是这儿； 此处<var>c</var>只是被传递给了<code>next_state()</code>函数。我们再上一级看看。
+<pre class='nd pp'><code># utf8prober.py
+def feed(self, aBuf):
+    for c in aBuf:
+        codingState = self._mCodingSM.next_state(c)</code></pre>
+<p>看到了吗？在Python 2中，<var>aBuf</var>是一个字符串，所以<var>c</var>就是一个长度为1的字符串。（那就是我们通过遍历字符串所得到的&nbsp;&mdash;&nbsp;所有的字符，一次一个。）因为现在<var>aBuf</var>是一个字节数组，所以<var>c</var>变成了<code>int</code>类型的，而不再是长度为1的字符串。也就是说，没有必要再调用<code>ord()</code>函数了，因为<var>c</var>已经是<code>int</code>了！
+<p>这样修改：
+<pre class='nd pp'><code>  def next_state(self, c):
+      # for each byte we get its class
+      # if it is first byte, we also get byte length
+<del>-     byteCls = self._mModel['classTable'][ord(c)]</del>
+<ins>+     byteCls = self._mModel['classTable'][c]</ins></code></pre>
+<p>在代码库中搜索&#8220;<code>ord(c)</code>&#8221;后，发现<code>sbcharsetprober.py</code>中也有相似的问题&hellip;
+<pre class='nd pp'><code># sbcharsetprober.py
+def feed(self, aBuf):
+    if not self._mModel['keepEnglishLetter']:
+        aBuf = self.filter_without_english_letters(aBuf)
+    aLen = len(aBuf)
+    if not aLen:
+        return self.get_state()
+    for c in aBuf:
+<mark>        order = self._mModel['charToOrderMap'][ord(c)]</mark></code></pre>
+<p>&hellip;还有<code>latin1prober.py</code>&hellip;
+<pre class='nd pp'><code># latin1prober.py
+def feed(self, aBuf):
+    aBuf = self.filter_with_english_letters(aBuf)
+    for c in aBuf:
+<mark>        charClass = Latin1_CharToClass[ord(c)]</mark></code></pre>
+<p><var>c</var>在<var>aBuf</var>中遍历，这就意味着它是一个整数，而非字符串。解决方案是相同的：把<code>ord(c)</code>就替换成<code>c</code>。
+<pre class='nd pp'><code>  # sbcharsetprober.py
+  def feed(self, aBuf):
+      if not self._mModel['keepEnglishLetter']:
+          aBuf = self.filter_without_english_letters(aBuf)
+      aLen = len(aBuf)
+      if not aLen:
+          return self.get_state()
+      for c in aBuf:
+<del>-         order = self._mModel['charToOrderMap'][ord(c)]</del>
+<ins>+         order = self._mModel['charToOrderMap'][c]</ins>
+
+  # latin1prober.py
+  def feed(self, aBuf):
+      aBuf = self.filter_with_english_letters(aBuf)
+      for c in aBuf:
+<del>-         charClass = Latin1_CharToClass[ord(c)]</del>
+<ins>+         charClass = Latin1_CharToClass[c]</ins>
+</code></pre>
+<h3 id=unorderabletypes>Unorderable types: <code>int()</code> >= <code>str()</code></h3>
+<p>继续我们的路吧。
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml                       ascii with confidence 1.0
+tests\Big5\0804.blogspot.com.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 10, in &lt;module>
+    u.feed(line)
+  File "C:\home\chardet\chardet\universaldetector.py", line 116, in feed
+    if prober.feed(aBuf) == constants.eFoundIt:
+  File "C:\home\chardet\chardet\charsetgroupprober.py", line 60, in feed
+    st = prober.feed(aBuf)
+  File "C:\home\chardet\chardet\sjisprober.py", line 68, in feed
+    self._mContextAnalyzer.feed(self._mLastChar[2 - charLen :], charLen)
+  File "C:\home\chardet\chardet\jpcntx.py", line 145, in feed
+    order, charLen = self.get_order(aBuf[i:i+2])
+  File "C:\home\chardet\chardet\jpcntx.py", line 176, in get_order
+    if ((aStr[0] >= '\x81') and (aStr[0] &lt;= '\x9F')) or \
+TypeError: unorderable types: int() >= str()</samp></pre>
+<p>这都是些什么？&#8220;Unorderable types&#8221;？字节数组与字符串之间的差异引起的问题再一次出现了。看一看以下代码：
+<pre class='nd pp'><code>class SJISContextAnalysis(JapaneseContextAnalysis):
+    def get_order(self, aStr):
+        if not aStr: return -1, 1
+        # find out current char's byte length
+<mark>        if ((aStr[0] >= '\x81') and (aStr[0] &lt;= '\x9F')) or \</mark>
+           ((aStr[0] >= '\xE0') and (aStr[0] &lt;= '\xFC')):
+            charLen = 2
+        else:
+            charLen = 1</code></pre>
+<p><var>aStr</var>从何而来？再深入栈内看一看：
+<pre class='nd pp'><code>def feed(self, aBuf, aLen):
+    .
+    .
+    .
+    i = self._mNeedToSkipCharNum
+    while i &lt; aLen:
+<mark>        order, charLen = self.get_order(aBuf[i:i+2])</mark></code></pre>
+<p>看，是<var>aBuf</var>，我们的老战友。从我们在这一章中所遇到的问题你也可以猜到了问题的关键了，因为<var>aBuf</var>是一个字节数组。此处<code>feed()</code>方法并不是整个地将它传递出去；而是先对它执行分片操作。就如你在<a href="case-study-porting-chardet-to-python-3.html#unsupportedoperandtypeforplus">这章前面</a>看到的，对字节数组执行分片操作的返回值仍然为字节数组，所以传递给<code>get_order()</code>方法的<var>aStr</var>仍然是字节数组。
+<p>那么以下代码是怎样处理<var>aStr</var>的呢？它将该字节第一个元素与长度为1的字符串进行比较操作。在Python 2，这是可以的，因为<var>aStr</var>和<var>aBuf</var>都是字符串，所以<var>aStr[0]</var>也是字符串，并且我们允许比较两个字符串的是否相等。但是在Python 3中，<var>aStr</var>和<var>aBuf</var>都是字节数组，而<var>aStr[0]</var>就成了一个整数，没有执行显式地强制转换的话，是不能对整数和字符串执行相等性比较的。
+<p>在当前情况下，没有必要添加强制转换，这会让代码变得更加复杂。<var>aStr[0]</var>产生一个整数；而我们所比较的对象都是常量(constant)。那就把长度为1的字符串换成整数吧。我们也顺便把<var>aStr</var>换成<var>aBuf</var>吧，因为<var>aStr</var>本来也不是一个字符串。
+<pre class='nd pp'><code>  class SJISContextAnalysis(JapaneseContextAnalysis):
+<del>-     def get_order(self, aStr):</del>
+<del>-      if not aStr: return -1, 1</del>
+<ins>+     def get_order(self, aBuf):</ins>
+<ins>+      if not aBuf: return -1, 1</ins>
+          # find out current char's byte length
+<del>-         if ((aStr[0] >= '\x81') and (aStr[0] &lt;= '\x9F')) or \</del>
+<del>-            ((aBuf[0] >= '\xE0') and (aBuf[0] &lt;= '\xFC')):</del>
+<ins>+         if ((aBuf[0] >= 0x81) and (aBuf[0] &lt;= 0x9F)) or \</ins>
+<ins>+            ((aBuf[0] >= 0xE0) and (aBuf[0] &lt;= 0xFC)):</ins>
+              charLen = 2
+          else:
+              charLen = 1
+
+          # return its order if it is hiragana
+<del>-      if len(aStr) > 1:</del>
+<del>-             if (aStr[0] == '\202') and \</del>
+<del>-                (aStr[1] >= '\x9F') and \</del>
+<del>-                (aStr[1] &lt;= '\xF1'):</del>
+<del>-                return ord(aStr[1]) - 0x9F, charLen</del>
+<ins>+      if len(aBuf) > 1:</ins>
+<ins>+             if (aBuf[0] == 0x202) and \</ins>
+<ins>+                (aBuf[1] >= 0x9F) and \</ins>
+<ins>+                (aBuf[1] &lt;= 0xF1):</ins>
+<ins>+                return aBuf[1] - 0x9F, charLen</ins>
+
+          return -1, charLen
+
+  class EUCJPContextAnalysis(JapaneseContextAnalysis):
+<del>-     def get_order(self, aStr):</del>
+<del>-      if not aStr: return -1, 1</del>
+<ins>+     def get_order(self, aBuf):</ins>
+<ins>+      if not aBuf: return -1, 1</ins>
+          # find out current char's byte length
+<del>-         if (aStr[0] == '\x8E') or \</del>
+<del>-           ((aStr[0] >= '\xA1') and (aStr[0] &lt;= '\xFE')):</del>
+<ins>+         if (aBuf[0] == 0x8E) or \</ins>
+<ins>+           ((aBuf[0] >= 0xA1) and (aBuf[0] &lt;= 0xFE)):</ins>
+              charLen = 2
+<del>-         elif aStr[0] == '\x8F':</del>
+<ins>+         elif aBuf[0] == 0x8F:</ins>
+              charLen = 3
+          else:
+              charLen = 1
+
+        # return its order if it is hiragana
+<del>-    if len(aStr) > 1:</del>
+<del>-           if (aStr[0] == '\xA4') and \</del>
+<del>-              (aStr[1] >= '\xA1') and \</del>
+<del>-              (aStr[1] &lt;= '\xF3'):</del>
+<del>-                 return ord(aStr[1]) - 0xA1, charLen</del>
+<ins>+    if len(aBuf) > 1:</ins>
+<ins>+           if (aBuf[0] == 0xA4) and \</ins>
+<ins>+              (aBuf[1] >= 0xA1) and \</ins>
+<ins>+              (aBuf[1] &lt;= 0xF3):</ins>
+<ins>+               return aBuf[1] - 0xA1, charLen</ins>
+
+        return -1, charLen</code></pre>
+<p>在代码库中查找<code>ord()</code>函数，我们在<code>chardistribution.py</code>中也发现了同样的问题（更确切地说，在以下这些类中，<code>EUCTWDistributionAnalysis</code>，<code>EUCKRDistributionAnalysis</code>，<code>GB2312DistributionAnalysis</code>，<code>Big5DistributionAnalysis</code>，<code>SJISDistributionAnalysis</code>和<code>EUCJPDistributionAnalysis</code>）。对于它们存在的问题，解决办法与我们对<code>jpcntx.py</code>中的类<code>EUCJPContextAnalysis</code>和<code>SJISContextAnalysis</code>的做法相似。
+
+<h3 id=reduceisnotdefined>Global name <code>'reduce'</code> is not defined</h3>
+<p>再次陷入中断&hellip;
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml                       ascii with confidence 1.0
+tests\Big5\0804.blogspot.com.xml</samp>
+<samp class=traceback>Traceback (most recent call last):
+  File "test.py", line 12, in &lt;module>
+    u.close()
+  File "C:\home\chardet\chardet\universaldetector.py", line 141, in close
+    proberConfidence = prober.get_confidence()
+  File "C:\home\chardet\chardet\latin1prober.py", line 126, in get_confidence
+    total = reduce(operator.add, self._mFreqCounter)
+NameError: global name 'reduce' is not defined</samp></pre>
+<p>根据官方手册：<a href=http://docs.python.org/3.0/whatsnew/3.0.html#builtins>What&#8217;s New In Python 3.0</a>，函数<code>reduce()</code>已经从全局名字空间中移出，放到了<code>functools</code>模块中。引用手册中的内容：&#8220;如果需要，请使用<code>functools.reduce()</code>，99％的情况下，显式的<code>for</code>循环使代码更有可读性。&#8221;你可以从Guido van Rossum的一篇日志中看到关于这项决策的更多细节：<a href='http://www.artima.com/weblogs/viewpost.jsp?thread=98196'>The fate of reduce() in Python 3000</a>。
+<pre class='nd pp'><code>def get_confidence(self):
+    if self.get_state() == constants.eNotMe:
+        return 0.01
+  
+<mark>    total = reduce(operator.add, self._mFreqCounter)</mark></code></pre>
+<p><code>reduce()</code>函数使用两个参数&nbsp;&mdash;&nbsp;一个函数，一个列表（更严格地说，可迭代的对象就行了）&nbsp;&mdash;&nbsp;然后将函数增量式地作用在列表的每个元素上。换句话说，这是一种良好而高效的用于综合(add up)列表所有元素并返回其结果的方法。
+<p>这种强大的技术使用如此频繁，所以Python就添加了一个全局的<code>sum()</code>函数。
+<pre class='nd pp'><code>  def get_confidence(self):
+      if self.get_state() == constants.eNotMe:
+          return 0.01
+  
+<del>-     total = reduce(operator.add, self._mFreqCounter)</del>
+<ins>+     total = sum(self._mFreqCounter)</ins></code></pre>
+<p>由于我们不再使用<code>operator</code>模块，所以可以在文件最上方移除那条<code>import</code>语句。
+<pre class='nd pp'><code>  from .charsetprober import CharSetProber
+  from . import constants
+<del>- import operator</del></code></pre>
+<p>可以开始测试了吧？（快要吐血的样子&hellip;）
+<pre class='nd screen'><samp class=p>C:\home\chardet> </samp><kbd>python test.py tests\*\*</kbd>
+<samp>tests\ascii\howto.diveintomark.org.xml                       ascii with confidence 1.0
+tests\Big5\0804.blogspot.com.xml                             Big5 with confidence 0.99
+tests\Big5\blog.worren.net.xml                               Big5 with confidence 0.99
+tests\Big5\carbonxiv.blogspot.com.xml                        Big5 with confidence 0.99
+tests\Big5\catshadow.blogspot.com.xml                        Big5 with confidence 0.99
+tests\Big5\coolloud.org.tw.xml                               Big5 with confidence 0.99
+tests\Big5\digitalwall.com.xml                               Big5 with confidence 0.99
+tests\Big5\ebao.us.xml                                       Big5 with confidence 0.99
+tests\Big5\fudesign.blogspot.com.xml                         Big5 with confidence 0.99
+tests\Big5\kafkatseng.blogspot.com.xml                       Big5 with confidence 0.99
+tests\Big5\ke207.blogspot.com.xml                            Big5 with confidence 0.99
+tests\Big5\leavesth.blogspot.com.xml                         Big5 with confidence 0.99
+tests\Big5\letterlego.blogspot.com.xml                       Big5 with confidence 0.99
+tests\Big5\linyijen.blogspot.com.xml                         Big5 with confidence 0.99
+tests\Big5\marilynwu.blogspot.com.xml                        Big5 with confidence 0.99
+tests\Big5\myblog.pchome.com.tw.xml                          Big5 with confidence 0.99
+tests\Big5\oui-design.com.xml                                Big5 with confidence 0.99
+tests\Big5\sanwenji.blogspot.com.xml                         Big5 with confidence 0.99
+tests\Big5\sinica.edu.tw.xml                                 Big5 with confidence 0.99
+tests\Big5\sylvia1976.blogspot.com.xml                       Big5 with confidence 0.99
+tests\Big5\tlkkuo.blogspot.com.xml                           Big5 with confidence 0.99
+tests\Big5\tw.blog.xubg.com.xml                              Big5 with confidence 0.99
+tests\Big5\unoriginalblog.com.xml                            Big5 with confidence 0.99
+tests\Big5\upsaid.com.xml                                    Big5 with confidence 0.99
+tests\Big5\willythecop.blogspot.com.xml                      Big5 with confidence 0.99
+tests\Big5\ytc.blogspot.com.xml                              Big5 with confidence 0.99
+tests\EUC-JP\aivy.co.jp.xml                                  EUC-JP with confidence 0.99
+tests\EUC-JP\akaname.main.jp.xml                             EUC-JP with confidence 0.99
+tests\EUC-JP\arclamp.jp.xml                                  EUC-JP with confidence 0.99
+.
+.
+.
+316 tests</samp></pre>
+<p>天哪，伙计，她真的欢快地跑起来了！<em><a href=http://www.hampsterdance.com/>/me does a little dance</a></em>
+<p class=a>&#x2042;
+
+<h2 id=summary>总结</h2>
+<p>我们学到了什么？
+<ol>
+<li>尝试大批量地把代码从Python 2移植到Python 3上是一件让人头疼的工作。没有捷径。它确实很困难。
+<li><a href="porting-code-to-python-3-with-2to3.html">自动化的<code>2to3</code>脚本</a>确实有用，但是它只能做一些简单的辅助工作&nbsp;&mdash;&nbsp;函数重命名，模块重命名，语法修改等。之前，它被认为是一项会让人印象深刻的大工程，但是最后，实际上它只是一个能智能地执行查找替换机器人。
+<li>在移植<code>chardet</code>库的时候遇到的头号问题就是：字符串和字节对象之间的差异。在我们这个情况中，这种问题比较明显，因为整个<code>chardet</code>库就是一直在执行从字节流到字符串的转换。但是&#8220;字节流&#8221;出现的方式会远超出你的想象。以&#8220;二进制&#8221;模式读取文件？我们会获得字节流。获取一份web页面？调用web <abbr>API</abbr>？这也会返回字节流。
+<li><em>你</em>需要彻底地了解所面对的程序。如果那段程序是自己写自然非常好，但是至少，我们需要够理解所有晦涩难懂的细节。因为bug可能埋伏在任何地方。
+<li>测试样例是必要的。没有它们的话不要尝试着移植代码。我自信移植后的<code>chardet</code>模块能在Python 3中工作的<em>唯一</em>理由是，我一开始就使用了测试集合来检验所有主要的代码路径。如果你还没有任何测试集，在移植代码之前自己写一些吧。如果你的测试集合太小，那么请写全。如果测试集够了，那么，我们就又可以开始历险了。
+</ol>
+
+<p class=v><a rel=prev href="http-web-services.html" title='back to &#8220;HTTP Web Services&#8221;'><span class=u>&#x261C;</span></a> <a rel=next href="packaging.html" title='onward to &#8220;Packaging Python Libraries&#8221;'><span class=u>&#x261E;</span></a>
+<p class=c>&copy; 2001&ndash;9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

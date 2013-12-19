@@ -1,0 +1,472 @@
+﻿<!DOCTYPE html>
+<meta charset=utf-8>
+<title>字符串 - 深入Python 3</title>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->
+<link rel=stylesheet href="dip3.css">
+<style>
+body{counter-reset:h1 4}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta name=viewport content='initial-scale=1.0'>
+<form action=http://www.google.com/cse><div><input type=hidden name=cx value=014021643941856155761:l5eihuescdw><input type=hidden name=ie value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input type=submit name=sa value=Search></div></form>
+<p>你的位置: <a href="index.html">Home</a> <span class=u>&#8227;</span> <a href="table-of-contents.html#strings">Dive Into Python 3</a> <span class=u>&#8227;</span>
+<p id=level>难度等级: <span class=u title=intermediate>&#x2666;&#x2666;&#x2666;&#x2662;&#x2662;</span>
+<h1>字符串</h1>
+<blockquote class=q>
+<p><span class=u>&#x275D;</span> I&#8217;m telling you this &#8217;cause you&#8217;re one of my friends.<br>
+My alphabet starts where your alphabet ends! <span class=u>&#x275E;</span><br>&mdash; Dr. Seuss, On Beyond Zebra!
+</blockquote>
+<p id=toc>&nbsp;
+<h2 id=boring-stuff>在开始之前需要掌握的一些知识</h2>
+<p class=f>你是否知道<a href=http://en.wikipedia.org/wiki/Bougainville_Province> Bougainville </a>人有世界上最小的字母表？他们的<a href=http://en.wikipedia.org/wiki/Rotokas_alphabet> Rotokas 字母表</a>只包含了12个字母： A, E, G, I, K, O, P, R, S, T, U, 和 V。另一方面，像汉语，日语和韩语这些语言，它们则有成千上万个字符。当然啦，英语共有26个字母&nbsp;&mdash;&nbsp;如果把大写和小写分别计算的话，52个&nbsp;&mdash;&nbsp;外加少量的标点符号，比如<i class=baa>!@#$%&amp;</i>
+
+<p>当人们说起&#8220;文本&#8221;，他们通常指显示在屏幕上的字符或者其他的记号；但是计算机不能直接处理这些字符和标记；它们只认识位(bit)和字节(byte)。实际上，从屏幕上的每一块文本都是以某种<i>字符编码(character encoding)</i>的方式保存的。粗略地说就是，字符编码提供一种映射，使屏幕上显示的内容和内存、磁盘内存储的内容对应起来。有许多种不同的字符编码，有一些是为特定的语言，比如俄语、中文或者英语，设计、优化的，另外一些则可以用于多种语言的编码。
+
+<p>在实际操作中则会比上边描述的更复杂一些。许多字符在几种编码里是共用的，但是在实际的内存或者磁盘上，不同的编码方式可能会使用不同的字节序列来存储他们。所以，你可以把字符编码当做一种解码密钥。当有人给你一个字节序列&nbsp;&mdash;&nbsp;文件，网页，或者别的什么&nbsp;&mdash;&nbsp;并且告诉你它们是&#8220;文本&#8221;时，就需要知道他们使用了何种编码方式，然后才能将这些字节序列解码成字符。如果他们给的是错误的&#8220;密钥&#8221;或者根本没有给你&#8220;密钥&#8221;，那就得自己来破解这段编码，这可是一个艰难的任务。有可能你使用了错误的解码方式，然后出现一些莫名其妙的结果。
+
+<aside>你所了解的关于字符串的知识都是错的。</aside>
+
+<p>你肯定见过这样的网页，在撇号(<code>'</code>)该出现的地方被奇怪的像问号的字符替代了。这种情况通常意味着页面的作者没有正确的声明其使用的编码方式，浏览器只能自己来猜测，结果就是一些正确的和意料之外的字符的混合体。如果原文是英语，那只是不方便阅读而已；在其他的语言环境下，结果可能是完全不可读的。
+
+<p>现有的字符编码各类给世界上每种主要的语言都提供了编码方案。由于每种语言的各不相同，而且在以前内存和硬盘都很昂贵，所以每种字符编码都为特定的语言做了优化。上边这句话的意思是，每种编码都使用数字(0&ndash;255)来代表这种语言的字符。比如，你也许熟悉<abbr>ASCII</abbr>编码，它将英语中的字符都当做从0&ndash;127的数字来存储。（65表示大写的&#8220;A&#8221;，97表示小写的&#8220;a&#8221;，<i class=baa>&amp;</i>c。）英语的字母表很简单，所以它能用不到128个数字表达出来。如果你懂得2进制计数的话，它只使用了一个字节内的7位。
+
+<p>西欧的一些语言，比如法语，西班牙语和德语等，比英语有更多的字母。或者，更准确的说，这些语言含有与变音符号(diacritical marks)组合起来的字母，像西班牙语里的<code>&ntilde;</code>。这些语言最常用的编码方式是CP-1252，又叫做&#8220;windows-1252&#8221;，因为它在微软的视窗操作系统上被广泛使用。CP-1252和<abbr>ASCII</abbr>在0&ndash;127这个范围内的字符是一样的，但是CP-1252为<code>&ntilde;</code>(n-with-a-tilde-over-it, 241)，<code>&Uuml;</code>(u-with-two-dots-over-it, 252)这类字符而扩展到了128&ndash;255这个范围。然而，它仍然是一种单字节的编码方式；可能的最大数字为255，这仍然可以用一个字节来表示。
+
+<p>然而，像中文，日语和韩语等语言，他们的字符如此之多而不得不需要多字节编码的字符集。即，使用两个字节的数字(0&ndash;255)代表每个&#8220;字符&#8221;。但是就跟不同的单字节编码方式一样，多字节编码方式之间也有同样的问题，即他们使用的数字是相同的，但是表达的内容却不同。相对于单字节编码方式它们只是使用的数字范围更广一些，因为有更多的字符需要表示。
+
+<p>在没有网络的时代，&#8220;文本&#8221;由自己输入，偶尔才会打印出来，大多数情况下使用以上的编码方案是可行的。那时没有太多的&#8220;纯文本&#8221;。源代码使用<abbr>ASCII</abbr>编码，其他人也都使用字处理器，这些字处理器定义了他们自己的格式（非文本的），这些格式会连同字符编码信息和风格样式一起记录其中，<i class=baa>&amp;</i>c。人们使用与原作者相同的字处理软件读取这些文档，所以或多或少地能够使用。
+
+<p>现在，我们考虑一下像email和web这样的全球网络的出现。大量的“纯文本”文件在全球范围内流转，它们在一台电脑上被撰写出来，通过第二台电脑进行传输，最后在另外一台电脑上显示。计算机只能识别数字，但是这些数字可能表达的是其他的东西。Oh no! 怎么办呢。。好吧，那么系统必须被设计成在每一段“纯文本”上都搭载编码信息。记住，编码方式是将计算机可读的数字映射成人类可读的字符的解码密钥。失去解码密钥则意味着混乱不清的，莫名其妙的信息，或者更糟。
+
+<p>现在我们考虑尝试把多段文本存储在同一个地方，比如放置所有收到邮件的数据库。这仍然需要对每段文本存储其相关的字符编码信息，只有这样才能正确地显示它们。这很困难吗？试试搜索你的email数据库，这意味着需要在运行时进行编码之间的转换。很有趣是吧&hellip;
+
+<p>现在我们来分析另外一种可能性，即多语言文档，同一篇文档里来自几种不同语言的字符混在一起。（提示：处理这样文档的程序通常使用转义符在不同的&#8220;模式(modes)&#8221;之间切换。噗！现在是俄语 koi8-r 模式，所以241代表 Я；噗噗！现在到了Mac Greek模式，所以241代表 ώ。）当然，你也会想要搜索<em>这些</em>文档。
+
+<p>现在，你就哭吧，因为以前所了解的关于字符串的知识都是错的，根本就没有所谓的&#8220;纯文本&#8221;。
+
+<p class=a>&#x2042;
+
+<h2 id=one-ring-to-rule-them-all>Unicode</h2>
+
+<p><i><dfn>Unicode</dfn>入门。</i>
+
+<p>Unicode编码系统为表达<em>任意</em>语言的<em>任意</em>字符而设计。它使用4字节的数字来表达每个字母、符号，或者表意文字(ideograph)。每个数字代表唯一的至少在某种语言中使用的符号。（并不是所有的数字都用上了，但是总数已经超过了65535，所以2个字节的数字是不够用的。）被几种语言共用的字符通常使用相同的数字来编码，除非存在一个在理的语源学(etymological)理由使不这样做。不考虑这种情况的话，每个字符对应一个数字，每个数字对应一个字符。即不存在二义性。不再需要记录&#8220;模式&#8221;了。<code>U+0041</code>总是代表<code>'A'</code>，即使这种语言没有<code>'A'</code>这个字符。
+
+<p>初次面对这个创想，它看起来似乎很伟大。一种编码方式即可解决所有问题。文档可包含多种语言。不再需要在各种编码方式之间进行&#8220;模式转换&#8220;。但是很快，一个明显的问题跳到我们面前。4个字节？只为了单独一个字符<span class=u title='interrobang!'>&#8253;</span> 这似乎太浪费了，特别是对像英语和西语这样的语言，他们只需要不到1个字节即可以表达所需的字符。事实上，对于以象形为基础的语言（比如中文）这种方法也有浪费，因为这些语言的字符也从来不需要超过2个字节即可表达。
+
+<p>有一种Unicode编码方式每1个字符使用4个字节。它叫做UTF-82，因为32位 = 4字节。UTF-32是一种直观的编码方式；它收录每一个Unicode字符（4字节数字）然后就以那个数字代表该字符。这种方法有其优点，最重要的一点就是可以在常数时间内定位字符串里的第<var>N</var>个字符，因为第<var>N</var>个字符从第<var>4&times;Nth</var>个字节开始。另外，它也有其缺点，最明显的就是它使用4个&#8220;诡异&#8221;的字节来存储每个&#8220;诡异&#8221;的字符&hellip;
+
+<p>尽管有Unicode字符非常多，但是实际上大多数人不会用到超过前65535个以外的字符。因此，就有了另外一种Unicode编码方式，叫做UTF-16(因为16位 = 2字节)。UTF-16将0&ndash;65535范围内的字符编码成2个字节，如果真的需要表达那些很少使用的<a href=http://en.wikipedia.org/wiki/Astral_character>&#8220;星芒层(astral plane)</a>&#8221;内超过这65535范围的Unicode字符，则需要使用一些诡异的技巧来实现。UTF-16编码最明显的优点是它在空间效率上比UTF-32高两倍，因为每个字符只需要2个字节来存储（除去65535范围以外的），而不是UTF-32中的4个字节。并且，如果我们假设某个字符串不包含任何星芒层中的字符，那么我们依然可以在常数时间内找到其中的第<var>N</var>个字符，直到它不成立为止这总是一个不错的推断&hellip;
+
+<p>但是对于UTF-32和UTF-16编码方式还有一些其他不明显的缺点。不同的计算机系统会以不同的顺序保存字节。这意味着字符<code>U+4E2D</code>在UTF-16编码方式下可能被保存为<code>4E 2D</code>或者<code>2D 4E</code>，这取决于该系统使用的是大尾端(big-endian)还是小尾端(little-endian)。（对于UTF-32编码方式，则有更多种可能的字节排列。）只要文档没有离开你的计算机，它还是安全的&nbsp;&mdash;&nbsp;同一台电脑上的不同程序使用相同的字节顺序(byte order)。但是当我们需要在系统之间传输这个文档的时候，也许在万维网中，我们就需要一种方法来指示当前我们的字节是怎样存储的。不然的话，接收文档的计算机就无法知道这两个字节<code>4E 2D</code>表达的到底是<code>U+4E2D</code>还是<code>U+2D4E</code>。
+<!--one way and reversed-->
+<p>为了解决<em>这个</em>问题，多字节的Unicode编码方式定义了一个&#8220;<a href="http://woodpecker.org.cn/diveintopython3/en.wikipedia.org/wiki/Byte-order_mark">字节顺序标记(Byte Order Mark)</a>&#8221;，它是一个特殊的非打印字符，你可以把它包含在文档的开头来指示你所使用的字节顺序。对于UTF-16，字节顺序标记是<code>U+FEFF</code>。如果收到一个以字节<code>FF FE</code>开头的UTF-16编码的文档，你就能确定它的字节顺序是单向的(one way)的了；如果它以<code>FE FF</code>开头，则可以确定字节顺序反向了。
+
+<p>不过，UTF-16还不够完美，特别是要处理许多<abbr>ASCII</abbr>字符时。如果仔细想想的话，甚至一个中文网页也会包含许多的<abbr>ASCII</abbr>字符&nbsp;&mdash;&nbsp;所有包围在可打印中文字符周围的元素(element)和属性(attribute)。能够在常数时间内找到第<var>Nth</var>个字符当然非常好，但是依然存在着纠缠不休的星芒层字符的问题，这意味着你不能<em>保证</em>每个字符都是2个字节长，所以，除非你维护着另外一个索引，不然就不能<em>真正意义上的</em>在常数时间内定位第<var>N</var>个字符。另外，朋友，世界上肯定还存在很多的<abbr>ASCII</abbr>文本&hellip;
+
+<p>另外一些人琢磨着这些问题，他们找到了一种解决方法：
+
+<p class=xxxl>UTF-8
+
+<!-->The range of integers used to code the abstract characters is called the codespace. A particular integer in this set is called a code point. When an abstract character is mapped or assigned to a particular code point in the codespace, it is then referred to as an encoded character.
+<-->
+<p>UTF-8是一种为Unicode设计的<em>变长(variable-length)</em>编码系统。即，不同的字符可使用不同数量的字节编码。对于<abbr>ASCII</abbr>字符(A-Z, <i class=baa>&amp;</i>c.)<abbr>UTF-8</abbr>仅使用1个字节来编码。事实上，<abbr>UTF-8</abbr>中前128个字符(0&ndash;127)使用的是跟<abbr>ASCII</abbr>一样的编码方式。像&ntilde;和&ouml;这样的&#8220;扩展拉丁字符(Extended Latin)&#8221;则使用2个字节来编码。（这里的字节并不是像UTF-16中那样简单的<a href="http://woodpecker.org.cn/diveintopython3/en.wikipedia.org/wiki/Code_point">Unicode编码点(unicode code point)</a>；它使用了一些位变换(bit-twiddling)。）中文字符比如&#8220;&#x4E2D;&#8221;则占用了3个字节。很少使用的&#8220;星芒层字符&#8221;则占用4个字节。
+
+<p>缺点：因为每个字符使用不同数量的字节编码，所以寻找串中第<var>N</var>个字符是一个O(N)复杂度的操作&nbsp;&mdash;&nbsp;即，串越长，则需要更多的时间来定位特定的字符。同时，还需要位变换来把字符编码成字节，把字节解码成字符。
+
+<p>优点：在处理经常会用到的<abbr>ASCII</abbr>字符方面非常有效。在处理扩展的拉丁字符集方面也不比UTF-16差。对于中文字符来说，比UTF-32要好。同时，（在这一条上你得相信我，因为我不打算给你展示它的数学原理。）由位操作的天性使然，使用UTF-8不再存在字节顺序的问题了。一份以<abbr>UTF-8</abbr>编码的文档在不同的计算机之间是一样的比特流。
+
+<p class=a>&#x2042;
+
+<h2 id=divingin>概述</h2>
+
+<p>在Python 3，所有的字符串都是使用Unicode编码的字符序列。不再存在以UTF-8或者CP-1252编码的情况。也就是说，&#8220;这个字符串是以<abbr>UTF-8</abbr>编码的吗？</abbr>不再是一个有效问题。&#8221;<abbr>UTF-8</abbr>是一种将字符编码成字节序列的方式。如果需要将字符串转换成特定编码的字节序列，Python 3可以为你做到。如果需要将一个字节序列转换成字符串，Python 3也能为你做到。字节即字节，并非字符。字符在计算机内只是一种抽象。字符串则是一种抽象的序列。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>s = '深入 Python'</kbd>    <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>len(s)</kbd>               <span class=u>&#x2461;</span></a>
+<samp class=pp>9</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>s[0]</kbd>                 <span class=u>&#x2462;</span></a>
+<samp class=pp>'深'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>s + ' 3'</kbd>             <span class=u>&#x2463;</span></a>
+<samp class=pp>'深入 Python 3'</samp></pre>
+<ol>
+<li>为了创建一个字符串，将其用引号包围。Python字符串可以通过单引号(<code>'</code>)或者双引号(<code>"</code>)来定义。
+<li>内置函数<code><dfn>len</dfn>()</code>可返回字符串的长度，<i>即</i>字符的个数。这与<a href="native-datatypes.html#extendinglists">获得列表，元组，集合或者字典的长度</a>的函数是同一个。Python中，字符串可以想像成由字符组成的元组。
+<li>Just like getting individual items out of a list, you can get individual characters out of a string using index notation.
+<!--s[-3:]同样有效，并且item(s)和characters(s)-->
+<br>与取得列表中的元素一样，也可以通过下标记号取得字符串中的某个字符。
+<li>类似列表，可以使用<code>+</code>操作符来<dfn>连接(concatenate)</dfn>字符串。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=formatting-strings>格式化字符串</h2>
+
+<aside>字符串可以使用单引号或者双引号来定义。</aside>
+<p>我们再来看一看<a href="your-first-python-program.html#divingin"><code>humansize.py</code></a>：
+
+<p class=d>[<a href="examples/humansize.py">download <code>humansize.py</code></a>]
+<pre class=pp><code><a>SUFFIXES = {1000: ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],         <span class=u>&#x2460;</span></a>
+            1024: ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']}
+
+def approximate_size(size, a_kilobyte_is_1024_bytes=True):
+<a>    '''Convert a file size to human-readable form.                          <span class=u>&#x2461;</span></a>
+
+    Keyword arguments:
+    size -- file size in bytes
+    a_kilobyte_is_1024_bytes -- if True (default), use multiples of 1024
+                                if False, use multiples of 1000
+
+    Returns: string
+
+<a>    '''                                                                     <span class=u>&#x2462;</span></a>
+    if size &lt; 0:
+<a>        raise ValueError('number must be non-negative')                     <span class=u>&#x2463;</span></a>
+
+    multiple = 1024 if a_kilobyte_is_1024_bytes else 1000
+    for suffix in SUFFIXES[multiple]:
+        size /= multiple
+        if size &lt; multiple:
+<a>            return '{0:.1f} {1}'.format(size, suffix)                       <span class=u>&#x2464;</span></a>
+
+    raise ValueError('number too large')</code></pre>
+<ol>
+<li><code>'KB'</code>, <code>'MB'</code>, <code>'GB'</code>&hellip; 这些是字符串。
+<li>函数的文档字符串(docstring)也是字符串。当前的文档字符串占用了多行，所以它使用了相邻的3个引号来标记字符串的起始和终止。
+<li>这3个引号代表该文档字符串的终止。
+<li>这是另外一个字符串，作为一个可读的提示信息传递给异常。
+<li>瓦哦&hellip;那是什么？
+</ol>
+
+<p>Python 3支持把值<dfn>格式化(format)</dfn>成字符串。可以有非常复杂的表达式，最基本的用法是使用单个占位符(placeholder)将一个值插入字符串。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>username = 'mark'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>password = 'PapayaWhip'</kbd>                             <span class=u>&#x2460;</span></a>
+<a><samp class=p>>>> </samp><kbd class=pp>"{0}'s password is {1}".format(username, password)</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=pp>"mark's password is PapayaWhip"</samp></pre>
+<ol>
+<li>不，<kbd>PapayaWhip</kbd>真的不是我的密码。
+<li>这里包含了很多知识。首先，这里使用了一个字符串字面值的方法调用。<em>字符串也是对象</em>，对象则有其方法。其次，整个表达式返回一个字符串。最后，<code>{0}</code>和<code>{1}</code>
+叫做<i>替换字段(replacement field)</i>，他们会被传递给<code><dfn>format</dfn>()</code>方法的参数替换。
+</ol>
+
+<h3 id=compound-field-names>复合字段名</h3>
+
+<p>在前一个例子中，替换字段只是简单的整数，这是最简单的用法。整型替换字段被当做传给<code>format()</code>方法的参数列表的位置索引。即，<code>{0}</code>会被第一个参数替换（在此例中即<var>username</var>），<code>{1}</code>被第二个参数替换（<var>password</code>），<i class=baa>&amp;</i>c。可以有跟参数一样多的替换字段，同时你也可以使用任意多个参数来调用<code>format()</code>。但是替换字段远比这个强大。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>import humansize</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>si_suffixes = humansize.SUFFIXES[1000]</kbd>      <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>si_suffixes</kbd>
+<samp class=pp>['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>'1000{0[0]} = 1{0[1]}'.format(si_suffixes)</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=pp>'1000KB = 1MB'</samp>
+</pre>
+<ol>
+<li>不需要调用<code>humansize</code>模块定义的任何函数我们就可以抓取到其所定义的数据结构：国际单位制(SI, 来自法语Système International)的后缀列表（以1000为进制）。
+<li>这一句看上去有些复杂，其实不是这样的。<code>{0}</code>代表传递给<code>format()</code>方法的第一个参数，即<var>si_suffixes</var>。注意<var>si_suffixes</var>是一个列表。所以<code>{0[0]}</code>指代<var>si_suffixes</var>的第一个元素，即<code>'KB'</code>。同时，<code>{0[1]}</code>指代该列表的第二个元素，即：<code>'MB'</code>。大括号以外的内容&nbsp;&mdash;&nbsp;包括<code>1000</code>，等号，还有空格等&nbsp;&mdash;&nbsp;则按原样输出。语句最后返回字符串为<code>'1000KB = 1MB'</code>。
+</ol>
+
+<aside>{0}会被format()的第1个参数替换，{1}则被其第2个参数替换。</aside>
+<p>这个例子说明<em>格式说明符可以通过利用（类似）Python的语法访问到对象的元素或属性</em>。这就叫做<i>复合字段名(compound field names)</i>。以下复合字段名都是&#8220;有效的&#8221;。
+
+<ul>
+<li>使用列表作为参数，并且通过下标索引来访问其元素（跟上一例类似）
+<li>使用字典作为参数，并且通过键来访问其值
+<li>使用模块作为参数，并且通过名字来访问其变量及函数
+<li>使用类的实例作为参数，并且通过名字来访问其方法和属性
+<li><em>以上方法的任意组合</em>
+</ul>
+
+<p>为了使你确信的确如此，下面这个样例就组合使用了上面所有方法：
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>import humansize</kbd>
+<samp class=p>>>> </samp><kbd class=pp>import sys</kbd>
+<samp class=p>>>> </samp><kbd class=pp>'1MB = 1000{0.modules[humansize].SUFFIXES[1000][0]}'.format(sys)</kbd>
+<samp class=pp>'1MB = 1000KB'</samp></pre>
+
+<p>下面是描述它如何工作的：
+
+<ul>
+<li><code>sys</code>模块保存了当前正在运行的Python实例的信息。由于已经导入了这个模块，因此可以将其作为<code>format()</code>方法的参数。所以替换域<code>{0}</code>指代<code>sys</code>模块。
+<li><code>sys.modules</code> is a dictionary of all the modules that have been imported in this Python instance. The keys are the module names as strings; the values are the module objects themselves. So the replacement field <code>{0.modules}</code> refers to the dictionary of imported modules.
+<code>sys.modules</code>是一个保存当前Python实例中所有已经导入模块的字典。模块的名字作为字典的键；模块自身则是键所对应的值。所以<code>{0.modules}</code>指代保存当前己被导入模块的字典。
+<li><code>sys.modules['humansize']</code>即刚才导入的<code>humansize</code>模块。所以替换域<code>{0.modules[humansize]}</code>指代<code>humansize</code>模块。请注意以上两句在语法上轻微的不同。在实际的Python代码中，字典<code>sys.modules</code>的键是字符串类型的；为了引用它们，我们需要在模块名周围放上引号（<i>比如</i> <code>'humansize'</code>）。但是在使用替换域的时候，我们在省略了字典的键名周围的引号（<i>比如</i> <code>humansize</code>）。在此，我们引用<a href=http://www.python.org/dev/peps/pep-3101/>PEP 3101：字符串格式化高级用法</a>，&#8220;解析键名的规则非常简单。如果名字以数字开头，则它被当作数字使用，其他情况则被认为是字符串。&#8221;
+<li><code>sys.modules['humansize'].SUFFIXES</code>是在<code>humansize</code>模块的开头定义的一个字典对象。 <code>{0.modules[humansize].SUFFIXES}</code>即指向该字典。
+<li><code>sys.modules['humansize'].SUFFIXES[1000]</code>是一个<abbr>SI</abbr>（国际单位制）后缀列表：<code>['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']</code>。所以替换域<code>{0.modules[humansize].SUFFIXES[1000]}</code>指向该列表。
+<li><code>sys.modules['humansize'].SUFFIXES[1000][0]</code>即<abbr>SI</abbr>后缀列表的第一个元素：<code>'KB'</code>。因此，整个替换域<code>{0.modules[humansize].SUFFIXES[1000][0]}</code>最后都被两个字符<code>KB</code>替换。
+</ul>
+
+<h3 id=format-specifiers>格式说明符</h3>
+
+<p>但是，还有一些问题我们没有讲到！再来看一看<code>humansize.py</code>中那一行奇怪的代码：
+
+<pre class='nd pp'><code>if size &lt; multiple:
+    return '{0:.1f} {1}'.format(size, suffix)</code></pre>
+
+<p><code>{1}</code>会被传递给<code>format()</code>方法的第二个参数替换，即<var>suffix</var>。但是<code>{0:.1f}</code>是什么意思呢？它其实包含了两方面的内容：<code>{0}</code>你已经能理解，<code>:.1f</code>则不一定了。第二部分（包括冒号及其后边的部分）即<i>格式说明符(format specifier)</i>，它进一步定义了被替换的变量应该如何被格式化。
+
+<blockquote class='note compare clang'>
+<p><span class=u>&#x261E;</span>格式说明符的允许你使用各种各种实用的方法来修饰被替换的文本，就像C语言中的<code><dfn>printf</dfn>()</code>函数一样。我们可以添加使用零填充(zero-padding)，衬距(space-padding)，对齐字符串(align strings)，控制10进制数输出精度，甚至将数字转换成16进制数输出。
+</blockquote>
+
+<p>在替换域中，冒号(<code>:</code>)标示格式说明符的开始。&#8220;<code>.1</code>&#8221;的意思是四舍五入到保留一们小数点。&#8220;<code>f</code>&#8221;的意思是定点数（与指数标记法或者其他10进制数表示方法相对应）。因此，如果给定<var>size</code>为<code>698.24</code>，<var>suffix</var>为<code>'GB'</code>，那么格式化后的字符串将是<code>'698.2 GB'</code>，因为<code>698.24</code>被四舍五入到一位小数表示，然后后缀<code>'GB'</code>再被追加到这个串最后。
+
+<pre class='nd screen'>
+<samp class=p>>>> </samp><kbd class=pp>'{0:.1f} {1}'.format(698.24, 'GB')</kbd>
+<samp class=pp>'698.2 GB'</samp></pre>
+
+<p>想了解格式说明符的复杂细节，请参阅Python官方文档<a href=http://docs.python.org/3.1/library/string.html#format-specification-mini-language>关于格式化规范的迷你语言</a>
+
+<p class=a>&#x2042;
+
+<h2 id=common-string-methods>其他常用字符串方法</h2>
+
+<p>除了格式化，关于字符串还有许多其他实用的使用技巧。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd>s = '''Finished files are the re-</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>... </samp><kbd>sult of years of scientif-</kbd>
+<samp class=p>... </samp><kbd>ic study combined with the</kbd>
+<samp class=p>... </samp><kbd>experience of years.'''</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>s.splitlines()</kbd>                     <span class=u>&#x2461;</span></a>
+<samp class=pp>['Finished files are the re-',
+ 'sult of years of scientif-',
+ 'ic study combined with the',
+ 'experience of years.']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>print(s.lower())</kbd>                   <span class=u>&#x2462;</span></a>
+<samp>finished files are the re-
+sult of years of scientif-
+ic study combined with the
+experience of years.</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>s.lower().count('f')</kbd>               <span class=u>&#x2463;</span></a>
+<samp class=pp>6</samp></pre>
+<ol>
+<li>我们可以在Python的交互式shell里输入<dfn>多行(multiline)</dfn>字符串。一旦我们以三个引号标记多行字符串的开始，按<kbd>ENTER</kbd>键，Python shell会提示你继续这个字符串的输入。连续输入三个结束引号以终止该字符串的输入，再敲<kbd>ENTER</kbd>键则会执行该条命令（在当前例子中，把这个字符串赋给变量<var>s</var>）。
+<li><code><dfn>splitlines</dfn>()</code>方法以多行字符串作为输入，返回一个由字符串组成的列表，列表的元素即原来的单行字符串。请注意，每行行末的回车符没有被包括进去。
+<li><code>lower()</code>方法把整个字符串转换成小写的。（类似地，<code>upper()</code>方法执行大写化转换操作。）
+<li><code>count()</code>方法对串中的指定的子串进行计数。是的，在那一句中确实出现了6个字母&#8220;f&#8221;。
+</ol>
+
+<p>还有一种经常会遇到的情况。比如有如下形式的键-值对列表 <code><var>key1</var>=<var>value1</var>&amp;<var>key2</var>=<var>value2</var></code>，我们需要将其分离然后产生一个这样形式的字典<code>{key1: value1, key2: value2}</code>。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>query = 'user=pilgrim&amp;database=master&amp;password=PapayaWhip'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>a_list = query.split('&amp;')</kbd>                            <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>a_list</kbd>
+<samp class=pp>['user=pilgrim', 'database=master', 'password=PapayaWhip']</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_list_of_lists = [v.split('=', 1) for v in a_list]</kbd>  <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>a_list_of_lists</kbd>
+<samp class=pp>[['user', 'pilgrim'], ['database', 'master'], ['password', 'PapayaWhip']]</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_dict = dict(a_list_of_lists)</kbd>                       <span class=u>&#x2462;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>a_dict</kbd>
+<samp class=pp>{'password': 'PapayaWhip', 'user': 'pilgrim', 'database': 'master'}</samp></pre>
+
+<ol>
+<li><code><dfn>split</dfn>()</code>方法使用一个参数，即指定的分隔符，然后根据这个分隔符将串分离成一个字符串列表。此处，分隔符即字符&#8220;<code>&amp;</code>&#8221;，它还可以是其他的内容。
+<li>现在我们有了一个字符串列表，其中的每个串由三部分组成：键，等号和值。我们可以使用<a href="comprehensions.html#listcomprehension">列表解析</a>来遍历整个列表，然后利用第一个等号标记将每个字符串再分离成两个子串。（理论上，值也可以包含等号标记，如果执行<code>'key=value=foo'.split('=')</code>，那么我们会得到一个三元素列表<code>['key', 'value', 'foo']</code>。）
+<li>最后，通过调用<code>dict()</code>函数Python会把那个包含列表的列表(list-of-lists)转换成字典对象。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>上一个例子跟解析<abbr>URL</abbr>的请求参数(query parameters)很相似，但是真实的<abbr>URL</abbr>解析实际上比这个复杂得多。如果需要处理<abbr>URL</abbr>请求参数，我们最好使用<a href=http://docs.python.org/3.1/library/urllib.parse.html#urllib.parse.parse_qs><code>urllib.parse.parse_qs()</code></a>函数，它可以处理一些不常见的边缘情况。
+</blockquote>
+
+<!--http://www.woodpecker.org.cn/diveintopython/native_data_types/lists.html-->
+<h3 id=slicingstrings>字符串的分片</h3>
+<p>定义一个字符串以后，我们可以截取其中的任意部分形成新串。这种操作被称作字符串的<i>分片(slice)</i>。字符串分片跟<a href="native-datatypes.html#slicinglists">列表的分片(slicing lists)</a>原理是一样的，从直观上也说得通，因为字符串本身就是一些字符序列。
+<br>
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>a_string = 'My alphabet starts where your alphabet ends.'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>a_string[3:11]</kbd>           <span class=u>&#x2460;</span></a>
+<samp class=pp>'alphabet'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_string[3:-3]</kbd>           <span class=u>&#x2461;</span></a>
+<samp class=pp>'alphabet starts where your alphabet en'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_string[0:2]</kbd>            <span class=u>&#x2462;</span></a>
+<samp class=pp>'My'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_string[:18]</kbd>            <span class=u>&#x2463;</span></a>
+<samp class=pp>'My alphabet starts'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>a_string[18:]</kbd>            <span class=u>&#x2464;</span></a>
+<samp class=pp>' where your alphabet ends.'</samp></pre>
+<ol>
+<li>我们可以通过指定两个索引值来获得原字符串的一个&#8220;slice&#8221;。该操作的返回值是一个新串，依次包含了从原串中第一个索引位置开始，直到但是不包含第二个索引位置之间的所有字符。
+<li>就像给列表做分片一样，我们也可以使用负的索引值来分片字符串。
+<li>字符串的下标索引是从0开始的，所以<code>a_string[0:2]</code>会返回原字符串的前两个元素，从<code>a_string[0]</code>开始，直到但不包括<code>a_string[2]</code>。
+<li>如果省略了第一个索引值，Python会默认它的值为0。所以<code>a_string[:18]</code>跟<code>a_string[0:18]</code>的效果是一样的，因为从0开始是被Python默认的。
+<li>同样地，如果第2个索引值是原字符串的长度，那么我们也可以省略它。所以，在此处<code>a_string[18:]</code>跟<code>a_string[18:44]</code>的结果是一样的，因为这个串的刚好有44个字符。这种规则存在某种有趣的对称性。在这个由44个字符组成的串中，<code>a_string[:18]</code>会返回前18个字符，而<code>a_string[18:]</code>则会返回除了前18个字符以外字符串的剩余部分。事实上<code>a_string[:<var>n</var>]</code>总是会返回串的前<var>n</var>个字符，而<code>a_string[<var>n</var>:]</code>则会返回其余的部分，这与串的长度无关。
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=byte-arrays>String vs. Bytes</h2>
+
+<p><dfn>字节</dfn>即字节；字符是一种抽象。一个不可变(immutable)的Unicode编码的字符序列叫做<i>string</i>。一串由0到255之间的数字组成的序列叫做<i>bytes</i>对象。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>by = b'abcd\x65'</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>by</kbd>
+<samp class=pp>b'abcde'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>type(by)</kbd>          <span class=u>&#x2461;</span></a>
+<samp class=pp>&lt;class 'bytes'></samp>
+<a><samp class=p>>>> </samp><kbd class=pp>len(by)</kbd>           <span class=u>&#x2462;</span></a>
+<samp class=pp>5</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>by += b'\xff'</kbd>     <span class=u>&#x2463;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>by</kbd>
+<samp class=pp>b'abcde\xff'</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>len(by)</kbd>           <span class=u>&#x2464;</span></a>
+<samp class=pp>6</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>by[0]</kbd>             <span class=u>&#x2465;</span></a>
+<samp class=pp>97</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>by[0] = 102</kbd>       <span class=u>&#x2466;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+TypeError: 'bytes' object does not support item assignment</samp></pre>
+<ol>
+<li>使用&#8220;<dfn>byte</dfn>字面值&#8221;语法<code>b''</code>来定义<code>bytes</code>对象。byte字面值里的每个字节可以是<abbr>ASCII</abbr>字符或者是从<code>\x00</code>到<code>\xff</code>编码了的16进制数。
+<li><code>bytes</code>对象的类型是<code>bytes</code>。
+<li>跟列表和字符串一样，我们可以通过内置函数<code>len()</code>来获得<code>bytes</code>对象的长度。
+<li>使用<code>+</code>操作符可以连接<code>bytes</code>对象。操作的结果是一个新的<code>bytes</code>对象。
+<li>连接5个字节的和1个字节的<code>bytes</code>对象会返回一个6字节的<code>bytes</code>对象。
+<li>一如列表和字符串，可以使用下标记号来获取<code>bytes</code>对象中的单个字节。对字符串做这种操作获得的元素仍为字符串，而对<code>bytes</code>对象做这种操作的返回值则为整数。确切地说，是0&ndash;255之间的整数。
+<li><code>bytes</code>对象是不可变的；我们不可以给单个字节赋上新值。如果需要改变某个字节，可以组合使用<a href="strings.html#slicingstrings">字符串的切片</a>和连接操作(效果跟字符串是一样的)，或者我们也可以将<code>bytes</code>对象转换为<code>bytearray</code>对象。
+</ol>
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>by = b'abcd\x65'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>barr = bytearray(by)</kbd>  <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>barr</kbd>
+<samp class=pp>bytearray(b'abcde')</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>len(barr)</kbd>             <span class=u>&#x2461;</span></a>
+<samp class=pp>5</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>barr[0] = 102</kbd>         <span class=u>&#x2462;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>barr</kbd>
+<samp class=pp>bytearray(b'fbcde')</samp></pre>
+<ol>
+<li>使用内置函数<code>bytearray()</code>来完成从<code>bytes</code>对象到可变的<code>bytearray</code>对象的转换。
+<li>所有对<code>bytes</code>对象的操作也可以用在<code>bytearray</code>对象上。
+<li>有一点不同的就是，我们可以使用下标标记给<code>bytearray</code>对象的某个字节赋值。并且，这个值必须是0&ndash;255之间的一个整数。
+</ol>
+
+<p>我们<em>决不应该</em>这样混用bytes和strings。
+
+<pre class=screen>
+<samp class=p>>>> </samp><kbd class=pp>by = b'd'</kbd>
+<samp class=p>>>> </samp><kbd class=pp>s = 'abcde'</kbd>
+<a><samp class=p>>>> </samp><kbd class=pp>by + s</kbd>                       <span class=u>&#x2460;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+TypeError: can't concat bytes to str</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>s.count(by)</kbd>                  <span class=u>&#x2461;</span></a>
+<samp class=traceback>Traceback (most recent call last):
+  File "&lt;stdin>", line 1, in &lt;module>
+TypeError: Can't convert 'bytes' object to str implicitly</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>s.count(by.decode('ascii'))</kbd>  <span class=u>&#x2462;</span></a>
+<samp class=pp>1</samp></pre>
+<ol>
+<li>不能连接<code>bytes</code>对象和字符串。他们两种不同的数据类型。
+<li>也不允许针对字符串中<code>bytes</code>对象的出现次数进行计数，因为串里面根本没有<code>bytes</code>。字符串是一系列的字符序列。也许你是想要先把这些字节序列通过某种编码方式进行解码获得字符串，然后对该字符串进行计数？可以，但是需要显式地指明它。Python 3不会隐含地将bytes转换成字符串，或者进行相反的操作。
+<li>好巧啊&hellip;这一行代码刚好给我们演示了使用特定编码方式将<code>bytes</code>对象转换成字符串后该串的出现次数。
+</ol>
+
+<p>所以，这就是字符串与字节数组之间的联系了：<code>bytes</code>对象有一个<code><dfn>decode</dfn>()</code>方法，它使用某种字符编码作为参数，然后依照这种编码方式将<code>bytes</code>对象转换为字符串，对应地，字符串有一个<code><dfn>encode</dfn>()</code>方法，它也使用某种字符编码作为参数，然后依照它将串转换为<code>bytes</code>对象。在上一个例子中，解码的过程相对直观一些&nbsp;&mdash;&nbsp;使用<abbr>ASCII</abbr>编码将一个字节序列转换为字符串。同样的过程对其他的编码方式依然有效&nbsp;&mdash;&nbsp;传统的（非Unicode）编码方式也可以，只要它们能够编码串中的所有字符。
+
+<pre class=screen>
+<a><samp class=p>>>> </samp><kbd class=pp>a_string = '深入 Python'</kbd>         <span class=u>&#x2460;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>len(a_string)</kbd>
+<samp class=pp>9</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>by = a_string.encode('utf-8')</kbd>    <span class=u>&#x2461;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>by</kbd>
+<samp class=pp>b'\xe6\xb7\xb1\xe5\x85\xa5 Python'</samp>
+<samp class=p>>>> </samp><kbd class=pp>len(by)</kbd>
+<samp class=pp>13</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>by = a_string.encode('gb18030')</kbd>  <span class=u>&#x2462;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>by</kbd>
+<samp class=pp>b'\xc9\xee\xc8\xeb Python'</samp>
+<samp class=p>>>> </samp><kbd class=pp>len(by)</kbd>
+<samp class=pp>11</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>by = a_string.encode('big5')</kbd>     <span class=u>&#x2463;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>by</kbd>
+<samp class=pp>b'\xb2`\xa4J Python'</samp>
+<samp class=p>>>> </samp><kbd class=pp>len(by)</kbd>
+<samp class=pp>11</samp>
+<a><samp class=p>>>> </samp><kbd class=pp>roundtrip = by.decode('big5')</kbd>    <span class=u>&#x2464;</span></a>
+<samp class=p>>>> </samp><kbd class=pp>roundtrip</kbd>
+<samp class=pp>'深入 Python'</samp>
+<samp class=p>>>> </samp><kbd class=pp>a_string == roundtrip</kbd>
+<samp class=pp>True</samp></pre>
+<ol>
+<li><var>a_string</var>是一个字符串。它有9个字符。
+<li><var>by</var>是一个<code>bytes</code>对象。它有13个字节。它是通过<var>a_string</var>使用<abbr>UTF-8</abbr>编码而得到的一串字节序列。
+<li><var>by</var>还是一个<code>bytes</code>对象。它有11个字节。它是通过<var>a_string</var>使用<a href=http://en.wikipedia.org/wiki/GB_18030>GB18030</a>编码而得到的一串字节序列。
+<li>此时的<var>by</var>仍旧是一个<code>bytes</code>对象，由11个字节组成。它又是一种<em>完全不同的字节序列</em>，我们通过对<var>a_string</var>使用<a href=http://en.wikipedia.org/wiki/Big5>Big5</a>编码得到。
+<li><var>roundtrip</var>是一个字符串，共有9个字符。它是通过对<var>by</var>使用Big5解码算法得到的一个字符序列。并且，从执行结果可以看出，<var>roundtrip</var>与<var>a_string</var>是完全一样的。
+<br>
+</ol>
+
+<p class=a>&#x2042;
+
+<h2 id=py-encoding>补充内容：Python源码的编码方式</h2>
+
+<p>Python 3会假定我们的源码&nbsp;&mdash;&nbsp;<i>即</i><code>.py</code>文件&nbsp;&mdash;&nbsp;使用的是<abbr>UTF-8</abbr>编码方式。
+
+<blockquote class='note compare python2'>
+<p><span class=u>&#x261E;</span>Python 2里，<code>.py</code>文件<dfn>默认</dfn>的编码方式为<abbr>ASCII</abbr>。Python 3的<a href=http://www.python.org/dev/peps/pep-3120/>源码的默认编码方式为<abbr>UTF-8</abbr></a>
+</blockquote>
+
+<p>如果想使用一种不同的编码方式来保存Python代码，我们可以在每个文件的第一行放置编码声明(encoding declaration)。以下声明定义<code>.py</code>文件使用windows-1252编码方式：
+
+<pre class='nd pp'><code># -*- coding: windows-1252 -*-</code></pre>
+
+<p>从技术上说，字符编码的重载声明也可以放在第二行，如果第一行被类<abbr>UNIX</abbr>系统中的<a href=http://en.wikipedia.org/wiki/Sha-bang>hash-bang</a>命令占用了。
+
+<pre class='nd pp'><code>#!/usr/bin/python3
+# -*- coding: windows-1252 -*-</code></pre>
+
+<p>了解更多信息，请参阅<a href=http://www.python.org/dev/peps/pep-0263/><abbr>PEP</abbr> 263: 指定Python源码的编码方式</a>。
+
+<p class=a>&#x2042;
+
+<h2 id=furtherreading>进一步阅读</h2>
+
+<p>关于Python中的Unicode：
+
+<ul>
+<li><a href=http://docs.python.org/3.1/howto/unicode.html>Python Unicode HOWTO</a>
+<li><a href=http://docs.python.org/3.0/whatsnew/3.0.html#text-vs-data-instead-of-unicode-vs-8-bit>Python 3中的新鲜事: 文本 vs. 数据，而非 Unicode vs. 8-bit</a>
+</ul>
+
+<p>关于Unicode本身：
+
+<ul>
+<li><a href=http://www.joelonsoftware.com/articles/Unicode.html>每个软件开发人员应该无条件、至少掌握的关于Unicode和字符集的知识</a>
+<li><a href=http://www.tbray.org/ongoing/When/200x/2003/04/06/Unicode>关于Unicode的优势</a>
+<li><a href=http://www.tbray.org/ongoing/When/200x/2003/04/13/Strings>关于字元字串(character string)</a>
+<li><a href=http://www.tbray.org/ongoing/When/200x/2003/04/26/UTF>字符 vs. 字节</a>
+</ul>
+
+<p>关于其他的编码方式：
+
+<ul>
+<li><a href=http://feedparser.org/docs/character-encoding.html>XML文档的编码方式</a>
+<li><a href=http://blog.whatwg.org/the-road-to-html-5-character-encoding>HTML文档的编码方式</a>
+</ul>
+
+<p>关于字符串及其格式化：
+
+<ul>
+<li><a href=http://docs.python.org/3.1/library/string.html><code>string</code>&nbsp;&mdash;&nbsp;常用字符串操作</a>
+<li><a href=http://docs.python.org/3.1/library/string.html#formatstrings>格式化字符串的语法</a>
+<li><a href=http://docs.python.org/3.1/library/string.html#format-specification-mini-language>关于格式化规范的迷你语言</a>
+<li><a href=http://www.python.org/dev/peps/pep-3101/><abbr>PEP</abbr> 3101: 字符串格式化高级应用</a>
+</ul>
+
+<p class=v><a href="comprehensions.html" rel=prev title='back to &#8220;Comprehensions&#8221;'><span class=u>&#x261C;</span></a> <a href="regular-expressions.html" rel=next title='onward to &#8220;Regular Expressions&#8221;'><span class=u>&#x261E;</span></a>
+
+<p class=c>&copy; 2001&ndash;9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>

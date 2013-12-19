@@ -1,0 +1,1350 @@
+﻿<!DOCTYPE html>
+<meta charset=utf-8>
+<title>使用2to3将代码移植到Python 3 - 深入Python 3</title>
+<!--[if IE]><script src=j/html5.js></script><![endif]-->
+<link rel=stylesheet href="dip3.css">
+<style>
+h1:before{counter-increment:h1;content:'Appendix A. '}
+h2:before{counter-increment:h2;content:'A.' counter(h2) '. '}
+h3:before{counter-increment:h3;content:'A.' counter(h2) '.' counter(h3) '. '}
+</style>
+<link rel=stylesheet media='only screen and (max-device-width: 480px)' href="http://woodpecker.org.cn/diveintopython3/mobile.css">
+<link rel=stylesheet media=print href="http://woodpecker.org.cn/diveintopython3/print.css">
+<meta content='initial-scale=1.0' name=viewport>
+<form action=http://www.google.com/cse><div><input name=cx type=hidden value=014021643941856155761:l5eihuescdw><input name=ie type=hidden value=UTF-8>&nbsp;<input type=search name=q size=25 placeholder="powered by Google&trade;">&nbsp;<input name=sa type=submit value=Search></div></form>
+<p>你的位置: <a href="index.html">Home</a> <span class=u>&#8227;</span> <a href="table-of-contents.html#porting-code-to-python-3-with-2to3">Dive Into Python 3</a> <span class=u>&#8227;</span>
+<p id=level>难度等级: <span class=u title=pro>&#x2666;&#x2666;&#x2666;&#x2666;&#x2666;</span>
+<h1>使用<code>2to3</code>将代码移植到Python 3</h1>
+
+<blockquote class=q>
+<p><span class=u>&#x275D;</span> Life is pleasant. Death is peaceful. It&#8217;s the transition that&#8217;s troublesome. <span class=u>&#x275E;</span><br>&mdash; Isaac Asimov (attributed)
+</blockquote>
+
+<p id=toc>&nbsp;
+
+<h2 id=divingin>概述</h2>
+
+<p class=f>几乎所有的Python 2程序都需要一些修改才能正常地运行在Python 3的环境下。为了简化这个转换过程，Python 3自带了一个叫做<code>2to3</code>的实用脚本(Utility Script)，这个脚本会将你的Python 2程序源文件作为输入，然后自动将其转换到Python 3的形式。<a href="case-study-porting-chardet-to-python-3.html#running2to3">案例研究:将<code>chardet</code>移植到Python 3(porting chardet to Python 3)</a>描述了如何运行这个脚本，然后展示了一些它不能自动修复的情况。这篇附录描述了它<em>能够</em>自动修复的内容。
+
+<h2 id=print><code>print</code>语句</h2>
+
+<p>在Python 2里，<code>print</code>是一个语句。无论你想输出什么，只要将它们放在<a href="your-first-python-program.html#divingin"><code>print</code></a>关键字后边就可以。在Python 3里，<code>print()</code>是一个函数。就像其他的函数一样，<code>print()</code>需要你将想要输出的东西作为参数传给它。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>print</code>
+<td><code class=pp>print()</code>
+<tr><th>&#x2461;
+<td><code class=pp>print 1</code>
+<td><code class=pp>print(1)</code>
+<tr><th>&#x2462;
+<td><code class=pp>print 1, 2</code>
+<td><code class=pp>print(1, 2)</code>
+<tr><th>&#x2463;
+<td><code class=pp>print 1, 2,</code>
+<td><code class=pp>print(1, 2, end=' ')</code>
+<tr><th>&#x2464;
+<td><code class=pp>print >>sys.stderr, 1, 2, 3</code>
+<td><code class=pp>print(1, 2, 3, file=sys.stderr)</code>
+</table>
+
+<ol>
+<li>为输出一个空白行，需要调用不带参数的<code>print()</code>。
+<li>为输出一个单独的值，需要将这这个值作为<code>print()</code>的一个参数就可以了。
+<li>为输出使用一个空格分隔的两个值，用两个参数调用<code>print()</code>即可。
+<li>这个例子有一些技巧。在Python 2里，如果你使用一个逗号(,)作为<code>print</code>语句的结尾，它将会用空格分隔输出的结果，然后在输出一个尾随的空格(trailing space)，而不输出回车(carriage return)。在Python 3里，通过把<code>end=' '</code>作为一个关键字参数传给<code>print()</code>可以实现同样的效果。参数<code>end</code>的默认值为<code>'\n'</code>，所以通过重新指定<code>end</code>参数的值，可以取消在末尾输出回车符。
+<li>在Python 2里，你可以通过使用<code>>>pipe_name</code>语法，把输出重定向到一个管道，比如<code>sys.stderr</code>。在Python 3里，你可以通过将管道作为关键字参数<code>file</code>的值传递给<code>print()</code>来完成同样的功能。参数<code>file</code>的默认值为<code>std.stdout</code>，所以重新指定它的值将会使<code>print()</code>输出到一个另外一个管道。
+</ol>
+
+<h2 id=unicodeliteral>Unicode字符串</h2>
+
+<p>Python 2有两种字符串类型：<dfn>Unicode</dfn>字符串和非Unicode字符串。Python 3只有一种类型：<a href="strings.html#divingin">Unicode字符串(Unicode strings)</a>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>u'PapayaWhip'</code>
+<td><code class=pp>'PapayaWhip'</code>
+<tr><th>&#x2461;
+<td><code class=pp>ur'PapayaWhip\foo'</code>
+<td><code class=pp>r'PapayaWhip\foo'</code>
+</table>
+
+<ol>
+<li>Python 2里的Unicode字符串在Python 3里即普通字符串，因为在Python 3里字符串总是Unicode形式的。
+<li>Unicode原始字符串(raw string)(使用这种字符串，Python不会自动转义反斜线"\")也被替换为普通的字符串，因为在Python 3里，所有原始字符串都是以Unicode编码的。
+</ol>
+
+<h2 id=unicode>全局函数<code>unicode()</code></h2>
+
+<p>Python 2有两个全局函数可以把对象强制转换成字符串：<code>unicode()</code>把对象转换成Unicode字符串，还有<code>str()</code>把对象转换为非Unicode字符串。Python 3只有一种字符串类型，<a href="strings.html#divingin">Unicode字符串</a>，所以<code>str()</code>函数即可完成所有的功能。(<code>unicode()</code>函数在Python 3里不再存在了。)
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>unicode(anything)</code>
+<td><code class=pp>str(anything)</code>
+</table>
+
+<h2 id=long><code>long</code>&nbsp;长整型</h2>
+
+<p>Python 2有为非浮点数准备的<code>int</code>和<code>long</code>类型。<code>int</code>类型的最大值不能超过<a href="porting-code-to-python-3-with-2to3.html#renames"><code>sys.maxint</code></a>，而且这个最大值是平台相关的。可以通过在数字的末尾附上一个<code>L</code>来定义长整型，显然，它比<code>int</code>类型表示的数字范围更大。在Python 3里，<a href="native-datatypes.html#numbers">只有一种整数类型<code>int</code></a>，大多数情况下，它很像Python 2里的长整型。由于已经不存在两种类型的整数，所以就没有必要使用特殊的语法去区别他们。
+<p><a href=http://www.python.org/dev/peps/pep-0237/>进一步阅读：<abbr>PEP</abbr> 237：统一长整型和整型</a>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>x = 1000000000000L</code>
+<td><code class=pp>x = 1000000000000</code>
+<tr><th>&#x2461;
+<td><code class=pp>x = 0xFFFFFFFFFFFFL</code>
+<td><code class=pp>x = 0xFFFFFFFFFFFF</code>
+<tr><th>&#x2462;
+<td><code class=pp>long(x)</code>
+<td><code class=pp>int(x)</code>
+<tr><th>&#x2463;
+<td><code class=pp>type(x) is long</code>
+<td><code class=pp>type(x) is int</code>
+<tr><th>&#x2464;
+<td><code class=pp>isinstance(x, long)</code>
+<td><code class=pp>isinstance(x, int)</code>
+</table>
+
+<ol>
+<li>在Python 2里的十进制长整型在Python 3里被替换为十进制的普通整数。
+<li>在Python 2里的十六进制长整型在Python 3里被替换为十六进制的普通整数。
+<li>在Python 3里，由于长整型已经不存在了，自然原来的<code>long()</code>函数也没有了。为了强制转换一个变量到整型，可以使用<code>int()</code>函数。
+<li>检查一个变量是否是整型，获得它的数据类型，并与一个<code>int</code>类型(不是<code>long</code>)的作比较。
+<li>你也可以使用<code>isinstance()</code>函数来检查数据类型；再强调一次，使用<code>int</code>，而不是<code>long</code>，来检查整数类型。
+</ol>
+
+<h2 id=ne>&lt;> 比较运算符</h2>
+
+<p>Python 2支持<code>&lt;></code>作为<code>!=</code>的同义词。Python 3只支持<code>!=</code>，不再支持<>了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>if x &lt;> y:</code>
+<td><code class=pp>if x != y:</code>
+<tr><th>&#x2461;
+<td><code class=pp>if x &lt;> y &lt;> z:</code>
+<td><code class=pp>if x != y != z:</code>
+</table>
+
+<ol>
+<li>简单地比较。
+<li>相对复杂的三个值之间的比较。
+</ol>
+
+<h2 id=has_key>字典类方法<code>has_key()</code></h2>
+
+<p>在Python 2里，字典对象的<code><dfn>has_key</dfn>()</code>方法用来测试字典是否包含特定的键(key)。Python 3不再支持这个方法了。你需要使用<a href="native-datatypes.html#mixed-value-dictionaries"><code>in</code>运算符</a>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>a_dictionary.has_key('PapayaWhip')</code>
+<td><code class=pp>'PapayaWhip' in a_dictionary</code>
+<tr><th>&#x2461;</th >
+<td><code class=pp>a_dictionary.has_key(x) or a_dictionary.has_key(y)</code>
+<td><code class=pp>x in a_dictionary or y in a_dictionary</code>
+<tr><th>&#x2462;
+<td><code class=pp>a_dictionary.has_key(x or y)</code>
+<td><code class=pp>(x or y) in a_dictionary</code>
+<tr><th>&#x2463;
+<td><code class=pp>a_dictionary.has_key(x + y)</code>
+<td><code class=pp>(x + y) in a_dictionary</code>
+<tr><th>&#x2464;
+<td><code class=pp>x + a_dictionary.has_key(y)</code>
+<td><code class=pp>x + (y in a_dictionary)</code>
+</table>
+
+<ol>
+<li>最简单的形式。
+<li>运算符<code>or</code>的优先级高于运算符<code>in</code>，所以这里不需要添加括号。
+<li>另一方面，出于同样的原因&nbsp;&mdash;&nbsp;<code>or</code>的优先级大于<code>in</code>，这里需要添加括号。(注意：这里的代码与前面那行完全不同。Python会先解释<code>x or y</code>，得到结果<var>x</var>(如果<var>x</var><a href="native-datatypes.html#booleans">在布尔上下文里的值是真</a>)或者<var>y</var>。然后Python检查这个结果是不是<var>a_dictionary</var>的一个键。)
+<li>运算符<code>in</code>的优先级大于运算符<code>+</code>，所以代码里的这种形式从技术上说不需要括号，但是<code>2to3</code>还是添加了。
+<li>这种形式一定需要括号，因为<code>in</code>的优先级大于<code>+</code>。
+</ol>
+
+<h2 id=dict>返回列表的字典类方法</h2>
+
+<p>在Python 2里，许多字典类方法的返回值是列表。其中最常用方法的有<code><dfn>keys</dfn></code>，<code><dfn>items</dfn></code>和<code><dfn>values</dfn></code>。在Python 3里，所有以上方法的返回值改为动态视图(dynamic view)。在一些上下文环境里，这种改变并不会产生影响。如果这些方法的返回值被立即传递给另外一个函数，并且那个函数会遍历整个序列，那么以上方法的返回值是列表或者视图并不会产生什么不同。在另外一些情况下，Python 3的这些改变干系重大。如果你期待一个能被独立寻址元素的列表，那么Python 3的这些改变将会使你的代码卡住(choke)，因为视图(view)不支持索引(indexing)。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>a_dictionary.keys()</code>
+<td><code class=pp>list(a_dictionary.keys())</code>
+<tr><th>&#x2461;
+<td><code class=pp>a_dictionary.items()</code>
+<td><code class=pp>list(a_dictionary.items())</code>
+<tr><th>&#x2462;
+<td><code class=pp>a_dictionary.iterkeys()</code>
+<td><code class=pp>iter(a_dictionary.keys())</code>
+<tr><th>&#x2463;
+<td><code class=pp>[i for i in a_dictionary.iterkeys()]</code>
+<td><code class=pp>[i for i in a_dictionary.keys()]</code>
+<tr><th>&#x2464;
+<td><code class=pp>min(a_dictionary.keys())</code>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>使用<code>list()</code>函数将<code>keys()</code>的返回值转换为一个静态列表，出于安全方面的考量，<code>2to3</code>可能会报错。这样的代码是有效的，但是对于使用视图来说，它的效率低一些。你应该检查转换后的代码，看看是否一定需要列表，也许视图也能完成同样的工作。
+<li>这是另外一种视图(关于<code>items()</code>方法的)到列表的转换。<code>2to3</code>对<code>values()</code>方法返回值的转换也是一样的。
+<li>Python 3里不再支持<code>iterkeys()</code>了。如果必要，使用<code>iter()</code>将<code>keys()</code>的返回值转换成为一个迭代器。
+<li><code>2to3</code>能够识别出<code>iterkeys()</code>方法在列表解析里被使用，然后将它转换为Python 3里的<code>keys()</code>方法(不需要使用额外的<code>iter()</code>去包装其返回值)。这样是可行的，因为视图是可迭代的。
+<li><code>2to3</code>也能识别出<code>keys()</code>方法的返回值被立即传给另外一个会遍历整个序列的函数，所以也就没有必要先把<code>keys()</code>的返回值转换到一个列表。相反的，<code>min()</code>函数会很乐意遍历视图。这个过程对<code>min()</code>，<code>max()</code>，<code>sum()</code>，<code>list()</code>，<code>tuple()</code>，<code>set()</code>，<code>sorted()</code>，<code>any()</code>和<code>all()</code>同样有效。
+</ol>
+
+<h2 id=imports>被重命名或者重新组织的模块</h2>
+
+<p>从Python 2到Python 3，标准库里的一些模块已经被重命名了。还有一些相互关联的模块也被组合或者重新组织，以使得这种关联更有逻辑性。
+
+<h3 id=http><code>http</code></h3>
+
+<p>在Python 3里，几个相关的<abbr>HTTP</abbr>模块被组合成一个单独的包，即<code>http</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>import <dfn>httplib</dfn></code>
+<td><code class=pp>import http.client</code>
+<tr><th>&#x2461;
+<td><code class=pp>import <dfn>Cookie</dfn></code>
+<td><code class=pp>import http.cookies</code>
+<tr><th>&#x2462;
+<td><code class=pp>import <dfn>cookielib</dfn></code>
+<td><code class=pp>import http.cookiejar</code>
+<tr><th>&#x2463;
+<td><pre class=pp><code>import <dfn>BaseHTTPServer</dfn>
+import <dfn>SimpleHTTPServer</dfn>
+import <dfn>CGIHttpServer</dfn></code></pre>
+<td><code class=pp>import http.server</code>
+</table>
+
+<ol>
+<li><code>http.client</code>模块实现了一个底层的库，可以用来请求<abbr>HTTP</abbr>资源，解析<abbr>HTTP</abbr>响应。
+<li><code>http.cookies</code>模块提供一个蟒样的(Pythonic)接口来获取通过<abbr>HTTP</abbr>头部(<abbr>HTTP</abbr> header)Set-Cookie发送的cookies
+<li>常用的流行的浏览器会把cookies以文件形式存放在磁盘上，<code>http.cookiejar</code>模块可以操作这些文件。
+<li><code>http.server</code>模块实现了一个基本的<abbr>HTTP</abbr>服务器
+</ol>
+
+<h3 id=urllib><code>urllib</code></h3>
+
+<p>Python 2有一些用来分析，编码和获取URL的模块，但是这些模块就像老鼠窝一样相互重叠。在Python 3里，这些模块被重构、组合成了一个单独的包，即<code>urllib</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>import <dfn>urllib</dfn></code>
+<td><code class=pp>import urllib.request, urllib.parse, urllib.error</code>
+<tr><th>&#x2461;
+<td><code class=pp>import <dfn>urllib2</dfn></code>
+<td><code class=pp>import urllib.request, urllib.error</code>
+<tr><th>&#x2462;
+<td><code class=pp>import <dfn>urlparse</dfn></code>
+<td><code class=pp>import urllib.parse</code>
+<tr><th>&#x2463;
+<td><code class=pp>import <dfn>robotparser</dfn></code>
+<td><code class=pp>import urllib.robotparser</code>
+<tr><th>&#x2464;
+<td><pre class=pp><code>from urllib import <dfn>FancyURLopener</dfn>
+from urllib import urlencode</code></pre>
+<td><pre class=pp><code>from urllib.request import FancyURLopener
+from urllib.parse import urlencode</code></pre>
+<tr><th>&#x2465;
+<td><pre class=pp><code>from urllib2 import <dfn>Request</dfn>
+from urllib2 import <dfn>HTTPError</dfn></code></pre>
+<td><pre class=pp><code>from urllib.request import Request
+from urllib.error import HTTPError</code></pre>
+</table>
+
+<ol>
+<li>以前，Python 2里的<code>urllib</code>模块有各种各样的函数，包括用来获取数据的<code>urlopen()</code>，还有用来将<abbr>URL</abbr>分割成其组成部分的<code>splittype()</code>，<code>splithost()</code>和<code>splituser()</code>函数。在新的<code>urllib</code>包里，这些函数被组织得更有逻辑性。2to3将会修改这些函数的调用以适应新的命名方案。
+<li>在Python 3里，以前的<code>urllib2</code>模块被并入了<code>urllib</code>包。同时，以<code>urllib2</code>里各种你最喜爱的东西将会一个不缺地出现在Python 3的<code>urllib</code>模块里，比如<code>build_opener()</code>方法，<code>Request</code>对象，<code>HTTPBasicAuthHandler</code>和friends。
+<li>Python 3里的<code>urllib.parse</code>模块包含了原来Python 2里<code>urlparse</code>模块所有的解析函数。
+<li><code>urllib.robotparse</code>模块解析<a href=http://www.robotstxt.org/><code>robots.txt</code>文件</a>。
+<li>处理<abbr>HTTP</abbr>重定向和其他状态码的<code>FancyURLopener</code>类在Python 3里的<code>urllib.request</code>模块里依然有效。<code>urlencode()</code>函数已经被转移到了<code>urllib.parse</code>里。
+<li><code>Request</code>对象在<code>urllib.request</code>里依然有效，但是像<code>HTTPError</code>这样的常量已经被转移到了<code>urllib.error</code>里。
+</ol>
+
+<p>我是否有提到<code>2to3</code>也会重写你的函数调用？比如，如果你的Python 2代码里导入了<code>urllib</code>模块，调用了<code>urllib.urlopen()</code>函数获取数据，<code>2to3</code>会同时修改<code>import</code>语句和函数调用。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><pre class=pp><code>import urllib
+print urllib.urlopen('http://diveintopython3.org/').read()</code></pre>
+<td><pre class=pp><code>import urllib.request, urllib.parse, urllib.error
+print(urllib.request.urlopen('http://diveintopython3.org/').read())</code></pre>
+</table>
+
+<h3 id=dbm><code>dbm</code></h3>
+
+<p>所有的<abbr>DBM</abbr>克隆(<abbr>DBM</abbr> clone)现在在单独的一个包里，即<code>dbm</code>。如果你需要其中某个特定的变体，比如<abbr>GNU</abbr> <abbr>DBM</abbr>，你可以导入<code>dbm</code>包中合适的模块。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>import <dfn>dbm</dfn></code>
+<td><code class=pp>import dbm.ndbm</code>
+<tr><th>
+<td><code class=pp>import <dfn>gdbm</dfn></code>
+<td><code class=pp>import dbm.gnu</code>
+<tr><th>
+<td><code class=pp>import <dfn>dbhash</dfn></code>
+<td><code class=pp>import dbm.bsd</code>
+<tr><th>
+<td><code class=pp>import <dfn>dumbdbm</dfn></code>
+<td><code class=pp>import dbm.dumb</code>
+<tr><th>
+<td><pre class=pp><code>import <dfn>anydbm</dfn>
+import whichdb</code></pre>
+<td><code class=pp>import dbm</code>
+</table>
+
+<h3 id=xmlrpc><code>xmlrpc</code></h3>
+
+<p><abbr>XML-RPC</abbr>是一个通过<abbr>HTTP</abbr>协议执行远程<abbr>RPC</abbr>调用的轻重级方法。一些<abbr>XML-RPC</abbr>客户端和<abbr>XML-RPC</abbr>服务端的实现库现在被组合到了独立的包，即<code>xmlrpc</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>import <dfn>xmlrpclib</dfn></code>
+<td><code class=pp>import xmlrpc.client</code>
+<tr><th>
+<td><pre class=pp><code>import <dfn>DocXMLRPCServer</dfn>
+import <dfn>SimpleXMLRPCServer</dfn></code></pre>
+<td><code class=pp>import xmlrpc.server</code>
+</table>
+
+<h3 id=othermodules>其他模块</h3>
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><pre class=pp><code>try:
+    import <dfn>cStringIO</dfn> as <dfn>StringIO</dfn>
+except ImportError:
+    import StringIO</code></pre>
+<td><code class=pp>import io</code>
+<tr><th>&#x2461;
+<td><pre class=pp><code>try:
+    import cPickle as pickle
+except ImportError:
+    import pickle</code></pre>
+<td><code class=pp>import pickle</code>
+<tr><th>&#x2462;
+<td><code class=pp>import <dfn>__builtin__</dfn></code>
+<td><code class=pp>import builtins</code>
+<tr><th>&#x2463;
+<td><code class=pp>import <dfn>copy_reg</dfn></code>
+<td><code class=pp>import copyreg</code>
+<tr><th>&#x2464;
+<td><code class=pp>import <dfn>Queue</dfn></code>
+<td><code class=pp>import queue</code>
+<tr><th>&#x2465;
+<td><code class=pp>import <dfn>SocketServer</dfn></code>
+<td><code class=pp>import socketserver</code>
+<tr><th>&#x2466;
+<td><code class=pp>import <dfn>ConfigParser</dfn></code>
+<td><code class=pp>import configparser</code>
+<tr><th>&#x2467;
+<td><code class=pp>import repr</code>
+<td><code class=pp>import reprlib</code>
+<tr><th>&#x2468;
+<td><code class=pp>import <dfn>commands</dfn></code>
+<td><code class=pp>import subprocess</code>
+</table>
+
+<ol>
+<li>在Python 2里，你通常会这样做，首先尝试把<code>cStringIO</code>导入作为<code>StringIO</code>的替代，如果失败了，再导入<code>StringIO</code>。不要在Python 3里这样做；<code>io</code>模块会帮你处理好这件事情。它会找出可用的最快实现方法，然后自动使用它。
+<li>在Python 2里，导入最快的<code>pickle</code>实现也是一个与上边相似的能用方法。在Python 3里，<code>pickle</code>模块会自动为你处理，所以不要再这样做。
+<li><code>builtins</code>模块包含了在整个Python语言里都会使用的全局函数，类和常量。重新定义<code>builtins</code>模块里的某个函数意味着在每处都重定义了这个全局函数。这听起来很强大，但是同时也是很可怕的。
+<li><code>copyreg</code>模块为用C语言定义的用户自定义类型添加了<code>pickle</code>模块的支持。
+<li><code>queue</code>模块实现一个生产者消费者队列(multi-producer, multi-consumer queue)。
+<li><code>socketserver</code>模块为实现各种socket server提供了通用基础类。
+<li><code>configparser</code>模块用来解析<abbr>INI</abbr>-style配置文件。
+<li><code>reprlib</code>模块重新实现了内置函数<code>repr()</code>，并添加了对字符串表示被截断前长度的控制。
+<li><code>subprocess</code>模块允许你创建子进程，连接到他们的管道，然后获取他们的返回值。
+</ol>
+
+<h2 id=import>包内的相对导入</h2>
+
+<p>包是由一组相关联的模块共同组成的单个实体。在Python 2的时候，为了实现同一个包内模块的相互引用，你会使用<code>import foo</code>或者<code>from foo import Bar</code>。Python 2解释器会先在当前目录里搜索<code>foo.py</code>，然后再去Python搜索路径(<code>sys.path</code>)里搜索。在Python 3里这个过程有一点不同。Python 3不会首先在当前路径搜索，它会直接在Python的搜索路径里寻找。如果你想要包里的一个模块导入包里的另外一个模块，你需要显式地提供两个模块的相对路径。
+<p>假设你有如下包，多个文件在同一个目录下：
+<pre>chardet/
+|
++--__init__.py
+|
++--constants.py
+|
++--mbcharsetprober.py
+|
++--universaldetector.py</pre>
+<p>现在假设<code>universaldetector.py</code>需要整个导入<code>constants.py</code>，另外还需要导入<code>mbcharsetprober.py</code>的一个类。你会怎样做?
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>import constants</code>
+<td><code class=pp>from . import constants</code>
+<tr><th>&#x2461;
+<td><code class=pp>from mbcharsetprober import MultiByteCharSetProber</code>
+<td><code class=pp>from .mbcharsetprober import MultiByteCharsetProber</code>
+</table>
+
+<ol>
+<li>当你需要从包的其他地方导入整个模块，使用新的<code>from . import</code>语法。这里的句号(.)即表示当前文件(<code>universaldetector.py</code>)和你想要导入文件(<code>constants.py</code>)之间的相对路径。在这个样例中，这两个文件在同一个目录里，所以使用了单个句号。你也可以从父目录(<code>from .. import anothermodule</code>)或者子目录里导入。
+<li>为了将一个特定的类或者函数从其他模块里直接导入到你的模块的名字空间里，在需要导入的模块名前加上相对路径，并且去掉最后一个斜线(slash)。在这个例子中，<code>mbcharsetprober.py</code>与<code>universaldetector.py</code>在同一个目录里，所以相对路径名就是一个句号。你也可以从父目录(from .. import anothermodule)或者子目录里导入。
+</ol>
+
+<h2 id=next>迭代器方法<code>next()</code></h2>
+
+<p>在Python 2里，迭代器有一个<code><dfn>next</dfn>()</code>方法，用来返回序列里的下一项。在Python 3里这同样成立，但是现在有了一个新的全局的函数<a href="generators.html#generators"><code>next()</code></a>，它使用一个迭代器作为参数。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>anIterator.next()</code>
+<td><code class=pp>next(anIterator)</code>
+<tr><th>&#x2461;
+<td><code class=pp>a_function_that_returns_an_iterator().next()</code>
+<td><code class=pp>next(a_function_that_returns_an_iterator())</code>
+<tr><th>&#x2462;
+<td><pre class=pp><code>class A:
+    def next(self):
+        pass</code></pre>
+<td><pre class=pp><code>class A:
+    def __next__(self):
+        pass</code></pre>
+<tr><th>&#x2463;
+<td><pre class=pp><code>class A:
+    def next(self, x, y):
+        pass</code></pre>
+<td><i>no change</i>
+<tr><th>&#x2464;
+<td><pre class=pp><code>next = 42
+for an_iterator in a_sequence_of_iterators:
+    an_iterator.next()</code></pre>
+<td><pre class=pp><code>next = 42
+for an_iterator in a_sequence_of_iterators:
+    an_iterator.__next__()</code></pre>
+</table>
+
+<ol>
+<li>最简单的例子，你不再调用一个迭代器的<code>next()</code>方法，现在你将迭代器自身作为参数传递给全局函数<code>next()</code>。
+<li>假如你有一个返回值是迭代器的函数，调用这个函数然后把结果作为参数传递给<code>next()</code>函数。(<code>2to3</code>脚本足够智能以正确执行这种转换。)
+<li>假如你想定义你自己的类，然后把它用作一个迭代器，在Python 3里，你可以通过定义特殊方法<code>__next__()</code>来实现。
+<li>如果你定义的类里刚好有一个<code>next()</code>，它使用一个或者多个参数，<code>2to3</code>执行的时候不会动它。这个类不能被当作迭代器使用，因为它的<code>next()</code>方法带有参数。
+<li>这一个有些复杂。如果你恰好有一个叫做<var>next</var>的本地变量，在Python 3里它的优先级会高于全局函数<code>next()</code>。在这种情况下，你需要调用迭代器的特别方法<code>__next__()</code>来获取序列里的下一个元素。(或者，你也可以重构代码以使这个本地变量的名字不叫<var>next</var>，但是2to3不会为你做这件事。)
+</ol>
+
+<h2 id=filter>全局函数<code>filter()</code></h2>
+
+<p>在Python 2里，<code><dfn>filter</dfn>()</code>方法返回一个列表，这个列表是通过一个返回值为<code>True</code>或者<code>False</code>的函数来检测序列里的每一项得到的。在Python 3里，<code>filter()</code>函数返回一个迭代器，不再是列表。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>filter(a_function, a_sequence)</code>
+<td><code class=pp>list(filter(a_function, a_sequence))</code>
+<tr><th>&#x2461;
+<td><code class=pp>list(filter(a_function, a_sequence))</code>
+<td><i>no change</i>
+<tr><th>&#x2462;
+<td><code class=pp>filter(None, a_sequence)</code>
+<td><code class=pp>[i for i in a_sequence if i]</code>
+<tr><th>&#x2463;
+<td><code class=pp>for i in filter(None, a_sequence):</code>
+<td><i>no change</i>
+<tr><th>&#x2464;
+<td><code class=pp>[i for i in filter(a_function, a_sequence)]</code>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>最简单的情况下，<code>2to3</code>会用一个<code>list()</code>函数来包装<code>filter()</code>，<code>list()</code>函数会遍历它的参数然后返回一个列表。
+<li>然而，如果<code>filter()</code>调用已经被<code>list()</code>包裹，<code>2to3</code>不会再做处理，因为这种情况下<code>filter()</code>的返回值是否是一个迭代器是无关紧要的。
+<li>为了处理<code>filter(None, ...)</code>这种特殊的语法，<code>2to3</code>会将这种调用从语法上等价地转换为列表解析。
+<li>由于<code>for</code>循环会遍历整个序列，所以没有必要再做修改。
+<li>与上面相同，不需要做修改，因为列表解析会遍历整个序列，即使<code>filter()</code>返回一个迭代器，它仍能像以前的<code>filter()</code>返回列表那样正常工作。
+</ol>
+
+<h2 id=map>全局函数<code>map()</code></h2>
+
+<p>跟<a href="porting-code-to-python-3-with-2to3.html#filter"><code>filter()</code></a>作的改变一样，<code><dfn>map</dfn>()</code>函数现在返回一个迭代器。(在Python 2里，它返回一个列表。)
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>map(a_function, 'PapayaWhip')</code>
+<td><code class=pp>list(map(a_function, 'PapayaWhip'))</code>
+<tr><th>&#x2461;
+<td><code class=pp>map(None, 'PapayaWhip')</code>
+<td><code class=pp>list('PapayaWhip')</code>
+<tr><th>&#x2462;
+<td><code class=pp>map(lambda x: x+1, range(42))</code>
+<td><code class=pp>[x+1 for x in range(42)]</code>
+<tr><th>&#x2463;
+<td><code class=pp>for i in map(a_function, a_sequence):</code>
+<td><i>no change</i>
+<tr><th>&#x2464;
+<td><code class=pp>[i for i in map(a_function, a_sequence)]</code>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>类似对<code>filter()</code>的处理，在最简单的情况下，<code>2to3</code>会用一个<code>list()</code>函数来包装<code>map()</code>调用。
+<li>对于特殊的<code>map(None, ...)</code>语法，跟<code>filter(None, ...)</code>类似，<code>2to3</code>会将其转换成一个使用<code>list()</code>的等价调用
+<li>如果<code>map()</code>的第一个参数是一个lambda函数，<code>2to3</code>会将其等价地转换成列表解析。
+<li>对于会遍历整个序列的<code>for</code>循环，不需要做改变。
+<li>再一次地，这里不需要做修改，因为列表解析会遍历整个序列，即使<code>map()</code>的返回值是迭代器而不是列表它也能正常工作。
+</ol>
+
+<h2 id=reduce>全局函数<code>reduce()</code></h2>
+
+<p>在Python 3里，<code><dfn>reduce</dfn>()</code>函数已经被从全局名字空间里移除了，它现在被放置在<code>fucntools</code>模块里。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>reduce(a, b, c)</code>
+<td><pre class=pp><code>from functools import reduce
+reduce(a, b, c)</code></pre>
+</table>
+
+<h2 id=apply>全局函数<code>apply()</code></h2>
+
+<p>Python 2有一个叫做<code><dfn>apply</dfn>()</code>的全局函数，它使用一个函数<var>f</var>和一个列表<code>[a, b, c]</code>作为参数，返回值是<code><var>f(a, b, c)</code>。你也可以通过直接调用这个函数，在列表前添加一个星号(*)作为参数传递给它来完成同样的事情。在Python 3里，<code><dfn>apply()</code>函数不再存在了；必须使用星号标记法。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>apply(a_function, a_list_of_args)</code>
+<td><code class=pp>a_function(*a_list_of_args)</code>
+<tr><th>&#x2461;
+<td><code class=pp>apply(a_function, a_list_of_args, a_dictionary_of_named_args)</code>
+<td><code class=pp>a_function(*a_list_of_args, **a_dictionary_of_named_args)</code>
+<tr><th>&#x2462;
+<td><code class=pp>apply(a_function, a_list_of_args + z)</code>
+<td><code class=pp>a_function(*a_list_of_args + z)</code>
+<tr><th>&#x2463;
+<td><code class=pp>apply(aModule.a_function, a_list_of_args)</code>
+<td><code class=pp>aModule.a_function(*a_list_of_args)</code>
+</table>
+
+<ol>
+<li>最简单的形式，可以通过在参数列表(就像<code>[a, b, c]</code>一样)前添加一个星号来调用函数。这跟Python 2里的<code>apply()</code>函数是等价的。
+<li>在Python 2里，<code>apply()</code>函数实际上可以带3个参数：一个函数，一个参数列表，一个字典命名参数(dictionary of named arguments)。在Python 3里，你可以通过在参数列表前添加一个星号(<code>*</code>)，在字典命名参数前添加两个星号(<code>**</code>)来达到同样的效果。
+<li>运算符<code>+</code>在这里用作连接列表的功能，它的优先级高于运算符<code>*</code>，所以没有必要在<code>a_list_of_args + z</code>周围添加额外的括号。
+<li><code>2to3</code>脚本足够智能来转换复杂的<code>apply()</code>调用，包括调用导入模块里的函数。
+</ol>
+
+<h2 id=intern>全局函数<code>intern()</code></h2>
+
+<p>在Python 2里，你可以用<code><dfn>intern</dfn>()</code>函数作用在一个字符串上来限定(intern)它以达到性能优化。在Python 3里，<code>intern()</code>函数被转移到<code>sys</code>模块里了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>intern(aString)</code>
+<td><code class=pp>sys.intern(aString)</code>
+</table>
+
+<h2 id=exec><code>exec</code>语句</h2>
+
+<p>就像<a href="porting-code-to-python-3-with-2to3.html#print"><code>print</code>语句</a>在Python 3里变成了一个函数一样，<code><dfn>exec</dfn></code>语句也是这样的。<code>exec()</code>函数使用一个包含任意Python代码的字符串作为参数，然后就像执行语句或者表达式一样执行它。<code>exec()</code>跟<a href="advanced-iterators.html#eval"><code>eval()</code></a>是相似的，但是<code>exec()</code>更加强大并更具有技巧性。<code>eval()</code>函数只能执行单独一条表达式，但是<code><code><dfn>exec</dfn></code>()</code>能够执行多条语句，导入(import)，函数声明&nbsp;&mdash;&nbsp;实际上整个Python程序的字符串表示也可以。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>exec codeString</code>
+<td><code class=pp>exec(codeString)</code>
+<tr><th>&#x2461;
+<td><code class=pp>exec codeString in a_global_namespace</code>
+<td><code class=pp>exec(codeString, a_global_namespace)</code>
+<tr><th>&#x2462;
+<td><code class=pp>exec codeString in a_global_namespace, a_local_namespace</code>
+<td><code class=pp>exec(codeString, a_global_namespace, a_local_namespace)</code>
+</table>
+
+<ol>
+<li>在最简单的形式下，因为<code>exec()</code>现在是一个函数，而不是语句，<code>2to3</code>会把这个字符串形式的代码用括号围起来。
+<li>Python 2里的<code>exec</code>语句可以指定名字空间，代码将在这个由全局对象组成的私有空间里执行。Python 3也有这样的功能；你只需要把这个名字空间作为第二个参数传递给<code>exec()</code>函数。
+<li>更加神奇的是，Python 2里的<code>exec</code>语句还可以指定一个本地名字空间(比如一个函数里声明的变量)。在Python 3里，<code>exec()</code>函数也有这样的功能。
+</ol>
+
+<h2 id=execfile><code>execfile</code>语句</h2>
+
+<p>就像以前的<a href="porting-code-to-python-3-with-2to3.html#exec"><code>exec</code>语句</a>，Python 2里的<code>execfile</code>语句也可以像执行Python代码那样使用字符串。不同的是<code>exec</code>使用字符串，而<code>execfile</code>则使用文件。在Python 3里，<code>execfile</code>语句已经被去掉了。如果你真的想要执行一个文件里的Python代码(但是你不想导入它)，你可以通过打开这个文件，读取它的内容，然后调用<code>compile()</code>全局函数强制Python解释器编译代码，然后调用新的<code>exec()</code>函数。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp><dfn>execfile</dfn>('a_filename')</code>
+<td><code class=pp>exec(compile(open('a_filename').read(), 'a_filename', 'exec'))</code>
+</table>
+
+<h2 id=repr><code>repr</code>(反引号)</h2>
+
+<p>在Python 2里，为了得到一个任意对象的字符串表示，有一种把对象包装在反引号里(比如<code>`x`</code>)的特殊语法。在Python 3里，这种能力仍然存在，但是你不能再使用反引号获得这种字符串表示了。你需要使用全局函数<code>repr()</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>`x`</code>
+<td><code class=pp>repr(x)</code>
+<tr><th>&#x2461;
+<td><code class=pp>`'PapayaWhip' + `2``</code>
+<td><code class=pp>repr('PapayaWhip' + repr(2))</code>
+</table>
+
+<ol>
+<li>记住，<var>x</var>可以是任何东西&nbsp;&mdash;&nbsp;一个类，函数，模块，基本数据类型，等等。<code>repr()</code>函数可以使用任何类型的参数。
+<li>在Python 2里，反引号可以嵌套，导致了这种令人费解的(但是有效的)表达式。<code>2to3</code>足够智能以将这种嵌套调用转换到<code>repr()</code>函数。
+</ol>
+
+<h2 id=except><code>try...except</code>语句</h2>
+
+<p>从Python 2到Python 3，<a href="your-first-python-program.html#exceptions">捕获异常</a>的语法有些许变化。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><pre class=pp><code>try:
+    import mymodule
+<dfn>except</dfn> ImportError, e
+    pass</code></pre>
+<td><pre class=pp><code>try:
+    import mymodule
+except ImportError as e:
+    pass</code></pre>
+<tr><th>&#x2461;
+<td><pre class=pp><code>try:
+    import mymodule
+except (RuntimeError, ImportError), e
+    pass</code></pre>
+<td><pre class=pp><code>try:
+    import mymodule
+except (RuntimeError, ImportError) as e:
+    pass</code></pre>
+<tr><th>&#x2462;
+<td><pre class=pp><code>try:
+    import mymodule
+except ImportError:
+    pass</code></pre>
+<td><i>no change</i>
+<tr><th>&#x2463;
+<td><pre class=pp><code>try:
+    import mymodule
+except:
+    pass</code></pre>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>相对于Python 2里在异常类型后添加逗号，Python 3使用了一个新的关键字，<code>as</code>。
+<li>关键字<code>as</code>也可以用在一次捕获多种类型异常的情况下。
+<li>如果你捕获到一个异常，但是并不在意访问异常对象本身，Python 2和Python 3的语法是一样的。
+<li>类似地，如果你使用一个保险方法(fallback)来捕获<em>所有</em>异常，Python 2和Python 3的语法是一样的。
+</ol>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span>在导入模块(或者其他大多数情况)的时候，你绝对不应该使用这种方法(指以上的fallback)。不然的话，程序可能会捕获到像<code>KeyboardInterrupt</code>(如果用户按<kbd>Ctrl-C</kbd>来中断程序)这样的异常，从而使调试变得更加困难。
+</blockquote>
+
+<h2 id=raise><code>raise</code>语句</h2>
+
+<p>Python 3里，<a href="your-first-python-program.html#exceptions">抛出自定义异常</a>的语法有细微的变化。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp><dfn>raise</dfn> MyException</code>
+<td><i>unchanged</i>
+<tr><th>&#x2461;
+<td><code class=pp>raise MyException, 'error message'</code>
+<td><code class=pp>raise MyException('error message')</code>
+<tr><th>&#x2462;
+<td><code class=pp>raise MyException, 'error message', a_traceback</code>
+<td><code class=pp>raise MyException('error message').with_traceback(a_traceback)</code>
+<tr><th>&#x2463;
+<td><code class=pp>raise 'error message'</code>
+<td><i>unsupported</i>
+</table>
+
+<ol>
+<li>抛出不带用户自定义错误信息的异常，这种最简单的形式下，语法没有改变。
+<li>当你想要抛出一个带用户自定义错误信息的异常时，改变就显而易见了。Python 2用一个逗号来分隔异常类和错误信息；Python 3把错误信息作为参数传递给异常类。
+<li>Python 2支持一种更加复杂的语法来抛出一个带用户自定义回溯(stack trace，堆栈追踪)的异常。在Python 3里你也可以这样做，但是语法完全不同。
+<li>在Python 2里，你可以抛出一个不带异常类的异常，仅仅只有一个异常信息。在Python 3里，这种形式不再被支持。<code>2to3</code>将会警告你它不能自动修复这种语法。
+</ol>
+
+<h2 id=throw>生成器的<code>throw</code>方法</h2>
+
+<p>在Python 2里，生成器有一个<code><dfn>throw</dfn>()</code>方法。调用<code>a_generator.throw()</code>会在生成器被暂停的时候抛出一个异常，然后返回由生成器函数获取的下一个值。在Python 3里，这种功能仍然可用，但是语法上有一点不同。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>a_generator.throw(MyException)</code>
+<td><i>no change</i>
+<tr><th>&#x2461;
+<td><code class=pp>a_generator.throw(MyException, 'error message')</code>
+<td><code class=pp>a_generator.throw(MyException('error message'))</code>
+<tr><th>&#x2462;
+<td><code class=pp>a_generator.throw('error message')</code>
+<td><i>unsupported</i>
+</table>
+
+<ol>
+<li>最简单的形式下，生成器抛出不带用户自定义错误信息的异常。这种情况下，从Python 2到Python 3语法上没有变化 。
+<li>如果生成器抛出一个带用户自定义错误信息的异常，你需要将这个错误信息字符串(error string)传递给异常类来以实例化它。
+<li>Python 2还支持抛出只有异常信息的异常。Python 3不支持这种语法，并且<code>2to3</code>会显示一个警告信息，告诉你需要手动地来修复这处代码。
+</ol>
+
+<h2 id=xrange>全局函数<code>xrange()</code></h2>
+
+<p>在Python 2里，有两种方法来获得一定范围内的数字：<code><dfn>range</dfn>()</code>，它返回一个列表，还有<code><dfn>range</dfn>()</code>，它返回一个迭代器。在Python 3里，<code>range()</code>返回迭代器，<code>xrange()</code>不再存在了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>xrange(10)</code>
+<td><code class=pp>range(10)</code>
+<tr><th>&#x2461;
+<td><code class=pp>a_list = range(10)</code>
+<td><code class=pp>a_list = list(range(10))</code>
+<tr><th>&#x2462;
+<td><code class=pp>[i for i in xrange(10)]</code>
+<td><code class=pp>[i for i in range(10)]</code>
+<tr><th>&#x2463;
+<td><code class=pp>for i in range(10):</code>
+<td><i>no change</i>
+<tr><th>&#x2464;
+<td><code class=pp>sum(range(10))</code>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>在最简单的情况下，<code>2to3</code>会简单地把<code>xrange()</code>转换为<code>range()</code>。
+<li>如果你的Python 2代码使用<code>range()</code>，<code>2to3</code>不知道你是否需要一个列表，或者是否一个迭代器也行。出于谨慎，<code>2to3</code>可能会报错，然后使用<code>list()</code>把<code>range()</code>的返回值强制转换为列表类型。
+<li>如果在列表解析里有<code>xrange()</code>函数，就没有必要将其返回值转换为一个列表，因为列表解析对迭代器同样有效。
+<li>类似的，<code>for</code>循环也能作用于迭代器，所以这里也没有改变任何东西。
+<li>函数<code>sum()</code>能作用于迭代器，所以<code>2to3</code>也没有在这里做出修改。就像<a href="porting-code-to-python-3-with-2to3.html#dict">返回值为视图(view)而不再是列表的字典类方法</a>一样，这同样适用于<code>min()</code>，<code>max()</code>，<code>sum()</code>，list()，<code>tuple()</code>，<code>set()</code>，<code>sorted()</code>，<code>any()</code>，<code>all()</code>。
+</ol>
+
+<h2 id=raw_input>全局函数<code>raw_input()</code>和<code>input()</code></h2>
+
+<p>Python 2有两个全局函数，用来在命令行请求用户输入。第一个叫做<code>input()</code>，它等待用户输入一个Python表达式(然后返回结果)。第二个叫做<code><dfn>raw_input</dfn>()</code>，用户输入什么它就返回什么。这让初学者非常困惑，并且这被广泛地看作是Python语言的一个“肉赘”(wart)。Python 3通过重命名<code>raw_input()</code>为<code>input()</code>，从而切掉了这个肉赘，所以现在的<code>input()</code>就像每个人最初期待的那样工作。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>raw_input()</code>
+<td><code class=pp>input()</code>
+<tr><th>&#x2461;
+<td><code class=pp>raw_input('prompt')</code>
+<td><code class=pp>input('prompt')</code>
+<tr><th>&#x2462;
+<td><code class=pp>input()</code>
+<td><code class=pp>eval(input())</code>
+</table>
+
+<ol>
+<li>最简单的形式，<code>raw_input()</code>被替换成<code>input()</code>。
+<li>在Python 2里，<code>raw_input()</code>函数可以指定一个提示符作为参数。Python 3里保留了这个功能。
+<li>如果你真的想要请求用户输入一个Python表达式，计算结果，可以通过调用<code>input()</code>函数然后把返回值传递给<code>eval()</code>。
+</ol>
+
+<h2 id=funcattrs>函数属性<code>func_*</code></h2>
+
+<p>在Python 2里，函数的里的代码可以访问到函数本身的特殊属性。在Python 3里，为了一致性，这些特殊属性被重新命名了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>a_function.<dfn>func_name</dfn></code>
+<td><code class=pp>a_function.__name__</code>
+<tr><th>&#x2461;
+<td><code class=pp>a_function.<dfn>func_doc</dfn></code>
+<td><code class=pp>a_function.__doc__</code>
+<tr><th>&#x2462;
+<td><code class=pp>a_function.<dfn>func_defaults</dfn></code>
+<td><code class=pp>a_function.__defaults__</code>
+<tr><th>&#x2463;
+<td><code class=pp>a_function.<dfn>func_dict</dfn></code>
+<td><code class=pp>a_function.__dict__</code>
+<tr><th>&#x2464;
+<td><code class=pp>a_function.<dfn>func_closure</dfn></code>
+<td><code class=pp>a_function.__closure__</code>
+<tr><th>&#x2465;
+<td><code class=pp>a_function.<dfn>func_globals</dfn></code>
+<td><code class=pp>a_function.__globals__</code>
+<tr><th>&#x2466;
+<td><code class=pp>a_function.<dfn>func_code</dfn></code>
+<td><code class=pp>a_function.__code__</code>
+</table>
+
+<ol>
+<li><code>__name__</code>属性(原<code>func_name</code>)包含了函数的名字。
+<li><code>__doc__</code>属性(原<code>funcdoc</code>)包含了你在函数源代码里定义的文档字符串(<i>docstring</i>)
+<li><code>__defaults__</code>属性(原<code>func_defaults</code>)是一个保存参数默认值的元组。
+<li><code>__dict__</code>属性(原<code>func_dict</code>)是一个支持任意函数属性的名字空间。
+<li><code>__closure__</code>属性(原<code>func_closure</code>)是一个由cell对象组成的元组，它包含了函数对自由变量(free variable)的绑定。
+<li><code>__globals__</code>属性(原<code>func_globals</code>)是一个对模块全局名字空间的引用，函数本身在这个名字空间里被定义。
+<li><code>__code__</code>属性(原<code>func_code</code>)是一个代码对象，表示编译后的函数体。
+</ol>
+
+<h2 id=xreadlines>I/O方法<code>xreadlines()</code></h2>
+
+<p>在Python 2里，文件对象有一个<code><dfn>xreadlines</dfn>()</code>方法，它返回一个迭代器，一次读取文件的一行。这在<code>for</code>循环中尤其有用。事实上，后来的Python 2版本给文件对象本身添加了这样的功能。
+
+<p>在Python 3里，<code>xreadlines()</code>方法不再可用了。<code>2to3</code>可以解决简单的情况，但是一些边缘案例则需要人工介入。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>for line in a_file.xreadlines():</code>
+<td><code class=pp>for line in a_file:</code>
+<tr><th>&#x2461;
+<td><code class=pp>for line in a_file.xreadlines(5):</code>
+<td><i>no change (broken)</i>
+</table>
+
+<ol>
+<li>如果你以前调用没有参数的<code>xreadlines()</code>，<code>2to3</code>会把它转换成文件对象本身。在Python 3里，这种转换后的代码可以完成前同样的工作：一次读取文件的一行，然后执行<code>for</code>循环的循环体。
+<li>如果你以前使用一个参数(每次读取的行数)调用<code>xreadlines()</code>，<code>2to3</code>不能为你完成从Python 2到Python 3的转换，你的代码会以这样的方式失败：<code>AttributeError: '_io.TextIOWrapper' object has no attribute 'xreadlines'</code>。你可以手工的把<code>xreadlines()</code>改成<code>readlines()</code>以使代码能在Python 3下工作。(readline()方法在Python 3里返回迭代器，所以它跟Python 2里的<code>xreadlines()</code>效率是不相上下的。)
+</ol>
+
+<p class=c><span style='font-size:56px;line-height:0.88'>&#x2603;</span>
+
+<h2 id=tuple_params>使用元组而非多个参数的<code>lambda</code>函数</h2>
+
+<p>在Python 2里，你可以定义匿名<code><dfn>lambda</dfn></code>函数(anonymous <code>lambda</code> function)，通过指定作为参数的元组的元素个数，使这个函数实际上能够接收多个参数。事实上，Python 2的解释器把这个元组“解开”(unpack)成命名参数(named arguments)，然后你可以在<code>lambda</code>函数里引用它们(通过名字)。在Python 3里，你仍然可以传递一个元组作为<code>lambda</code>函数的参数，但是Python解释器不会把它解析成命名参数。你需要通过位置索引(positional index)来引用每个参数。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>lambda (x,): x + f(x)</code>
+<td><code class=pp>lambda x1: x1[0] + f(x1[0])</code>
+<tr><th>&#x2461;
+<td><code class=pp>lambda (x, y): x + f(y)</code>
+<td><code class=pp>lambda x_y: x_y[0] + f(x_y[1])</code>
+<tr><th>&#x2462;
+<td><code class=pp>lambda (x, (y, z)): x + y + z</code>
+<td><code class=pp>lambda x_y_z: x_y_z[0] + x_y_z[1][0] + x_y_z[1][1]</code>
+<tr><th>&#x2463;
+<td><code class=pp>lambda x, y, z: x + y + z</code>
+<td><i>unchanged</i>
+</table>
+
+<ol>
+<li>如果你已经定义了一个<code>lambda</code>函数，它使用包含一个元素的元组作为参数，在Python 3里，它会被转换成一个包含到<var>x1[0]</var>的引用的<code>lambda</code>函数。<var>x1</var>是<code>2to3</code>脚本基于原来元组里的命名参数自动生成的。
+<li>使用含有两个元素的元组<var>(x, y)</var>作为参数的<code>lambda</code>函数被转换为<var>x_y</var>，它有两个位置参数，即<var>x_y[0]</var>和<var>x_y[1]</var>。
+<li><code>2to3</code>脚本甚至可以处理使用嵌套命名参数的元组作为参数的<code>lambda</code>函数。产生的结果代码有点难以阅读，但是它在Python 3下跟原来的代码在Python 2下的效果是一样的。
+<li>你可以定义使用多个参数的<code>lambda</code>函数。如果没有括号包围在参数周围，Python 2会把它当作一个包含多个参数的<code>lambda</code>函数；在这个<code>lambda</code>函数体里，你通过名字引用这些参数，就像在其他类型的函数里所做的一样。这种语法在Python 3里仍然有效。
+</ol>
+
+<h2 id=methodattrs>特殊的方法属性</h2>
+
+<p>在Python 2里，类方法可以访问到定义他们的类对象(class object)，也能访问方法对象(method object)本身。<code>im_self</code>是类的实例对象；<code>im_func</code>是函数对象，<code>im_class</code>是类本身。在Python 3里，这些属性被重新命名，以遵循其他属性的命名约定。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>aClassInstance.aClassMethod.<dfn>im_func</dfn></code>
+<td><code class=pp>aClassInstance.aClassMethod.__func__</code>
+<tr><th>
+<td><code class=pp>aClassInstance.aClassMethod.<dfn>im_self</dfn></code>
+<td><code class=pp>aClassInstance.aClassMethod.__self__</code>
+<tr><th>
+<td><code class=pp>aClassInstance.aClassMethod.<dfn>im_class</dfn></code>
+<td><code class=pp>aClassInstance.aClassMethod.__self__.__class__</code>
+</table>
+
+<h2 id=nonzero><code>__nonzero__</code>特殊方法</h2>
+
+<p>在Python 2里，你可以创建自己的类，并使他们能够在布尔上下文(boolean context)中使用。举例来说，你可以实例化这个类，并把这个实例对象用在一个<code>if</code>语句中。为了实现这个目的，你定义一个特别的<code>__nonzero__()</code>方法，它的返回值为<code>True</code>或者<code>False</code>，当实例对象处在布尔上下文中的时候这个方法就会被调用 。在Python 3里，你仍然可以完成同样的功能，但是这个特殊方法的名字变成了<code>__bool__()</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><pre class=pp><code>class A:
+    def <dfn>__nonzero__</dfn>(self):
+        pass</code></pre>
+<td><pre class=pp><code>class A:
+    def <dfn>__bool__</dfn>(self):
+        pass</code></pre>
+<tr><th>&#x2461;
+<td><pre class=pp><code>class A:
+    def __nonzero__(self, x, y):
+        pass</code></pre>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>当在布尔上下文使用一个类对象时，Python 3会调用<code>__bool__()</code>，而非<code>__nonzero__()</code>。
+<li>然而，如果你有定义了一个使用两个参数的<code>__nonzero__()</code>方法，<code>2to3</code>脚本会假设你定义的这个方法有其他用处，因此不会对代码做修改。
+</ol>
+
+<h2 id=numliterals>八进制类型</h2>
+
+<p>在Python 2和Python 3之间，定义八进制(<dfn>octal</dfn>)数的语法有轻微的改变。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>x = 0755</code>
+<td><code class=pp>x = 0o755</code>
+</table>
+
+<h2 id=renames><code>sys.maxint</code></h2>
+
+<p>由于<a href="porting-code-to-python-3-with-2to3.html#long">长整型和整型被整合在一起</a>了，<code>sys.maxint</code>常量不再精确。但是因为这个值对于检测特定平台的能力还是有用处的，所以它被Python 3保留，并且重命名为<code>sys.maxsize</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>from sys import <dfn>maxint</dfn></code>
+<td><code class=pp>from sys import <dfn>maxsize</dfn></code>
+<tr><th>&#x2461;
+<td><code class=pp>a_function(<dfn>sys.maxint</dfn>)</code>
+<td><code class=pp>a_function(<dfn>sys.maxsize</dfn>)</code>
+</table>
+
+<ol>
+<li><code>maxint</code>变成了<code>maxsize</code>。
+<li>所有的<code>sys.maxint</code>都变成了<code>sys.maxsize</code>。
+</ol>
+
+<h2 id=callable>全局函数<code>callable()</code></h2>
+
+<p>在Python 2里，你可以使用全局函数<code><dfn>callable</dfn>()</code>来检查一个对象是否可调用(callable，比如函数)。在Python 3里，这个全局函数被取消了。为了检查一个对象是否可调用，可以检查特殊方法<code>__call__()</code>的存在性。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>callable(anything)</code>
+<td><code class=pp>hasattr(anything, '__call__')</code>
+</table>
+
+<h2 id=zip>全局函数<code>zip()</code></h2>
+
+<p>在Python 2里，全局函数<code><dfn>zip</dfn>()</code>可以使用任意多个序列作为参数，它返回一个由元组构成的列表。第一个元组包含了每个序列的第一个元素；第二个元组包含了每个序列的第二个元素；依次递推下去。在Python 3里，<code>zip()</code>返回一个迭代器，而非列表。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>zip(a, b, c)</code>
+<td><code class=pp>list(zip(a, b, c))</code>
+<tr><th>&#x2461;
+<td><code class=pp>d.join(zip(a, b, c))</code>
+<td><i>no change</i>
+</table>
+
+<ol>
+<li>最简单的形式，你可以通过调用<code>list()</code>函数包装<code>zip()</code>的返回值来恢复<code>zip()</code>函数以前的功能，<code>list()</code>函数会遍历这个<code>zip()</code>函数返回的迭代器，然后返回结果的列表表示。
+<li>在已经会遍历序列所有元素的上下文环境里(比如这里对<code>join()</code>方法的调用)，<code>zip()</code>返回的迭代器能够正常工作。<code>2to3</code>脚本会检测到这些情况，不会对你的代码作出改变。
+</ol>
+
+<h2 id=standarderror><code>StandardError</code>异常</h2>
+
+<p>在Python 2里，<code><dfn>StandardError</dfn></code>是除了<code>StopIteration</code>，<code>GeneratorExit</code>，<code>KeyboardInterrupt</code>，<code>SystemExit</code>之外所有其他内置异常的基类。在Python 3里，<code>StandardError</code>已经被取消了；使用<code>Exception</code>替代。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>x = StandardError()</code>
+<td><code class=pp>x = Exception()</code>
+<tr><th>
+<td><code class=pp>x = StandardError(a, b, c)</code>
+<td><code class=pp>x = Exception(a, b, c)</code>
+</table>
+
+<h2 id=types><code>types</code>模块中的常量</h2>
+
+<p><code>types</code>模块里各种各样的常量能帮助你决定一个对象的类型。在Python 2里，它包含了代表所有基本数据类型的常量，如<code>dict</code>和<code>int</code>。在Python 3里，这些常量被已经取消了。只需要使用基础类型的名字来替代。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>types.<dfn>UnicodeType</dfn></code>
+<td><code class=pp>str</code>
+<tr><th>
+<td><code class=pp>types.<dfn>StringType</dfn></code>
+<td><code class=pp>bytes</code>
+<tr><th>
+<td><code class=pp>types.<dfn>DictType</dfn></code>
+<td><code class=pp>dict</code>
+<tr><th>
+<td><code class=pp>types.<dfn>IntType</dfn></code>
+<td><code class=pp>int</code>
+<tr><th>
+<td><code class=pp>types.<dfn>LongType</dfn></code>
+<td><code class=pp>int</code>
+<tr><th>
+<td><code class=pp>types.<dfn>ListType</dfn></code>
+<td><code class=pp>list</code>
+<tr><th>
+<td><code class=pp>types.<dfn>NoneType</dfn></code>
+<td><code class=pp>type(None)</code>
+<tr><th>
+<td><code class=pp>types.<dfn>BooleanType</dfn></code>
+<td><code class=pp>bool</code>
+<tr><th>
+<td><code class=pp>types.<dfn>BufferType</dfn></code>
+<td><code class=pp>memoryview</code>
+<tr><th>
+<td><code class=pp>types.<dfn>ClassType</dfn></code>
+<td><code class=pp>type</code>
+<tr><th>
+<td><code class=pp>types.<dfn>ComplexType</dfn></code>
+<td><code class=pp>complex</code>
+<tr><th>
+<td><code class=pp>types.<dfn>EllipsisType</dfn></code>
+<td><code class=pp>type(Ellipsis)</code>
+<tr><th>
+<td><code class=pp>types.<dfn>FloatType</dfn></code>
+<td><code class=pp>float</code>
+<tr><th>
+<td><code class=pp>types.<dfn>ObjectType</dfn></code>
+<td><code class=pp>object</code>
+<tr><th>
+<td><code class=pp>types.<dfn>NotImplementedType</dfn></code>
+<td><code class=pp>type(NotImplemented)</code>
+<tr><th>
+<td><code class=pp>types.<dfn>SliceType</dfn></code>
+<td><code class=pp>slice</code>
+<tr><th>
+<td><code class=pp>types.<dfn>TupleType</dfn></code>
+<td><code class=pp>tuple</code>
+<tr><th>
+<td><code class=pp>types.<dfn>TypeType</dfn></code>
+<td><code class=pp>type</code>
+<tr><th>
+<td><code class=pp>types.<dfn>XRangeType</dfn></code>
+<td><code class=pp>range</code>
+</table>
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>types.StringType</code>被映射为<code>bytes</code>，而非<code>str</code>，因为Python 2里的“string”(非Unicode编码的字符串，即普通字符串)事实上只是一些使用某种字符编码的字节序列(a sequence of bytes)。
+</blockquote>
+
+<h2 id=isinstance>全局函数<code>isinstance()</code></h2>
+
+<p><code>isinstance()</code>函数检查一个对象是否是一个特定类(class)或者类型(type)的实例。在Python 2里，你可以传递一个由类型(types)构成的元组给<code>isinstance()</code>，如果该对象是元组里的任意一种类型，函数返回<code>True</code>。在Python 3里，你依然可以这样做，但是不推荐使用把一种类型作为参数传递两次。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>isinstance(x, (int, float, int))</code>
+<td><code class=pp>isinstance(x, (int, float))</code>
+</table>
+
+<h2 id=basestring><code>basestring</code>数据类型</h2>
+
+<p>Python 2有两种字符串类型：Unicode编码的字符串和非Unicode编码的字符串。但是其实还有另外 一种类型，即<code><dfn>basestring</dfn></code>。它是一个抽象数据类型，是<code>str</code>和<code>unicode</code>类型的超类(superclass)。它不能被直接调用或者实例化，但是你可以把它作为<code>isinstance()</code>的参数来检测一个对象是否是一个Unicode字符串或者非Unicode字符串。在Python 3里，只有一种字符串类型，所以<code>basestring</code>就没有必要再存在了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>isinstance(x, basestring)</code>
+<td><code class=pp>isinstance(x, str)</code>
+</table>
+
+<h2 id=itertools><code>itertools</code>模块</h2>
+
+<p>Python 2.3引入了<code>itertools</code>模块，它定义了全局函数<code>zip()</code>，<code>map()</code>，<code>filter()</code>的变体(variant)，这些变体的返回类型为迭代器，而非列表。在Python 3里，由于这些全局函数的返回类型本来就是迭代器，所以这些<code>itertools</code>里的这些变体函数就被取消了。(<a href="advanced-iterators.html#more-itertools">在<code>itertools</code>模块里仍然还有许多其他的有用的函数</a>，而不仅仅是以上列出的这些。)
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><code class=pp>itertools.<dfn>izip</dfn>(a, b)</code>
+<td><code class=pp>zip(a, b)</code>
+<tr><th>&#x2461;
+<td><code class=pp>itertools.<dfn>imap</dfn>(a, b)</code>
+<td><code class=pp>map(a, b)</code>
+<tr><th>&#x2462;
+<td><code class=pp>itertools.<dfn>ifilter</dfn>(a, b)</code>
+<td><code class=pp>filter(a, b)</code>
+<tr><th>&#x2463;
+<td><code class=pp>from itertools import imap, izip, foo</code>
+<td><code class=pp>from itertools import foo</code>
+</table>
+
+<ol>
+<li>使用全局的<code>zip()</code>函数，而非<code>itertools.izip()</code>。
+<li>使用<code>map()</code>而非<code>itertools.imap()</code>。
+<li><code>itertools.ifilter()</code>变成了<code>filter()</code>。
+<li><code>itertools</code>模块在Python 3里仍然存在，它只是不再包含那些已经转移到全局名字空间的函数。<code>2to3</code>脚本能够足够智能地去移除那些不再有用的导入语句，同时保持其他的导入语句的完整性。
+</ol>
+
+<h2 id=sys_exc><code>sys.exc_type</code>, <code>sys.exc_value</code>, <code>sys.exc_traceback</code></h2>
+
+<p>处理异常的时候，在<code>sys</code>模块里有三个你可以访问的变量：<code>sys.exc_type，<code>sys.exc_value，<code>sys.exc_traceback</code>。(实际上这些在Python 1的时代就有。)从Python 1.5开始，由于新出的<code>sys.exc_info</code>，不再推荐使用这三个变量了，这是一个包含所有以上三个元素的元组。在Python 3里，这三个变量终于不再存在了；这意味着，你必须使用<code>sys.exc_info</code>。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp><dfn>sys.exc_type</dfn></code>
+<td><code class=pp>sys.exc_info()[0]</code>
+<tr><th>
+<td><code class=pp><dfn>sys.exc_value</dfn></code>
+<td><code class=pp>sys.exc_info()[1]</code>
+<tr><th>
+<td><code class=pp><dfn>sys.exc_traceback</dfn></code>
+<td><code class=pp>sys.exc_info()[2]</code>
+</table>
+
+<h2 id=paren>对元组的列表解析</h2>
+
+<p>在Python 2里，如果你需要编写一个遍历元组的列表解析，你不需要在元组值的周围加上括号。在Python 3里，这些括号是必需的。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp>[i for i in 1, 2]</code>
+<td><code class=pp>[i for i in (1, 2)]</code>
+</table>
+
+<h2 id=getcwdu><code>os.getcwdu()</code>函数</h2>
+
+<p>Python 2有一个叫做<code>os.getcwd()</code>的函数，它将当前的工作目录作为一个(非Unicode编码的)字符串返回。由于现代的文件系统能够处理能何字符编码的目录名，Python 2.3引入了<code>os.getcwdu()</code>函数。<code>os.getcwdu()</code>函数把当前工作目录用Unicode编码的字符串返回。在Python 3里，由于<a href="strings.html#divingin">只有一种字符串类型(Unicode类型的)</a>，所以你只需要<code>os.getcwd()</code>就可以了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>
+<td><code class=pp><dfn>os.getcwdu</dfn>()</code>
+<td><code class=pp>os.getcwd()</code>
+</table>
+
+<h2 id=metaclass>元类(metaclass)</h2>
+
+<p>在Python 2里，你可以通过在类的声明中定义<code>metaclass</code>参数，或者定义一个特殊的类级别的(class-level)<code><dfn>__metaclass__</dfn></code>属性，来创建元类。在Python 3里，<code>__metaclass__</code>属性已经被取消了。
+
+<table>
+<tr><th>Notes
+<th>Python 2
+<th>Python 3
+<tr><th>&#x2460;
+<td><pre class=pp><code>class C(metaclass=PapayaMeta):
+    pass</code></pre>
+<td><i>unchanged</i>
+<tr><th>&#x2461;
+<td><pre class=pp><code>class Whip:
+    __metaclass__ = PapayaMeta</code></pre>
+<td><pre class=pp><code>class Whip(metaclass=PapayaMeta):
+    pass</code></pre>
+<tr><th>&#x2462;
+<td><pre class=pp><code>class C(Whipper, Beater):
+    __metaclass__ = PapayaMeta</code></pre>
+<td><pre class=pp><code>class C(Whipper, Beater, metaclass=PapayaMeta):
+    pass</code></pre>
+</table>
+
+<ol>
+<li>在声明类的时候声明<code>metaclass</code>参数，这在Python 2和Python 3里都有效，它们是一样的。
+<li>在类的定义里声明<code>__metaclass__</code>属性在Python 2里有效，但是在Python 3里不再有效。
+<li><code>2to3</code>能够构建一个有效的类声明，即使这个类继承自多个父类。
+</ol>
+
+<h2 id=nitpick>关于代码风格</h2>
+
+<p>以下所列的“修补”(fixes)实质上并不算真正的修补。意思就是，他们只是代码的风格上的事情，而不涉及到代码的本质。但是Python的开发者们在使得代码风格尽可能一致方面非常有兴趣(have a vested interest)。为此，有一个专门<a href=http://www.python.org/dev/peps/pep-0008/>o描述Python代码风格的官方指导手册</a>&nbsp;&mdash;&nbsp;细致到能使人痛苦&nbsp;&mdash;&nbsp;都是一些你不太可能关心的在各种各样的细节上的挑剔。鉴于<code>2to3</code>为转换代码提供了一个这么好的条件，脚本的作者们添加了一些可选的特性以使你的代码更具可读性。
+
+<h3 id=set_literal><code>set()</code>字面值(literal)(显式的)</h3>
+
+<p>在Python 2城，定义一个字面值集合(literal set)的唯一方法就是调用<code>set(a_sequence)</code>。在Python 3里这仍然有效，但是使用新的标注记号(literal notation)：大括号({})是一种更清晰的方法。这种方法除了空集以外都有效，因为字典也用大括号标记，所以<a href="native-datatypes.html#emptyset"><code>{}</code>表示一个空的字典，而不是一个空集</a>。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>2to3</code>脚本默认不会修复<code>set()</code>字面值。为了开启这个功能，在命令行调用<code>2to3</code>的时候指定<kbd>-f set_literal</kbd>参数。
+</blockquote>
+
+<table>
+<tr><th>Notes
+<th>Before
+<th>After
+
+<tr><th>
+<td><code class=pp>set([1, 2, 3])</code>
+<td><code class=pp>{1, 2, 3}</code>
+<tr><th>
+<td><code class=pp>set((1, 2, 3))</code>
+<td><code class=pp>{1, 2, 3}</code>
+<tr><th>
+<td><code class=pp>set([i for i in a_sequence])</code>
+<td><code class=pp>{i for i in a_sequence}</code>
+</table>
+
+<h3 id=buffer>全局函数<code>buffer()</code>(显式的)</h3>
+
+<p>用C实现的Python对象可以导出一个“缓冲区接口”(buffer interface)，它允许其他的Python代码直接读写一块内存。(这听起来很强大，它也同样可怕。)在Python 3里，<code>buffer()</code>被重新命名为<code>memoryview()</code>。(实际的修改更加复杂，但是你几乎可以忽略掉这些不同之处。)
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>2to3</code>脚本默认不会修复<code>buffer()</code>函数。为了开启这个功能，在命令行调用<code>2to3</code>的时候指定<kbd>-f buffer</kbd>参数。
+</blockquote>
+
+<table>
+<tr><th>Notes
+<th>Before
+<th>After
+
+<tr><th>
+<td><code class=pp>x = <dfn>buffer</dfn>(y)</code>
+<td><code class=pp>x = <dfn>memoryview</dfn>(y)</code>
+</table>
+
+<h3 id=wscomma>逗号周围的空格(显式的)</h3>
+
+<p>尽管Python对用于缩进和凸出(indenting and outdenting)的空格要求很严格，但是对于空格在其他方面的使用Python还是很自由的。在列表，元组，集合和字典里，空格可以出现在逗号的前面或者后面，这不会有什么坏影响。但是，Python代码风格指导手册上指出，逗号前不能有空格，逗号后应该包含一个空格。尽管这纯粹只是一个美观上的考量(代码仍然可以正常工作，在Python 2和Python 3里都可以)，但是<code>2to3</code>脚本可以依据手册上的标准为你完成这个修复。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>2to3</code>脚本默认不会修复逗号周围的空格。为了开启这个功能，在命令行调用<code>2to3</code>的时候指定<kbd>-f wscomma</kbd>参数。
+</blockquote>
+
+<table>
+<tr><th>Notes
+<th>Before
+<th>After
+
+<tr><th>
+<td><code class=pp>a ,b</code>
+<td><code class=pp>a, b</code>
+<tr><th>
+<td><code class=pp>{a :b}</code>
+<td><code class=pp>{a: b}</code>
+</table>
+
+<h3 id=idioms>惯例(Common idioms)(显式的)</h3>
+
+<p>在Python社区里建立起来了许多惯例。有一些比如<code>while 1:</code> loop，它可以追溯到Python 1。(Python直到Python 2.3才有真正意义上的布尔类型，所以开发者以前使用<code>1</code>和<code>0</code>替代。)当代的Python程序员应该锻炼他们的大脑以使用这些惯例的现代版。
+
+<blockquote class=note>
+<p><span class=u>&#x261E;</span><code>2to3</code>脚本默认不会为这些惯例做修复。为了开启这个功能，在命令行调用<code>2to3</code>的时候指定<kbd>-f idioms</kbd>参数。
+</blockquote>
+
+<table>
+<tr><th>Notes
+<th>Before
+<th>After
+
+<tr><th>
+<td><pre class=pp><code>while 1:
+    do_stuff()</code></pre>
+<td><pre class=pp><code>while True:
+    do_stuff()</code></pre>
+<tr><th>
+<td><code class=pp>type(x) == T</code>
+<td><code class=pp>isinstance(x, T)</code>
+<tr><th>
+<td><code class=pp>type(x) is T</code>
+<td><code class=pp>isinstance(x, T)</code>
+<tr><th>
+<td><pre class=pp><code>a_list = list(a_sequence)
+a_list.sort()
+do_stuff(a_list)</code></pre>
+<td><pre class=pp><code>a_list = sorted(a_sequence)
+do_stuff(a_list)</code></pre>
+</table>
+
+<p class=v><a href="packaging.html" rel=prev title='back to &#8220;Packaging Python Libraries&#8221;'><span class=u>&#x261C;</span></a> <a href="special-method-names.html" rel=next title='onward to &#8220;Special Method Names&#8221;'><span class=u>&#x261E;</span></a>
+<p class=c>&copy; 2001&ndash;9 <a href="about.html">Mark Pilgrim</a>
+<script src="j/jquery.js"></script>
+<script src="j/prettify.js"></script>
+<script src="j/dip3.js"></script>
